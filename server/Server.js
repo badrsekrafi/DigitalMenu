@@ -277,12 +277,13 @@ app.get("/Home", async (req, res) => {
     try {
         const categories = await Category.find();
         const categoryCount = await MyCategory.countDocuments(); // Update this line
-        const orders = await Order.find();
+        const orders = await Order.find().sort({ createdAt: -1 }).limit(8);
 
         res.render("Home", {
             categories,
             categoryCount,
             orders,
+            hasOrders: orders.length > 0,
             adminName: getAdminDisplayName(req),
         });
     } catch (error) {

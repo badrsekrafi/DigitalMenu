@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700;800&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
         rel="stylesheet">
 </head>
 
@@ -18,178 +18,145 @@
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            <!-- -------------- Start of main ---------------- -->
-            <main>
-                <h1>Dashboard</h1>
-                <div class="date">
-                    <input type="date" id="date" class="unstyled">
-                    <style>
-                        .unstyled::-webkit-inner-spin-button,
-                        .unstyled::-webkit-calendar-picker-indicator {
-                            display: none;
-                            -webkit-appearance: none;
-                        }
-                    </style>
-                    <script>
-                        document.getElementById('date').valueAsDate = new Date();
-                    </script>
 
-                </div>
-
-                <div class="insights">
-                    <div class="sales">
-                        <div><i class="fa fa-line-chart"></i></div>
-                        <div class="middle">
-                            <div class="left">
-                                <h1 id="menuItemCount"></h1>
-                                <h3>MENU ITEMS</h3>
-                            </div>
-                        </div>
+            <main class="boxes dashboard-page">
+                <section class="upperbox dashboard-hero">
+                    <div class="upperbox-text">
+                        <p class="eyebrow">Overview</p>
+                        <h1>Dashboard</h1>
+                        <p class="welcome-text">Hey, <strong>{{adminName}}</strong></p>
                     </div>
 
-                    <div class="items">
+                    <div class="dashboard-tools">
+                        <label class="date-pill" for="date">
+                            <i class="fa-regular fa-calendar"></i>
+                            <input type="date" id="date" class="unstyled">
+                        </label>
+                        <div class="admin-chip">
+                            <div>
+                                <span>Admin</span>
+                                <strong>{{adminName}}</strong>
+                            </div>
+                            <img src="/images/Admin_image.png" alt="Admin profile">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="insights" aria-label="Dashboard stats">
+                    <article class="stat-card sales">
+                        <i class="fa fa-line-chart"></i>
+                        <div>
+                            <h2 id="menuItemCount">0</h2>
+                            <p>Menu Items</p>
+                        </div>
+                    </article>
+
+                    <article class="stat-card items">
                         <i class="fa fa-gift"></i>
-                        <div class="middle">
-                            <div class="left">
-                                <h1 id="categoryCount"></h1>
-                                <h3>CATEGORIES</h3>
-                            </div>
+                        <div>
+                            <h2 id="categoryCount">0</h2>
+                            <p>Categories</p>
                         </div>
-                    </div>
+                    </article>
 
-                    <div class="orders">
+                    <article class="stat-card orders">
                         <i class="fa fa-shopping-basket"></i>
-                        <div class="middle">
-                            <div class="left">
-                                <h1 id="orderCount"></h1>
-                                <h3>ORDERS</h3>
-                            </div>
+                        <div>
+                            <h2 id="orderCount">0</h2>
+                            <p>Orders</p>
                         </div>
-                    </div>
+                    </article>
+                </section>
 
-                </div>
-                <div class="recent-orders">
-                    <h2>Recent Orders</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Table Number</th>
-                                <th>Name</th>
-                                <th>Items</th>
-                                <th>Amount</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each orders}}
-                            <tr>
-                                <td>{{TableNumber}}</td>
-                                <td>{{name}}</td>
-                                <td>
-                                    {{#each items}}
-                                    {{this.itemName}}
-                                    {{#unless @last}}, {{/unless}}
+                <section class="dashboard-grid">
+                    <section class="lowerbox recent-orders">
+                        <div class="list-heading">
+                            <div>
+                                <p class="eyebrow">Latest activity</p>
+                                <h2>Recent Orders</h2>
+                            </div>
+                            <a class="view-all-link" href="/Orders">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                Show All
+                            </a>
+                        </div>
+
+                        <div class="lowerbox-table" aria-label="Recent orders table">
+                            {{#if hasOrders}}
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Table</th>
+                                        <th>Name</th>
+                                        <th>Items</th>
+                                        <th>Amount</th>
+                                        <th>View</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each orders}}
+                                    <tr>
+                                        <td data-label="Table">
+                                            <span class="cell-text strong-text">
+                                                {{#if TableNumber}}Table {{TableNumber}}{{else}}Reservation{{/if}}
+                                            </span>
+                                        </td>
+                                        <td data-label="Name">
+                                            <span class="cell-text">{{name}}</span>
+                                        </td>
+                                        <td data-label="Items">
+                                            <span class="cell-text">
+                                                {{#each items}}
+                                                {{this.itemName}}
+                                                {{#unless @last}}, {{/unless}}
+                                                {{/each}}
+                                            </span>
+                                        </td>
+                                        <td data-label="Amount">
+                                            <span class="cell-text strong-text">{{totalPrice}} DNT</span>
+                                        </td>
+                                        <td data-label="View" class="action-cell">
+                                            <a class="icon-action" href="/Orders" aria-label="View orders">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
                                     {{/each}}
-                                </td>
-                                <td>{{totalPrice}}</td>
-                                <td><a href="#">Details</a></td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                    <a href="/Orders">Show All</a>
-                </div>
+                                </tbody>
+                            </table>
+                            {{else}}
+                            <div class="empty-state">
+                                <i class="fa-solid fa-receipt"></i>
+                                <p>No orders yet.</p>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </section>
+
+                    <section class="lowerbox dashboard-qr-card">
+                        <div class="list-heading">
+                            <div>
+                                <p class="eyebrow">Quick access</p>
+                                <h2>General QR</h2>
+                            </div>
+                            <a class="view-all-link" href="/QR_Code">
+                                <i class="fa-solid fa-qrcode"></i>
+                                QR Page
+                            </a>
+                        </div>
+                        <div class="dashboard-qr-frame">
+                            <div class="updates12"></div>
+                        </div>
+                    </section>
+                </section>
             </main>
-            <!-- ------------ End of Main --------------- -->
-            <div class="right-side">
-                <!-- {{>right_top}} -->
-                <div class="right">
-                    <div class="top">
-                        <div class="profile">
-                            <div class="info">
-                                <p>Hey, <b>{{adminName}}</b></p>
-                                <small class="text-muted">Admin</small>
-                            </div>
-                            <div class="profile-photo">
-                                <img src="/images/Admin_image.png" alt="error">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- <div class="recent-updates">
-                    <h2>Recent Updates</h2>
-                    <div class="updates">
-                        <div class="update">
-                            <div class="profile-photo">
-                                <img src="/images/boy.png" alt="error">
-                            </div>
-                            <div class="message">
-                                <p><b>Mike Tyson</b> giving his order of Myonese Pizza</p>
-                                <div class="text-muted">2 Minutes ago</div>
-                            </div>
-                        </div>
-
-                        <div class="update">
-                            <div class="profile-photo">
-                                <img src="/images/boy.png" alt="error">
-                            </div>
-                            <div class="message">
-                                <p><b>Rishi Sharma</b> receiving his order of Berbecubs Pizza</p>
-                                <div class="text-muted">8 Minutes ago</div>
-                            </div>
-                        </div>
-
-                        <div class="update">
-                            <div class="profile-photo">
-                                <img src="/images/boy.png" alt="error">
-                            </div>
-                            <div class="message">
-                                <p><b>Kruti</b> receiving his order of Sandwitch</p>
-                                <div class="text-muted">15 Minutes ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
-                <div class="recent-updates g-qr">
-                    <h2>Generated QR</h2>
-                    <div class="updates12">
-                        <script src="/vendor/qrious/qrious.min.js"></script>
-                        <script>
-                            const generateQRCode = () => {
-                                if (typeof QRious === 'undefined') {
-                                    return;
-                                }
-
-                                const qrText = new URL('/UserMenu', window.location.origin).href;
-                                const canvas = document.createElement('canvas');
-                                new QRious({
-                                    element: canvas,
-                                    size: 200,
-                                    level: 'H',
-                                    value: qrText
-                                });
-
-                                const qrImage = document.getElementById('dashboardQrImage') || new Image();
-                                qrImage.id = 'dashboardQrImage';
-                                qrImage.src = canvas.toDataURL('image/png');
-                                if (!qrImage.parentElement) {
-                                    document.querySelector('.updates12').appendChild(qrImage);
-                                }
-                            };
-
-                            // Call the function when the page loads
-                            window.addEventListener('load', generateQRCode);
-                        </script>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-    <script>
 
-        //       =======  For Count the Number of MenuItems  =======
+    <script src="/vendor/qrious/qrious.min.js"></script>
+    <script>
+        document.getElementById('date').valueAsDate = new Date();
+
         const updateMenuItemCount = (count) => {
             const menuItemCountElement = document.getElementById('menuItemCount');
             if (menuItemCountElement) {
@@ -197,21 +164,14 @@
             }
         };
 
-        // Fetch the menu item count from the server
         fetch('/getMenuItemCount')
             .then(response => response.json())
-            .then(data => {
-                const menuItemCount = data.menuItemCount;
-                // Update the menu item count in the HTML
-                updateMenuItemCount(menuItemCount);
-            })
+            .then(data => updateMenuItemCount(data.menuItemCount))
             .catch(error => {
                 console.error('Error fetching menu item count:', error);
-                updateMenuItemCount(0); // Set count to 0 in case of an error
+                updateMenuItemCount(0);
             });
 
-
-        //      =======  For Count the Number of Categories  ========
         const updateCategoryCount = (count) => {
             const categoryCountElement = document.getElementById('categoryCount');
             if (categoryCountElement) {
@@ -219,39 +179,44 @@
             }
         };
 
-        // Fetch the category count from the server
         fetch('/getCategoryCount')
             .then(response => response.json())
-            .then(data => {
-                const categoryCount = data.categoryCount;
-                // Update the category count in the HTML
-                updateCategoryCount(categoryCount);
-            })
+            .then(data => updateCategoryCount(data.categoryCount))
             .catch(error => console.error('Error fetching category count:', error));
 
-
-        // ======= For Count the Number of Orders ========
         const updateOrderCount = (count) => {
-            const OrderCountElement = document.getElementById('orderCount');
-            if (OrderCountElement) {
-                OrderCountElement.innerText = count;
+            const orderCountElement = document.getElementById('orderCount');
+            if (orderCountElement) {
+                orderCountElement.innerText = count;
             }
         };
 
-        // Fetch the order count from the server
         fetch('/getorderCount')
             .then(response => response.json())
-            .then(data => {
-                const OrderCount = data.OrderCount;
-                // Update the order count in the HTML
-                updateOrderCount(OrderCount);
-            })
+            .then(data => updateOrderCount(data.OrderCount))
             .catch(error => console.error('Error fetching Order count:', error));
 
+        function generateQRCode() {
+            if (typeof QRious === 'undefined') {
+                return;
+            }
 
+            const qrText = new URL('/UserMenu', window.location.origin).href;
+            const canvas = document.createElement('canvas');
+            new QRious({
+                element: canvas,
+                size: 184,
+                level: 'H',
+                value: qrText,
+            });
+
+            const qrSlot = document.querySelector('.updates12');
+            qrSlot.innerHTML = '';
+            qrSlot.appendChild(canvas);
+        }
+
+        window.addEventListener('load', generateQRCode);
     </script>
-
-    <!-- <script src="/javascript/orders.js"></script> -->
     <script src="/javascript/index.js"></script>
 </body>
 
