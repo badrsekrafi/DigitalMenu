@@ -139,6 +139,66 @@ p {
     margin-bottom: 20px;
 }
 
+.table-context {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 78px 1rem -72px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid rgba(23, 24, 29, 0.1);
+    border-left: 5px solid var(--red);
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.08) 0 8px 20px;
+}
+
+.dashboard-banner + .table-context {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.table-context[hidden] {
+    display: none;
+}
+
+.table-context p {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.table-context strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 18px;
+}
+
+.table-context label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--darkGrey);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.table-context select {
+    min-width: 190px;
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid rgba(23, 24, 29, 0.18);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--darkBlack);
+    font-weight: 700;
+}
+
+.table-context.is-locked {
+    border-left-color: #29A22E;
+}
+
 .menu-heading {
     display: flex;
     align-items: end;
@@ -656,6 +716,22 @@ p {
     .menu-heading {
         display: block;
         padding-top: 120px;
+    }
+
+    .table-context {
+        align-items: flex-start;
+        flex-direction: column;
+        margin: 110px 0.8rem -102px 0;
+    }
+
+    .dashboard-banner + .table-context {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .table-context label,
+    .table-context select {
+        width: 100%;
     }
 
     .menu-heading > span {

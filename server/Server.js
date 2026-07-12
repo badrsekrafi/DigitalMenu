@@ -75,6 +75,31 @@ function formatReservationLabel(order) {
     return '';
 }
 
+function getFloorTables() {
+    return [
+        { number: 1, zone: 'Terrace', seats: 4, shape: 'round' },
+        { number: 2, zone: 'Terrace', seats: 4, shape: 'round' },
+        { number: 3, zone: 'Terrace', seats: 4, shape: 'round' },
+        { number: 4, zone: 'Terrace', seats: 4, shape: 'round' },
+        { number: 5, zone: 'Terrace', seats: 2, shape: 'round' },
+        { number: 6, zone: 'Terrace', seats: 2, shape: 'round' },
+        { number: 7, zone: 'Main room', seats: 4, shape: 'square' },
+        { number: 8, zone: 'Main room', seats: 4, shape: 'square' },
+        { number: 9, zone: 'Main room', seats: 4, shape: 'square' },
+        { number: 10, zone: 'Main room', seats: 4, shape: 'square' },
+        { number: 11, zone: 'Main room', seats: 6, shape: 'square' },
+        { number: 12, zone: 'Main room', seats: 6, shape: 'square' },
+        { number: 13, zone: 'Window side', seats: 2, shape: 'round' },
+        { number: 14, zone: 'Window side', seats: 2, shape: 'round' },
+        { number: 15, zone: 'Window side', seats: 4, shape: 'round' },
+        { number: 16, zone: 'Window side', seats: 4, shape: 'round' },
+        { number: 17, zone: 'Family corner', seats: 6, shape: 'square' },
+        { number: 18, zone: 'Family corner', seats: 6, shape: 'square' },
+        { number: 19, zone: 'Family corner', seats: 4, shape: 'square' },
+        { number: 20, zone: 'Family corner', seats: 4, shape: 'square' },
+    ];
+}
+
 // ============ Admin Login Page ================
 app.get("/health", (req, res) => {
     res.status(200).send("ok");
@@ -383,7 +408,8 @@ app.get("/Messages", (req, res) => {
 })
 
 app.get("/QR_Code", (req, res) => {
-    res.render("QR_Code");
+    const tables = getFloorTables();
+    res.render("QR_Code", { tables, tableCount: tables.length });
 })
 
 
@@ -462,28 +488,7 @@ app.put('/updateImage/:id', upload.single('image'), async (req, res) => {
 
 app.get('/ImgUploader_add', async (req, res) => {
     try {
-        const floorTables = [
-            { number: 1, zone: 'Terrace', seats: 4, shape: 'round' },
-            { number: 2, zone: 'Terrace', seats: 4, shape: 'round' },
-            { number: 3, zone: 'Terrace', seats: 4, shape: 'round' },
-            { number: 4, zone: 'Terrace', seats: 4, shape: 'round' },
-            { number: 5, zone: 'Terrace', seats: 2, shape: 'round' },
-            { number: 6, zone: 'Terrace', seats: 2, shape: 'round' },
-            { number: 7, zone: 'Main room', seats: 4, shape: 'square' },
-            { number: 8, zone: 'Main room', seats: 4, shape: 'square' },
-            { number: 9, zone: 'Main room', seats: 4, shape: 'square' },
-            { number: 10, zone: 'Main room', seats: 4, shape: 'square' },
-            { number: 11, zone: 'Main room', seats: 6, shape: 'square' },
-            { number: 12, zone: 'Main room', seats: 6, shape: 'square' },
-            { number: 13, zone: 'Window side', seats: 2, shape: 'round' },
-            { number: 14, zone: 'Window side', seats: 2, shape: 'round' },
-            { number: 15, zone: 'Window side', seats: 4, shape: 'round' },
-            { number: 16, zone: 'Window side', seats: 4, shape: 'round' },
-            { number: 17, zone: 'Family corner', seats: 6, shape: 'square' },
-            { number: 18, zone: 'Family corner', seats: 6, shape: 'square' },
-            { number: 19, zone: 'Family corner', seats: 4, shape: 'square' },
-            { number: 20, zone: 'Family corner', seats: 4, shape: 'square' },
-        ];
+        const floorTables = getFloorTables();
         const activeOrders = await Order.find({ status: { $ne: 'closed' } }).lean();
         const ordersByTable = new Map();
 
@@ -698,6 +703,7 @@ app.get("/UserMenu", async (req, res) => {
             MenuItems,
             categorySections,
             totalItems: MenuItems.length,
+            tables: getFloorTables(),
         });
     } catch (error) {
         console.error('Error fetching categories for UserMenu:', error);
@@ -707,7 +713,7 @@ app.get("/UserMenu", async (req, res) => {
 });
 
 app.get("/Order_Details", (req, res) => {
-    res.render("Order_Details");
+    res.render("Order_Details", { tables: getFloorTables() });
 });
 
 app.post('/Order_Details', async (req, res) => {

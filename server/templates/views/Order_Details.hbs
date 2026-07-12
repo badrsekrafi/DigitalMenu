@@ -53,7 +53,15 @@
             <div class="inputBox">
                 <div class="input" id="tableNumberField">
                     <label for="TableNumber">Your Table Number</label>
-                    <input type="number" id="TableNumber" name="TableNumber" placeholder="Enter Your Table number" min="1" required>
+                    <select id="TableNumber" name="TableNumber" required>
+                        <option value="">Choose table</option>
+                        {{#each tables}}
+                        <option value="{{number}}">Table {{number}} - {{seats}} seats</option>
+                        {{/each}}
+                    </select>
+                    <p class="table-lock-note" id="tableLockNote" hidden>
+                        Commande sur place for <strong id="lockedTableLabel"></strong>
+                    </p>
                 </div>
             </div>
 
@@ -100,6 +108,36 @@
             return selected ? selected.value : 'dine-in';
         }
 
+        const tableStorageKey = 'kaffaSelectedTableNumber';
+        const tableLockedStorageKey = 'kaffaSelectedTableLocked';
+
+        function normalizeTableNumber(value) {
+            const tableNumber = Number(value);
+            return Number.isInteger(tableNumber) && tableNumber > 0 ? String(tableNumber) : '';
+        }
+
+        function readCheckoutTableContext() {
+            const params = new URLSearchParams(window.location.search);
+            const urlTable = normalizeTableNumber(params.get('table'));
+            const isCounterMode = params.get('mode') === 'counter';
+
+            if (urlTable) {
+                localStorage.setItem(tableStorageKey, urlTable);
+                localStorage.setItem(tableLockedStorageKey, 'true');
+            } else if (isCounterMode) {
+                localStorage.setItem(tableLockedStorageKey, 'false');
+            }
+
+            const storedTable = normalizeTableNumber(localStorage.getItem(tableStorageKey));
+            const locked = localStorage.getItem(tableLockedStorageKey) === 'true' && Boolean(storedTable);
+
+            return {
+                tableNumber: storedTable,
+                locked,
+                isCounterMode,
+            };
+        }
+
         function syncCheckoutFields() {
             const isReservation = getSelectedServiceType() === 'reservation';
             const reservationFields = document.getElementById('reservationFields');
@@ -107,16 +145,25 @@
             const reservationTimeInput = document.getElementById('reservationTime');
             const tableNumberField = document.getElementById('tableNumberField');
             const tableNumberInput = document.getElementById('TableNumber');
+            const tableLockNote = document.getElementById('tableLockNote');
+            const lockedTableLabel = document.getElementById('lockedTableLabel');
+            const tableContext = readCheckoutTableContext();
 
             reservationFields.hidden = !isReservation;
             reservationDateInput.required = isReservation;
             reservationTimeInput.required = isReservation;
             tableNumberField.classList.toggle('is-hidden', isReservation);
             tableNumberInput.required = !isReservation;
+            tableNumberField.classList.toggle('is-locked', !isReservation && tableContext.locked);
+            tableLockNote.hidden = isReservation || !tableContext.locked;
 
             if (isReservation) {
-                tableNumberInput.value = '';
+                tableNumberInput.required = false;
             } else {
+                if (tableContext.tableNumber) {
+                    tableNumberInput.value = tableContext.tableNumber;
+                    lockedTableLabel.textContent = `Table ${tableContext.tableNumber}`;
+                }
                 reservationDateInput.value = '';
                 reservationTimeInput.value = '';
             }
@@ -142,6 +189,17 @@
 
             document.querySelectorAll('input[name="serviceType"]').forEach(input => {
                 input.addEventListener('change', syncCheckoutFields);
+            });
+            document.getElementById('TableNumber').addEventListener('change', (event) => {
+                const tableNumber = normalizeTableNumber(event.target.value);
+
+                if (tableNumber) {
+                    localStorage.setItem(tableStorageKey, tableNumber);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                } else {
+                    localStorage.removeItem(tableStorageKey);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                }
             });
             syncCheckoutFields();
 
@@ -212,7 +270,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Table number required',
-                        text: 'Please enter your table number for commande sur place.',
+                        text: 'Please choose your table for commande sur place.',
                     });
                     return;
                 }
@@ -266,7 +324,12 @@
 
                         // Redirect to the UserMenu page after a delay
                         setTimeout(() => {
-                            window.location.href = '/UserMenu';
+                            localStorage.removeItem("cart");
+                            const redirectUrl = new URL('/UserMenu', window.location.origin);
+                            if (selectedServiceType === 'dine-in' && tableNumber) {
+                                redirectUrl.searchParams.set('table', tableNumber);
+                            }
+                            window.location.href = `${redirectUrl.pathname}${redirectUrl.search}`;
                         }, 1500);
                     } else {
                         // Handle the error

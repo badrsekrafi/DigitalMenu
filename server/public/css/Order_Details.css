@@ -56,6 +56,7 @@ input[type="datetime-local"],
 input[type="date"],
 input[type="time"],
 input[type="email"],
+select,
 textarea {
     width: 100%;
     padding: 12px;
@@ -63,6 +64,10 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 6px;
     margin-bottom: 10px;
+}
+
+select {
+    background: #ffffff;
 }
 
 .service-choice {
@@ -105,6 +110,25 @@ textarea {
 
 .reservation-fields[hidden],
 .is-hidden {
+    display: none;
+}
+
+.input.is-locked select {
+    display: none;
+}
+
+.table-lock-note {
+    margin: 0 0 10px;
+    padding: 12px;
+    border: 1px solid #bfe8cf;
+    border-radius: 6px;
+    color: #155b2f;
+    background: #e8f8ef;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.table-lock-note[hidden] {
     display: none;
 }
 
@@ -187,6 +211,7 @@ textarea {
     input[type="datetime-local"],
     input[type="date"],
     input[type="time"],
+    select,
     textarea {
         font-size: 14px;
 

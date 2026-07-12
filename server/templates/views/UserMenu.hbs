@@ -36,6 +36,22 @@
         </div>
         {{/if}}
 
+        <div class="table-context" id="tableContext" hidden>
+            <div>
+                <p id="tableContextKicker">Commande sur place</p>
+                <strong id="tableContextLabel">Choose your table</strong>
+            </div>
+            <label id="tableSelectorWrap" for="userMenuTableSelect">
+                Table
+                <select id="userMenuTableSelect">
+                    <option value="">Choose table</option>
+                    {{#each tables}}
+                    <option value="{{number}}">Table {{number}} - {{seats}} seats</option>
+                    {{/each}}
+                </select>
+            </label>
+        </div>
+
         <div class="menu-heading">
             <div>
                 <p class="menu-kicker">Digital menu</p>
@@ -106,11 +122,99 @@
                 <hr class="divider">
                 <p>Total<span id="grand-total">0.00 DNT</span></p>
             </div>
-            <a href="/Order_Details" class="checkout">Checkout</a>
+            <a href="/Order_Details" class="checkout" id="checkoutLink">Checkout</a>
             <!-- <button>Checkout</button> -->
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableStorageKey = 'kaffaSelectedTableNumber';
+            const tableLockedStorageKey = 'kaffaSelectedTableLocked';
+            const params = new URLSearchParams(window.location.search);
+            const tableContext = document.getElementById('tableContext');
+            const tableContextKicker = document.getElementById('tableContextKicker');
+            const tableContextLabel = document.getElementById('tableContextLabel');
+            const tableSelectorWrap = document.getElementById('tableSelectorWrap');
+            const tableSelect = document.getElementById('userMenuTableSelect');
+            const checkoutLink = document.getElementById('checkoutLink');
+
+            function normalizeTableNumber(value) {
+                const tableNumber = Number(value);
+                return Number.isInteger(tableNumber) && tableNumber > 0 ? String(tableNumber) : '';
+            }
+
+            const urlTable = normalizeTableNumber(params.get('table'));
+            const isCounterMode = params.get('mode') === 'counter';
+
+            if (urlTable) {
+                localStorage.setItem(tableStorageKey, urlTable);
+                localStorage.setItem(tableLockedStorageKey, 'true');
+            } else if (isCounterMode) {
+                localStorage.removeItem(tableStorageKey);
+                localStorage.setItem(tableLockedStorageKey, 'false');
+            }
+
+            function getSelectedTable() {
+                return normalizeTableNumber(localStorage.getItem(tableStorageKey));
+            }
+
+            function isTableLocked() {
+                return localStorage.getItem(tableLockedStorageKey) === 'true' && Boolean(getSelectedTable());
+            }
+
+            function updateCheckoutLink() {
+                const selectedTable = getSelectedTable();
+                const url = new URL('/Order_Details', window.location.origin);
+
+                if (selectedTable) {
+                    url.searchParams.set('table', selectedTable);
+                } else if (isCounterMode) {
+                    url.searchParams.set('mode', 'counter');
+                }
+
+                checkoutLink.href = `${url.pathname}${url.search}`;
+            }
+
+            function renderTableContext() {
+                const selectedTable = getSelectedTable();
+                const locked = isTableLocked();
+                const shouldShowContext = Boolean(selectedTable || urlTable || isCounterMode);
+
+                tableContext.hidden = !shouldShowContext;
+                tableContext.classList.toggle('is-locked', locked);
+                tableSelectorWrap.hidden = locked;
+
+                if (selectedTable) {
+                    tableSelect.value = selectedTable;
+                    tableContextKicker.textContent = locked ? 'Table QR scanned' : 'Commande sur place';
+                    tableContextLabel.textContent = `Table ${selectedTable}`;
+                } else {
+                    tableSelect.value = '';
+                    tableContextKicker.textContent = 'Comptoir QR';
+                    tableContextLabel.textContent = 'Choose your table';
+                }
+
+                updateCheckoutLink();
+            }
+
+            tableSelect.addEventListener('change', () => {
+                const selectedTable = normalizeTableNumber(tableSelect.value);
+
+                if (selectedTable) {
+                    localStorage.setItem(tableStorageKey, selectedTable);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                } else {
+                    localStorage.removeItem(tableStorageKey);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                }
+
+                renderTableContext();
+            });
+
+            renderTableContext();
+        });
+    </script>
     <script src="/javascript/MenuFitering.js"></script>
     <script src="/javascript/UserMenu_Cart.js"></script>
 </body>
