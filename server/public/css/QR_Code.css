@@ -41,6 +41,25 @@
     font-weight: 500;
 }
 
+.qr-link {
+    display: block;
+    margin-top: 12px;
+    color: #2d4f9e;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.qr-status {
+    min-height: 20px;
+    margin: 8px 0 0;
+    padding: 0;
+    color: #4f5b67;
+    font-size: 13px;
+    text-align: center;
+}
+
 .boxi canvas {
     /* max-height: 0;
     overflow: hidden;

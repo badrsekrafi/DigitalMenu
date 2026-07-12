@@ -155,20 +155,28 @@
                 <div class="recent-updates g-qr">
                     <h2>Generated QR</h2>
                     <div class="updates12">
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-                        <script>    // 192.168.0.182
+                        <script src="/vendor/qrious/qrious.min.js"></script>
+                        <script>
                             const generateQRCode = () => {
-                                const qrText = "192.168.43.82:5000/UserMenu"; // Default value
+                                if (typeof QRious === 'undefined') {
+                                    return;
+                                }
+
+                                const qrText = new URL('/UserMenu', window.location.origin).href;
                                 const canvas = document.createElement('canvas');
-                                const qr = new QRious({
+                                new QRious({
                                     element: canvas,
                                     size: 200,
+                                    level: 'H',
                                     value: qrText
                                 });
 
-                                const qrImage = new Image();
+                                const qrImage = document.getElementById('dashboardQrImage') || new Image();
+                                qrImage.id = 'dashboardQrImage';
                                 qrImage.src = canvas.toDataURL('image/png');
-                                document.querySelector('.updates12').appendChild(qrImage);
+                                if (!qrImage.parentElement) {
+                                    document.querySelector('.updates12').appendChild(qrImage);
+                                }
                             };
 
                             // Call the function when the page loads

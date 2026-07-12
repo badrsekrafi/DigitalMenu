@@ -24,8 +24,10 @@
                 <div class="boxi">
                     <p>This is Your Resturant QR Code</p>
                     <!-- <input type="text" placeholder="Text or URL" id="qrText"> -->
-                    <canvas id="qrCode"></canvas>
-                    <button onclick="generateQRCode()">Generate QR Code</button>
+                    <canvas id="qrCode" aria-label="Restaurant menu QR code"></canvas>
+                    <a id="qrTargetLink" class="qr-link" href="/UserMenu" target="_blank" rel="noopener"></a>
+                    <p id="qrStatus" class="qr-status"></p>
+                    <button type="button" id="generateQrButton">Generate QR Code</button>
                 </div>
             </main>
             
@@ -33,18 +35,35 @@
             
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <script>    //   192.168.0.182
-        const generateQRCode = () => {
-            const qrText = "192.168.0.182:5000/UserMenu"; // Default value
+    <script src="/vendor/qrious/qrious.min.js"></script>
+    <script>
+        const getMenuUrl = () => new URL('/UserMenu', window.location.origin).href;
+
+        window.generateQRCode = () => {
+            const qrText = getMenuUrl();
             const canvas = document.getElementById('qrCode');
-            const qr = new QRious({
+            const qrTargetLink = document.getElementById('qrTargetLink');
+            const qrStatus = document.getElementById('qrStatus');
+
+            qrTargetLink.href = qrText;
+            qrTargetLink.textContent = qrText;
+
+            if (typeof QRious === 'undefined') {
+                qrStatus.textContent = 'QR generator failed to load.';
+                return;
+            }
+
+            new QRious({
                 element: canvas,
-                size: 200,
-                value: qrText
+                size: 220,
+                value: qrText,
+                level: 'H'
             });
+            qrStatus.textContent = 'QR Code ready.';
         };
-        
+
+        document.getElementById('generateQrButton').addEventListener('click', window.generateQRCode);
+        window.addEventListener('load', window.generateQRCode);
     </script>
 </body>
 

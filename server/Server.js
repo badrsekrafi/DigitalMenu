@@ -36,6 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
+app.use("/vendor/qrious", express.static(path.join(__dirname, "../node_modules/qrious/dist")));
 app.set("view engine", "hbs");
 app.set("views", templates_path);
 hbs.registerPartials(partials_path);
