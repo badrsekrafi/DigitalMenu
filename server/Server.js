@@ -28,6 +28,8 @@ const Order = require('./models/order');
 const TableConfig = require('./models/tableConfig');
 
 const PORT = process.env.PORT || 5000;
+const MENU_AUTH_COOKIE = 'kaffa_menu_user';
+const MENU_AUTH_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 
 const static_path = path.join(__dirname, "../server/public");
 const templates_path = path.join(__dirname, "../server/templates/views");
@@ -884,6 +886,218 @@ app.patch('/tables/:tableNumber/free', async (req, res) => {
 
 
 let latestImageIdentifier = null;
+
+function getSafeMenuReturnTo(value) {
+    const fallback = '/UserMenu';
+    const rawValue = String(value || '').trim();
+
+    if (!rawValue || !rawValue.startsWith('/') || rawValue.startsWith('//') || rawValue.includes('\\')) {
+        return fallback;
+    }
+
+    try {
+        const parsedUrl = new URL(rawValue, 'http://digital-menu.local');
+
+        if (parsedUrl.origin !== 'http://digital-menu.local') {
+            return fallback;
+        }
+
+        if (parsedUrl.pathname === '/UserMenu_loginpage' || parsedUrl.pathname === '/UserMenu_SignUp') {
+            return fallback;
+        }
+
+        return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function getMenuSessionUser(req) {
+    if (req.session && req.session.menuUser) {
+        return req.session.menuUser;
+    }
+
+    const cookieUser = readMenuAuthCookie(req);
+    if (cookieUser && req.session) {
+        req.session.menuUser = cookieUser;
+    }
+
+    return cookieUser;
+}
+
+function buildMenuSessionUser(userDocument) {
+    return {
+        id: String(userDocument._id),
+        username: userDocument.username,
+        email: userDocument.email,
+        phonenumber: userDocument.phonenumber,
+    };
+}
+
+function parseCookies(req) {
+    return String(req.headers.cookie || '')
+        .split(';')
+        .map((cookie) => cookie.trim())
+        .filter(Boolean)
+        .reduce((cookies, cookie) => {
+            const separatorIndex = cookie.indexOf('=');
+            if (separatorIndex === -1) {
+                return cookies;
+            }
+
+            const key = cookie.slice(0, separatorIndex);
+            const value = cookie.slice(separatorIndex + 1);
+            try {
+                cookies[key] = decodeURIComponent(value);
+            } catch (error) {
+                cookies[key] = value;
+            }
+            return cookies;
+        }, {});
+}
+
+function signMenuCookiePayload(payload) {
+    return crypto
+        .createHmac('sha256', secretKey)
+        .update(payload)
+        .digest('base64url');
+}
+
+function createMenuAuthCookieValue(menuUser) {
+    const payload = Buffer.from(JSON.stringify(menuUser)).toString('base64url');
+    const signature = signMenuCookiePayload(payload);
+    return `${payload}.${signature}`;
+}
+
+function readMenuAuthCookie(req) {
+    const cookieValue = parseCookies(req)[MENU_AUTH_COOKIE];
+
+    if (!cookieValue || !cookieValue.includes('.')) {
+        return null;
+    }
+
+    const [payload, signature] = cookieValue.split('.');
+    const expectedSignature = signMenuCookiePayload(payload);
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+
+    if (signatureBuffer.length !== expectedBuffer.length) {
+        return null;
+    }
+
+    if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+        return null;
+    }
+
+    try {
+        const parsedUser = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+
+        if (!parsedUser || !parsedUser.id || !parsedUser.email) {
+            return null;
+        }
+
+        return parsedUser;
+    } catch (error) {
+        return null;
+    }
+}
+
+function getMenuAuthCookieOptions() {
+    return {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: MENU_AUTH_COOKIE_MAX_AGE,
+    };
+}
+
+function setMenuAuth(req, res, menuUser) {
+    if (req.session) {
+        req.session.menuUser = menuUser;
+    }
+
+    res.cookie(MENU_AUTH_COOKIE, createMenuAuthCookieValue(menuUser), getMenuAuthCookieOptions());
+}
+
+function clearMenuAuth(req, res) {
+    if (req.session) {
+        delete req.session.menuUser;
+    }
+
+    const { maxAge, ...cookieOptions } = getMenuAuthCookieOptions();
+    res.clearCookie(MENU_AUTH_COOKIE, cookieOptions);
+}
+
+async function buildUserMenuViewData(req) {
+    const categories = await Category.find().lean();
+    const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
+
+    MenuItems.forEach(item => {
+        item.imageUrl = `/menu-image/${item._id}`;
+    });
+
+    const slugify = (value) => String(value || "other")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || "other";
+    const sectionsByCategory = new Map(categories.map((category) => [
+        category.title,
+        {
+            title: category.title,
+            sectionId: `category-${category._id}`,
+            items: [],
+        },
+    ]));
+    const extraSections = new Map();
+
+    MenuItems.forEach((item) => {
+        const section = sectionsByCategory.get(item.category);
+        if (section) {
+            section.items.push(item);
+            return;
+        }
+
+        const fallbackTitle = item.category || "Other";
+        if (!extraSections.has(fallbackTitle)) {
+            extraSections.set(fallbackTitle, {
+                title: fallbackTitle,
+                sectionId: `category-${slugify(fallbackTitle)}`,
+                items: [],
+            });
+        }
+        extraSections.get(fallbackTitle).items.push(item);
+    });
+
+    const categorySections = [
+        ...sectionsByCategory.values(),
+        ...extraSections.values(),
+    ]
+        .filter((section) => section.items.length > 0)
+        .map((section) => ({
+            ...section,
+            itemCount: section.items.length,
+        }));
+
+    let latestImage = null;
+    if (latestImageIdentifier) {
+        latestImage = await Image.findOne({ title: latestImageIdentifier });
+
+        if (latestImage) {
+            latestImage.base64Image = `data:${latestImage.image.contentType};base64,${latestImage.image.data.toString('base64')}`;
+        }
+    }
+
+    return {
+        categories,
+        latestImage,
+        MenuItems,
+        categorySections,
+        totalItems: MenuItems.length,
+        tables: await getConfiguredFloorTables(),
+        menuUser: getMenuSessionUser(req),
+    };
+}
+
 app.post("/ImgUploader_add", upload.single('image'), async (req, res) => {
     const title = req.body.title;
     const image = req.file;
@@ -912,74 +1126,8 @@ app.post("/ImgUploader_add", upload.single('image'), async (req, res) => {
 
 app.get("/UserMenu", async (req, res) => {
     try {
-        const categories = await Category.find().lean();
-        const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
-
-        MenuItems.forEach(item => {
-            item.imageUrl = `/menu-image/${item._id}`;
-        });
-
-        const slugify = (value) => String(value || "other")
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "") || "other";
-        const sectionsByCategory = new Map(categories.map((category) => [
-            category.title,
-            {
-                title: category.title,
-                sectionId: `category-${category._id}`,
-                items: [],
-            },
-        ]));
-        const extraSections = new Map();
-
-        MenuItems.forEach((item) => {
-            const section = sectionsByCategory.get(item.category);
-            if (section) {
-                section.items.push(item);
-                return;
-            }
-
-            const fallbackTitle = item.category || "Other";
-            if (!extraSections.has(fallbackTitle)) {
-                extraSections.set(fallbackTitle, {
-                    title: fallbackTitle,
-                    sectionId: `category-${slugify(fallbackTitle)}`,
-                    items: [],
-                });
-            }
-            extraSections.get(fallbackTitle).items.push(item);
-        });
-
-        const categorySections = [
-            ...sectionsByCategory.values(),
-            ...extraSections.values(),
-        ]
-            .filter((section) => section.items.length > 0)
-            .map((section) => ({
-                ...section,
-                itemCount: section.items.length,
-            }));
-
-        let latestImage = null;
-        if (latestImageIdentifier) {
-            latestImage = await Image.findOne({ title: latestImageIdentifier });
-
-            if (latestImage) {
-                latestImage.base64Image = `data:${latestImage.image.contentType};base64,${latestImage.image.data.toString('base64')}`;
-            }
-        }
-
-        res.render("UserMenu", {
-            categories,
-            latestImage,
-            MenuItems,
-            categorySections,
-            totalItems: MenuItems.length,
-            tables: await getConfiguredFloorTables(),
-        });
+        res.render("UserMenu", await buildUserMenuViewData(req));
     } catch (error) {
-        console.error('Error fetching categories for UserMenu:', error);
         console.error('Error fetching menu items for UserMenu:', error);
         res.status(500).send('Error fetching menu items for UserMenu.');
     }
@@ -1064,27 +1212,41 @@ app.post('/Order_Details', async (req, res) => {
 
 
 app.get("/UserMenu_loginpage", (req, res) => {
-    res.render("UserMenu_loginpage");
+    const returnTo = getSafeMenuReturnTo(req.query.returnTo);
+    res.render("UserMenu_loginpage", {
+        returnTo,
+        returnToQuery: encodeURIComponent(returnTo),
+    });
 });
 
 app.post("/UserMenu_loginpage", async (req, res) => {
+    const returnTo = getSafeMenuReturnTo(req.body.returnTo || req.query.returnTo);
+
     try {
         // const { email, password } = req.body;
 
         // Check if the user exists
-        const user = await UserNew.findOne({ email: req.body.email });
+        const user = await UserNew.findOne({ email: String(req.body.email || '').toLowerCase().trim() });
 
         if (!user) {
-            return res.status(400).send('User not found. Please check your email and try again.');
+            return res.status(400).render("UserMenu_loginpage", {
+                loginError: 'User not found. Please check your email and try again.',
+                returnTo,
+                returnToQuery: encodeURIComponent(returnTo),
+            });
         }
 
         // Check if the password is correct
         if (user.password === req.body.password) {
-            return res.status(201).render("UserMenu");
-        } else {
-            res.send("Invalid login Details");
+            setMenuAuth(req, res, buildMenuSessionUser(user));
+            return res.redirect(303, returnTo);
         }
 
+        res.status(401).render("UserMenu_loginpage", {
+            loginError: 'Invalid login details.',
+            returnTo,
+            returnToQuery: encodeURIComponent(returnTo),
+        });
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).send('Internal Server Error');
@@ -1092,29 +1254,49 @@ app.post("/UserMenu_loginpage", async (req, res) => {
 });
 
 app.get("/UserMenu_SignUp", (req, res) => {
-    res.render("UserMenu_SignUp");
+    const returnTo = getSafeMenuReturnTo(req.query.returnTo);
+    res.render("UserMenu_SignUp", {
+        returnTo,
+        returnToQuery: encodeURIComponent(returnTo),
+    });
 });
 
 app.post("/UserMenu_SignUp", async (req, res) => {
     const { username, phonenumber, email, password } = req.body;
+    const returnTo = getSafeMenuReturnTo(req.body.returnTo || req.query.returnTo);
 
     try {
         // Check if the user already exists
-        const existingUser = await UserNew.findOne({ email });
+        const existingUser = await UserNew.findOne({ email: String(email || '').toLowerCase().trim() });
 
         if (existingUser) {
-            return res.status(400).send('User with this email already exists.');
+            return res.status(400).render("UserMenu_SignUp", {
+                registerError: 'User with this email already exists.',
+                returnTo,
+                returnToQuery: encodeURIComponent(returnTo),
+            });
         }
 
         // Create a new user
-        const newUser = new UserNew({ username, phonenumber, email, password });
+        const newUser = new UserNew({
+            username,
+            phonenumber,
+            email: String(email || '').toLowerCase().trim(),
+            password,
+        });
         await newUser.save();
-        res.render("UserMenu_loginpage");
+        setMenuAuth(req, res, buildMenuSessionUser(newUser));
+        res.redirect(303, returnTo);
         // res.status(201).send('User registered successfully.');
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).send('Internal Server Error');
     }
+});
+
+app.get('/UserMenu_logout', (req, res) => {
+    clearMenuAuth(req, res);
+    res.redirect(getSafeMenuReturnTo(req.query.returnTo));
 });
 
 app.get('/signout', (req, res) => {

@@ -19,7 +19,13 @@
     <!-- header -->
     <input type="checkbox" id="cart">
     <label for="cart" class="label-cart"><span class="fas fa-shopping-cart"></span></label>
-    <button class="login-btn" id="loginButton"><a href="UserMenu_loginpage">Login</a></button>
+    <button class="login-btn {{#if menuUser}}is-authenticated{{/if}}" id="loginButton">
+        {{#if menuUser}}
+        <a href="/UserMenu_logout" id="menuLogoutLink">{{menuUser.username}}</a>
+        {{else}}
+        <a href="/UserMenu_loginpage" id="menuLoginLink">Login</a>
+        {{/if}}
+    </button>
     <h3 class="logo"><span class="logo-text">Kaffa Menu</span></h3>
     <div class="search-bar">
         <span class="fas fa-search"></span>
@@ -138,6 +144,17 @@
             const tableSelectorWrap = document.getElementById('tableSelectorWrap');
             const tableSelect = document.getElementById('userMenuTableSelect');
             const checkoutLink = document.getElementById('checkoutLink');
+            const loginLink = document.getElementById('menuLoginLink');
+            const logoutLink = document.getElementById('menuLogoutLink');
+            const currentReturnTo = `${window.location.pathname}${window.location.search}`;
+
+            if (loginLink) {
+                loginLink.href = `/UserMenu_loginpage?returnTo=${encodeURIComponent(currentReturnTo)}`;
+            }
+
+            if (logoutLink) {
+                logoutLink.href = `/UserMenu_logout?returnTo=${encodeURIComponent(currentReturnTo)}`;
+            }
 
             function normalizeTableNumber(value) {
                 const tableNumber = Number(value);
