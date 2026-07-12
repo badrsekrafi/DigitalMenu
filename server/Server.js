@@ -423,18 +423,133 @@ app.put('/updateImage/:id', upload.single('image'), async (req, res) => {
 });
 
 
-// When rendering ImgUploader_add for editing
 app.get('/ImgUploader_add', async (req, res) => {
-    const itemId = req.query.id;
     try {
-        const item = await Image.findById(itemId);
-        if (item) {
-            item.base64Image = `data:${item.image.contentType};base64,${item.image.data.toString('base64')}`;
-        }
-        res.render('ImgUploader_add', { item });
+        const floorTables = [
+            { number: 1, zone: 'Terrace', seats: 4, shape: 'round' },
+            { number: 2, zone: 'Terrace', seats: 4, shape: 'round' },
+            { number: 3, zone: 'Terrace', seats: 4, shape: 'round' },
+            { number: 4, zone: 'Terrace', seats: 4, shape: 'round' },
+            { number: 5, zone: 'Terrace', seats: 2, shape: 'round' },
+            { number: 6, zone: 'Terrace', seats: 2, shape: 'round' },
+            { number: 7, zone: 'Main room', seats: 4, shape: 'square' },
+            { number: 8, zone: 'Main room', seats: 4, shape: 'square' },
+            { number: 9, zone: 'Main room', seats: 4, shape: 'square' },
+            { number: 10, zone: 'Main room', seats: 4, shape: 'square' },
+            { number: 11, zone: 'Main room', seats: 6, shape: 'square' },
+            { number: 12, zone: 'Main room', seats: 6, shape: 'square' },
+            { number: 13, zone: 'Window side', seats: 2, shape: 'round' },
+            { number: 14, zone: 'Window side', seats: 2, shape: 'round' },
+            { number: 15, zone: 'Window side', seats: 4, shape: 'round' },
+            { number: 16, zone: 'Window side', seats: 4, shape: 'round' },
+            { number: 17, zone: 'Family corner', seats: 6, shape: 'square' },
+            { number: 18, zone: 'Family corner', seats: 6, shape: 'square' },
+            { number: 19, zone: 'Family corner', seats: 4, shape: 'square' },
+            { number: 20, zone: 'Family corner', seats: 4, shape: 'square' },
+        ];
+        const activeOrders = await Order.find({ status: { $ne: 'closed' } }).lean();
+        const ordersByTable = new Map();
+
+        activeOrders.forEach((order) => {
+            const tableNumber = Number(order.TableNumber);
+            if (!Number.isInteger(tableNumber) || tableNumber < 1) {
+                return;
+            }
+            if (!ordersByTable.has(tableNumber)) {
+                ordersByTable.set(tableNumber, []);
+            }
+            ordersByTable.get(tableNumber).push(order);
+        });
+
+        const floorByNumber = new Map(floorTables.map((table) => [table.number, table]));
+        ordersByTable.forEach((orders, tableNumber) => {
+            if (!floorByNumber.has(tableNumber)) {
+                const extraTable = {
+                    number: tableNumber,
+                    zone: 'Extra tables',
+                    seats: 4,
+                    shape: 'square',
+                };
+                floorTables.push(extraTable);
+                floorByNumber.set(tableNumber, extraTable);
+            }
+        });
+
+        const tables = floorTables
+            .sort((a, b) => a.number - b.number)
+            .map((table) => {
+                const orders = ordersByTable.get(table.number) || [];
+                const isReserved = orders.length > 0;
+                const itemNames = orders
+                    .flatMap((order) => order.items || [])
+                    .map((item) => item.itemName)
+                    .filter(Boolean);
+                const orderTotal = orders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
+                const visibleItems = itemNames.slice(0, 3).join(', ');
+                const itemSummary = itemNames.length > 3
+                    ? `${visibleItems} +${itemNames.length - 3}`
+                    : visibleItems;
+
+                return {
+                    ...table,
+                    seatsClass: `seats-${table.seats}`,
+                    shapeClass: `shape-${table.shape}`,
+                    isReserved,
+                    statusClass: isReserved ? 'reserved' : 'free',
+                    statusLabel: isReserved ? 'Reserved' : 'Free',
+                    orderCount: orders.length,
+                    orderTotal: orderTotal.toFixed(2),
+                    itemSummary,
+                };
+            });
+
+        const zoneOrder = ['Terrace', 'Main room', 'Window side', 'Family corner', 'Extra tables'];
+        const tableSections = zoneOrder
+            .map((zone) => {
+                const zoneTables = tables.filter((table) => table.zone === zone);
+                return {
+                    title: zone,
+                    tables: zoneTables,
+                    totalCount: zoneTables.length,
+                    freeCount: zoneTables.filter((table) => !table.isReserved).length,
+                    reservedCount: zoneTables.filter((table) => table.isReserved).length,
+                };
+            })
+            .filter((section) => section.tables.length > 0);
+
+        res.render('ImgUploader_add', {
+            tableSections,
+            tableStats: {
+                totalTables: tables.length,
+                freeTables: tables.filter((table) => !table.isReserved).length,
+                reservedTables: tables.filter((table) => table.isReserved).length,
+                activeOrders: activeOrders.length,
+            },
+        });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send('Error fetching image for editing.');
+        console.error('Error fetching table map:', error);
+        res.status(500).send('Error fetching table map.');
+    }
+});
+
+app.patch('/tables/:tableNumber/free', async (req, res) => {
+    const tableNumber = Number(req.params.tableNumber);
+    if (!Number.isInteger(tableNumber) || tableNumber < 1) {
+        return res.status(400).json({ success: false, error: 'Invalid table number.' });
+    }
+
+    try {
+        const result = await Order.updateMany(
+            { TableNumber: tableNumber, status: { $ne: 'closed' } },
+            { $set: { status: 'closed', closedAt: new Date() } }
+        );
+        res.json({
+            success: true,
+            modifiedCount: result.modifiedCount || result.nModified || 0,
+        });
+    } catch (error) {
+        console.error('Error freeing table:', error);
+        res.status(500).json({ success: false, error: 'Error freeing table.' });
     }
 });
 

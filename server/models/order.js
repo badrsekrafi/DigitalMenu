@@ -18,17 +18,25 @@ const orderSchema = new mongoose.Schema({
         require:true,
    },
    items: [{
-        itemName: { 
-            type: String, 
-            required: true, 
+        itemName: {
+            type: String,
+            required: true,
         },
     }],
-    totalPrice: { 
-        type: Number, 
+    totalPrice: {
+        type: Number,
         required: true,
     },
-    
-});
+    status: {
+        type: String,
+        enum: ['active', 'closed'],
+        default: 'active',
+    },
+    closedAt: {
+        type: Date,
+    },
+
+}, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
 
