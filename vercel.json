@@ -1,0 +1,18 @@
+{
+  "services": {
+    "digital-menu": {
+      "root": ".",
+      "runtime": "node",
+      "entrypoint": "server.js"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "digital-menu"
+      }
+    }
+  ]
+}
