@@ -54,6 +54,72 @@
                     <span><i class="legend-dot reserved-dot"></i>Reserved / has order</span>
                 </section>
 
+                <section class="table-config-panel" aria-label="Table setup">
+                    <div class="config-title">
+                        <div>
+                            <p class="eyebrow">Setup</p>
+                            <h2>Tables configuration</h2>
+                        </div>
+                        <button type="button" class="secondary-action" id="resetTablesButton">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            Reset default
+                        </button>
+                    </div>
+
+                    <form class="table-count-form" id="tableCountForm">
+                        <div class="setup-field">
+                            <label for="tableCount">Total tables</label>
+                            <input type="number" id="tableCount" min="1" value="{{tableStats.totalTables}}" required>
+                        </div>
+                        <div class="setup-field">
+                            <label for="newTableSeats">Seats for new tables</label>
+                            <input type="number" id="newTableSeats" min="1" value="4" required>
+                        </div>
+                        <button type="submit" class="primary-action">
+                            <i class="fa-solid fa-table-cells"></i>
+                            Apply count
+                        </button>
+                    </form>
+
+                    <form class="table-setup-form" id="tableSetupForm">
+                        <input type="hidden" id="editingTableNumber">
+                        <div class="setup-field">
+                            <label for="tableNumber">Table</label>
+                            <input type="number" id="tableNumber" min="1" required>
+                        </div>
+                        <div class="setup-field">
+                            <label for="tableSeats">Seats</label>
+                            <input type="number" id="tableSeats" min="1" required>
+                        </div>
+                        <div class="setup-field">
+                            <label for="tableZone">Zone</label>
+                            <input type="text" id="tableZone" list="tableZoneOptions" required>
+                            <datalist id="tableZoneOptions">
+                                <option value="Terrace"></option>
+                                <option value="Main room"></option>
+                                <option value="Window side"></option>
+                                <option value="Family corner"></option>
+                            </datalist>
+                        </div>
+                        <div class="setup-field">
+                            <label for="tableShape">Shape</label>
+                            <select id="tableShape" required>
+                                <option value="square">Square</option>
+                                <option value="round">Round</option>
+                            </select>
+                        </div>
+                        <div class="setup-actions">
+                            <button type="submit" class="primary-action" id="saveTableButton">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Add table
+                            </button>
+                            <button type="button" class="secondary-action" id="cancelTableEdit" hidden>
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
                 <div class="floor-plan">
                     {{#each tableSections}}
                     <section class="floor-zone">
@@ -63,7 +129,8 @@
                         </div>
                         <div class="table-grid">
                             {{#each tables}}
-                            <article class="table-card {{statusClass}}">
+                            <article class="table-card {{statusClass}}" data-table-number="{{number}}"
+                                data-table-seats="{{seats}}" data-table-zone="{{zone}}" data-table-shape="{{shape}}">
                                 <div class="table-diagram {{shapeClass}} {{seatsClass}}" aria-label="Table {{number}}">
                                     <span class="chair chair-top"></span>
                                     <span class="chair chair-right"></span>
@@ -79,6 +146,17 @@
                                         <span>{{seats}} seats</span>
                                     </div>
                                     <strong>{{statusLabel}}</strong>
+                                </div>
+
+                                <div class="table-actions">
+                                    <button type="button" class="edit-table-button" data-table-number="{{number}}">
+                                        <i class="fa-solid fa-pen"></i>
+                                        Edit
+                                    </button>
+                                    <button type="button" class="delete-table-button" data-table-number="{{number}}">
+                                        <i class="fa-solid fa-trash"></i>
+                                        Delete
+                                    </button>
                                 </div>
 
                                 {{#if isReserved}}
@@ -117,6 +195,18 @@
 
     <script>
         const toast = document.getElementById('statusToast');
+        const tableCountForm = document.getElementById('tableCountForm');
+        const tableCountInput = document.getElementById('tableCount');
+        const newTableSeatsInput = document.getElementById('newTableSeats');
+        const tableSetupForm = document.getElementById('tableSetupForm');
+        const editingTableNumberInput = document.getElementById('editingTableNumber');
+        const tableNumberInput = document.getElementById('tableNumber');
+        const tableSeatsInput = document.getElementById('tableSeats');
+        const tableZoneInput = document.getElementById('tableZone');
+        const tableShapeInput = document.getElementById('tableShape');
+        const saveTableButton = document.getElementById('saveTableButton');
+        const cancelTableEditButton = document.getElementById('cancelTableEdit');
+        const resetTablesButton = document.getElementById('resetTablesButton');
 
         function showToast(message, type) {
             toast.textContent = message;
@@ -125,6 +215,169 @@
                 toast.classList.remove('is-visible');
             }, 2500);
         }
+
+        async function readResponseError(response) {
+            try {
+                const data = await response.json();
+                return data.error || 'Request failed';
+            } catch (error) {
+                return 'Request failed';
+            }
+        }
+
+        function resetTableForm() {
+            tableSetupForm.reset();
+            editingTableNumberInput.value = '';
+            saveTableButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Add table';
+            cancelTableEditButton.hidden = true;
+        }
+
+        function fillTableForm(card) {
+            editingTableNumberInput.value = card.dataset.tableNumber;
+            tableNumberInput.value = card.dataset.tableNumber;
+            tableSeatsInput.value = card.dataset.tableSeats;
+            tableZoneInput.value = card.dataset.tableZone;
+            tableShapeInput.value = card.dataset.tableShape || 'square';
+            saveTableButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update table';
+            cancelTableEditButton.hidden = false;
+            tableSetupForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tableNumberInput.focus();
+        }
+
+        tableCountForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            try {
+                const response = await fetch('/tables/config/count', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tableCount: tableCountInput.value,
+                        defaultSeats: newTableSeatsInput.value,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(await readResponseError(response));
+                }
+
+                showToast('Table count updated', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 700);
+            } catch (error) {
+                showToast(error.message || 'Could not update table count', 'error');
+            }
+        });
+
+        tableSetupForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const editingTableNumber = editingTableNumberInput.value;
+            const payload = {
+                number: tableNumberInput.value,
+                seats: tableSeatsInput.value,
+                zone: tableZoneInput.value,
+                shape: tableShapeInput.value,
+            };
+
+            try {
+                const response = await fetch(editingTableNumber ? `/tables/config/${editingTableNumber}` : '/tables/config', {
+                    method: editingTableNumber ? 'PATCH' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(await readResponseError(response));
+                }
+
+                showToast(editingTableNumber ? 'Table updated' : 'Table added', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 700);
+            } catch (error) {
+                showToast(error.message || 'Could not save table', 'error');
+            }
+        });
+
+        cancelTableEditButton.addEventListener('click', resetTableForm);
+
+        resetTablesButton.addEventListener('click', async () => {
+            const confirmed = confirm('Reset tables to the default cafe setup?');
+
+            if (!confirmed) {
+                return;
+            }
+
+            resetTablesButton.disabled = true;
+            try {
+                const response = await fetch('/tables/config/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(await readResponseError(response));
+                }
+
+                showToast('Default setup restored', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 700);
+            } catch (error) {
+                resetTablesButton.disabled = false;
+                showToast(error.message || 'Could not reset tables', 'error');
+            }
+        });
+
+        document.querySelectorAll('.edit-table-button').forEach((button) => {
+            button.addEventListener('click', () => {
+                const card = button.closest('.table-card');
+                fillTableForm(card);
+            });
+        });
+
+        document.querySelectorAll('.delete-table-button').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const tableNumber = button.dataset.tableNumber;
+                const confirmed = confirm(`Delete table ${tableNumber}?`);
+
+                if (!confirmed) {
+                    return;
+                }
+
+                button.disabled = true;
+                try {
+                    const response = await fetch(`/tables/config/${tableNumber}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(await readResponseError(response));
+                    }
+
+                    showToast(`Table ${tableNumber} deleted`, 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 700);
+                } catch (error) {
+                    button.disabled = false;
+                    showToast(error.message || 'Could not delete table', 'error');
+                }
+            });
+        });
 
         document.querySelectorAll('.mark-free-button').forEach((button) => {
             button.addEventListener('click', async () => {

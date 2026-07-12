@@ -25,6 +25,7 @@ const MenuItem = require('./models/MenuItems');
 const Image = require('./models/ImgUploader');
 const UserNew = require('./models/UserMenu_SignUp');
 const Order = require('./models/order');
+const TableConfig = require('./models/tableConfig');
 
 const PORT = process.env.PORT || 5000;
 
@@ -75,7 +76,7 @@ function formatReservationLabel(order) {
     return '';
 }
 
-function getFloorTables() {
+function getDefaultFloorTables() {
     return [
         { number: 1, zone: 'Terrace', seats: 4, shape: 'round' },
         { number: 2, zone: 'Terrace', seats: 4, shape: 'round' },
@@ -98,6 +99,103 @@ function getFloorTables() {
         { number: 19, zone: 'Family corner', seats: 4, shape: 'square' },
         { number: 20, zone: 'Family corner', seats: 4, shape: 'square' },
     ];
+}
+
+function normalizeTableConfig(table) {
+    const number = Number(table.number);
+    const seats = Number(table.seats);
+    const shape = table.shape === 'round' ? 'round' : 'square';
+    const zone = String(table.zone || 'Main room').trim() || 'Main room';
+
+    return {
+        number,
+        zone,
+        seats: Number.isInteger(seats) && seats > 0 ? seats : 4,
+        shape,
+    };
+}
+
+async function getConfiguredFloorTables() {
+    const configuredTables = await TableConfig.find().sort({ number: 1 }).lean();
+
+    if (configuredTables.length === 0) {
+        return getDefaultFloorTables();
+    }
+
+    return configuredTables.map(normalizeTableConfig);
+}
+
+async function seedDefaultTableConfig() {
+    const defaultTables = getDefaultFloorTables();
+    await TableConfig.deleteMany({});
+    await TableConfig.insertMany(defaultTables);
+    return defaultTables;
+}
+
+async function ensureTableConfigSeeded() {
+    const count = await TableConfig.countDocuments();
+
+    if (count === 0) {
+        await TableConfig.insertMany(getDefaultFloorTables());
+    }
+}
+
+function parsePositiveInteger(value) {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function buildTableConfigPayload(body, requireNumber) {
+    const number = parsePositiveInteger(body.number);
+    const seats = parsePositiveInteger(body.seats);
+    const zone = String(body.zone || '').trim();
+    const shape = body.shape === 'round' ? 'round' : body.shape === 'square' ? 'square' : '';
+
+    if ((requireNumber || body.number !== undefined) && !number) {
+        return { error: 'Please enter a valid table number.' };
+    }
+
+    if (!seats) {
+        return { error: 'Please enter a valid seats number.' };
+    }
+
+    if (!zone) {
+        return { error: 'Please enter a table zone.' };
+    }
+
+    if (!shape) {
+        return { error: 'Please choose a valid table shape.' };
+    }
+
+    return {
+        payload: {
+            number,
+            seats,
+            zone,
+            shape,
+        },
+    };
+}
+
+function buildGeneratedTableConfig(number, existingTablesByNumber, defaultTablesByNumber, defaultSeats) {
+    const existingTable = existingTablesByNumber.get(number);
+
+    if (existingTable) {
+        return normalizeTableConfig(existingTable);
+    }
+
+    const defaultTable = defaultTablesByNumber.get(number);
+
+    if (defaultTable) {
+        return { ...defaultTable };
+    }
+
+    return {
+        number,
+        zone: 'Main room',
+        seats: defaultSeats,
+        shape: 'square',
+    };
 }
 
 // ============ Admin Login Page ================
@@ -412,9 +510,14 @@ app.get("/Messages", (req, res) => {
     res.render("Messages");
 })
 
-app.get("/QR_Code", (req, res) => {
-    const tables = getFloorTables();
-    res.render("QR_Code", { tables, tableCount: tables.length });
+app.get("/QR_Code", async (req, res) => {
+    try {
+        const tables = await getConfiguredFloorTables();
+        res.render("QR_Code", { tables, tableCount: tables.length });
+    } catch (error) {
+        console.error('Error fetching QR table config:', error);
+        res.status(500).send('Error fetching QR table config.');
+    }
 })
 
 
@@ -493,7 +596,7 @@ app.put('/updateImage/:id', upload.single('image'), async (req, res) => {
 
 app.get('/ImgUploader_add', async (req, res) => {
     try {
-        const floorTables = getFloorTables();
+        const floorTables = await getConfiguredFloorTables();
         const activeOrders = await Order.find({ status: { $ne: 'closed' } }).lean();
         const ordersByTable = new Map();
 
@@ -564,7 +667,10 @@ app.get('/ImgUploader_add', async (req, res) => {
                 };
             });
 
-        const zoneOrder = ['Terrace', 'Main room', 'Window side', 'Family corner', 'Extra tables'];
+        const preferredZoneOrder = ['Terrace', 'Main room', 'Window side', 'Family corner'];
+        const dynamicZones = [...new Set(tables.map((table) => table.zone))]
+            .filter((zone) => !preferredZoneOrder.includes(zone) && zone !== 'Extra tables');
+        const zoneOrder = [...preferredZoneOrder, ...dynamicZones, 'Extra tables'];
         const tableSections = zoneOrder
             .map((zone) => {
                 const zoneTables = tables.filter((table) => table.zone === zone);
@@ -590,6 +696,168 @@ app.get('/ImgUploader_add', async (req, res) => {
     } catch (error) {
         console.error('Error fetching table map:', error);
         res.status(500).send('Error fetching table map.');
+    }
+});
+
+app.post('/tables/config', async (req, res) => {
+    const { payload, error } = buildTableConfigPayload(req.body, true);
+
+    if (error) {
+        return res.status(400).json({ success: false, error });
+    }
+
+    try {
+        await ensureTableConfigSeeded();
+
+        const existingTable = await TableConfig.findOne({ number: payload.number }).lean();
+        if (existingTable) {
+            return res.status(409).json({
+                success: false,
+                error: 'This table already exists. Use edit to change it.',
+            });
+        }
+
+        const table = await TableConfig.create(payload);
+        res.status(201).json({ success: true, table: normalizeTableConfig(table) });
+    } catch (error) {
+        console.error('Error creating table config:', error);
+        res.status(500).json({ success: false, error: 'Error creating table.' });
+    }
+});
+
+app.post('/tables/config/count', async (req, res) => {
+    const tableCount = parsePositiveInteger(req.body.tableCount);
+    const defaultSeats = parsePositiveInteger(req.body.defaultSeats) || 4;
+
+    if (!tableCount) {
+        return res.status(400).json({ success: false, error: 'Please enter a valid table count.' });
+    }
+
+    try {
+        await ensureTableConfigSeeded();
+
+        const blockedTables = await Order.distinct('TableNumber', {
+            TableNumber: { $gt: tableCount },
+            status: { $ne: 'closed' },
+        });
+
+        if (blockedTables.length > 0) {
+            return res.status(409).json({
+                success: false,
+                error: `Close active orders on table ${blockedTables.join(', ')} before reducing the count.`,
+            });
+        }
+
+        const existingTables = await TableConfig.find().lean();
+        const existingTablesByNumber = new Map(existingTables.map((table) => [Number(table.number), table]));
+        const defaultTablesByNumber = new Map(getDefaultFloorTables().map((table) => [table.number, table]));
+        const nextTables = Array.from({ length: tableCount }, (_, index) => {
+            const number = index + 1;
+            return buildGeneratedTableConfig(number, existingTablesByNumber, defaultTablesByNumber, defaultSeats);
+        });
+
+        await TableConfig.deleteMany({});
+        await TableConfig.insertMany(nextTables);
+
+        res.json({ success: true, tables: nextTables });
+    } catch (error) {
+        console.error('Error setting table count:', error);
+        res.status(500).json({ success: false, error: 'Error setting table count.' });
+    }
+});
+
+app.patch('/tables/config/:tableNumber', async (req, res) => {
+    const currentNumber = parsePositiveInteger(req.params.tableNumber);
+    const { payload, error } = buildTableConfigPayload(req.body, true);
+
+    if (!currentNumber) {
+        return res.status(400).json({ success: false, error: 'Invalid table number.' });
+    }
+
+    if (error) {
+        return res.status(400).json({ success: false, error });
+    }
+
+    try {
+        await ensureTableConfigSeeded();
+
+        const table = await TableConfig.findOne({ number: currentNumber });
+        if (!table) {
+            return res.status(404).json({ success: false, error: 'Table not found.' });
+        }
+
+        if (payload.number !== currentNumber) {
+            const duplicateTable = await TableConfig.findOne({ number: payload.number }).lean();
+            if (duplicateTable) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Another table already uses this number.',
+                });
+            }
+        }
+
+        table.number = payload.number;
+        table.seats = payload.seats;
+        table.zone = payload.zone;
+        table.shape = payload.shape;
+        await table.save();
+
+        if (payload.number !== currentNumber) {
+            await Order.updateMany(
+                { TableNumber: currentNumber, status: { $ne: 'closed' } },
+                { $set: { TableNumber: payload.number } }
+            );
+        }
+
+        res.json({ success: true, table: normalizeTableConfig(table) });
+    } catch (error) {
+        console.error('Error updating table config:', error);
+        res.status(500).json({ success: false, error: 'Error updating table.' });
+    }
+});
+
+app.delete('/tables/config/:tableNumber', async (req, res) => {
+    const tableNumber = parsePositiveInteger(req.params.tableNumber);
+
+    if (!tableNumber) {
+        return res.status(400).json({ success: false, error: 'Invalid table number.' });
+    }
+
+    try {
+        await ensureTableConfigSeeded();
+
+        const activeOrderCount = await Order.countDocuments({
+            TableNumber: tableNumber,
+            status: { $ne: 'closed' },
+        });
+
+        if (activeOrderCount > 0) {
+            return res.status(409).json({
+                success: false,
+                error: 'Close active orders before deleting this table.',
+            });
+        }
+
+        const deletedTable = await TableConfig.findOneAndDelete({ number: tableNumber });
+
+        if (!deletedTable) {
+            return res.status(404).json({ success: false, error: 'Table not found.' });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting table config:', error);
+        res.status(500).json({ success: false, error: 'Error deleting table.' });
+    }
+});
+
+app.post('/tables/config/reset', async (req, res) => {
+    try {
+        const tables = await seedDefaultTableConfig();
+        res.json({ success: true, tables });
+    } catch (error) {
+        console.error('Error resetting table config:', error);
+        res.status(500).json({ success: false, error: 'Error resetting tables.' });
     }
 });
 
@@ -708,7 +976,7 @@ app.get("/UserMenu", async (req, res) => {
             MenuItems,
             categorySections,
             totalItems: MenuItems.length,
-            tables: getFloorTables(),
+            tables: await getConfiguredFloorTables(),
         });
     } catch (error) {
         console.error('Error fetching categories for UserMenu:', error);
@@ -717,8 +985,13 @@ app.get("/UserMenu", async (req, res) => {
     }
 });
 
-app.get("/Order_Details", (req, res) => {
-    res.render("Order_Details", { tables: getFloorTables() });
+app.get("/Order_Details", async (req, res) => {
+    try {
+        res.render("Order_Details", { tables: await getConfiguredFloorTables() });
+    } catch (error) {
+        console.error('Error fetching checkout table config:', error);
+        res.status(500).send('Error fetching checkout table config.');
+    }
 });
 
 app.post('/Order_Details', async (req, res) => {
