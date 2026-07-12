@@ -49,15 +49,14 @@
         <div class="dashboard-content">
             {{#each MenuItems}}
             <div class="dashboard-card">
-                <img src="data:{{this.image.contentType}};base64,{{base64Image}}" alt="{{this.title}}"
-                    class="card-image">
+                <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
                 <div class="card-detail">
                     <h4>{{this.title}}<span>${{this.price}}</span></h4>
                     <p>{{this.description}}</p>
                     <p class="card-time"></p>
                 </div>
                 <button class="add-to-cart-btn" data-name="{{this.title}}" data-price="{{this.price}}"
-                    data-img="data:{{this.image.contentType}};base64,{{base64Image}}">Add to Cart</button>
+                    data-img="{{this.imageUrl}}">Add to Cart</button>
 
             </div>
             {{/each}}

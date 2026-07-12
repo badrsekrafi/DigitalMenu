@@ -95,6 +95,7 @@ To set up the project locally:
     ```
 3. **Set up environment variables**
     - Create a `.env` file based on `.env.example` and configure your settings.
+    - Make sure MongoDB is running locally on `127.0.0.1:27017`, or update `MONGODB_URI` in `.env`.
 4. **Start the application**
     ```bash
     npm start

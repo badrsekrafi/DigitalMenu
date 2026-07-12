@@ -13,9 +13,10 @@ const multer = require('multer');
 const Handlebars = require('handlebars');
 require("./database/connection");
 
-// Generate a random secret key
-const secretKey = crypto.randomBytes(32).toString('hex');
-console.log("Generated Secret Key:", secretKey);
+const secretKey = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.SESSION_SECRET) {
+    console.warn("SESSION_SECRET is not set; using an ephemeral session secret.");
+}
 
 const user = require("./models/registerUsers");
 const Category = require("./models/category");
@@ -51,6 +52,10 @@ Handlebars.registerHelper('formatCurrency', function (value) {
 });
 
 // ============ Admin Login Page ================
+app.get("/health", (req, res) => {
+    res.status(200).send("ok");
+});
+
 app.get("/", (req, res) => {
     res.render("login");
 });
@@ -197,17 +202,37 @@ app.post("/Categories_add", async (req, res) => {
 // ================ Menu_Dishes Page ==================
 app.get("/Menu_Dishes", async (req, res) => {
     try {
-        const MenuItems = await MenuItem.find();
-        // Convert binary image data to base64 for each menu item
+        const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
         MenuItems.forEach(item => {
-            item.base64Image = item.image.data.toString('base64');
+            item.imageUrl = `/menu-image/${item._id}`;
         });
         res.render("Menu_Dishes", { MenuItems });
 
     } catch (error) {
-        res.status(500).send('Error Fetching Menu Items:', error);
+        console.error('Error fetching menu items:', error);
+        res.status(500).send('Error Fetching Menu Items.');
     }
 })
+
+app.get('/menu-image/:id', async (req, res) => {
+    try {
+        const item = await MenuItem.findById(req.params.id, { image: 1 }).lean();
+        if (!item || !item.image || !item.image.data) {
+            return res.status(404).send('Image not found.');
+        }
+
+        const imageData = Buffer.isBuffer(item.image.data)
+            ? item.image.data
+            : Buffer.from(item.image.data.buffer || item.image.data);
+
+        res.set('Content-Type', item.image.contentType || 'application/octet-stream');
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.send(imageData);
+    } catch (error) {
+        console.error('Error fetching menu image:', error);
+        res.status(500).send('Error fetching menu image.');
+    }
+});
 
 app.delete('/deleteMenuItem/:id', async (req, res) => {
     const itemId = req.params.id;
@@ -238,36 +263,68 @@ app.get("/Menu_Dishes_add", async (req, res) => {
 // Define storage for uploaded files
 const storage = multer.memoryStorage(); // Store as binary data in memory
 // Initialize multer with the defined storage
-const upload = multer({ storage: storage });
-
-app.post("/Menu_Dishes_add", upload.single('image'), async (req, res) => {
-    const { title, description, price, size } = req.body;
-    const image = req.file;
-    const categoryID = req.body.category;
-    if (!image) {
-        return res.status(400).send('No image file provided. Please select an image to upload.');
-    }
-
-    try {
-        const category = await Category.findById(categoryID);
-        if (!category) {
-            return res.status(400).send('Invalid Category Selected.');
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed.'));
         }
-        const newItem = new MenuItem({
-            title, description, price, size,
-            category: category.title,
-            image: {
-                data: image.buffer,
-                contentType: image.mimetype,
-            },
-        });
-        await newItem.save();
-        console.log('Item added:', newItem);
-        res.send('Item added successfully.');
-    } catch (error) {
-        console.log('Error:', error);
-        res.status(500).send('Error adding New Item.');
+        cb(null, true);
     }
+});
+
+app.post("/Menu_Dishes_add", (req, res) => {
+    upload.single('image')(req, res, async (uploadError) => {
+        if (uploadError) {
+            const message = uploadError.code === 'LIMIT_FILE_SIZE'
+                ? 'Image is too large. Please choose an image under 5 MB.'
+                : uploadError.message;
+            return res.status(400).send(message);
+        }
+
+        const { title, description, price, size } = req.body;
+        const image = req.file;
+        const categoryID = req.body.category;
+
+        if (!title || !description || !price || !categoryID) {
+            return res.status(400).send('Please fill title, description, price, and category.');
+        }
+        if (!image) {
+            return res.status(400).send('No image file provided. Please select an image to upload.');
+        }
+
+        try {
+            const category = await Category.findById(categoryID);
+            if (!category) {
+                return res.status(400).send('Invalid Category Selected.');
+            }
+
+            const newItem = new MenuItem({
+                title,
+                description,
+                price,
+                size,
+                category: category.title,
+                image: {
+                    data: image.buffer,
+                    contentType: image.mimetype,
+                },
+            });
+            await newItem.save();
+            console.log('Item added:', {
+                id: newItem._id,
+                title: newItem.title,
+                category: newItem.category,
+                imageBytes: image.size,
+                contentType: image.mimetype,
+            });
+            res.send('Item added successfully.');
+        } catch (error) {
+            console.log('Error:', error);
+            res.status(500).send('Error adding New Item.');
+        }
+    });
 });
 
 app.get("/Orders", async (req, res) => {
@@ -410,11 +467,11 @@ app.post("/ImgUploader_add", upload.single('image'), async (req, res) => {
 
 app.get("/UserMenu", async (req, res) => {
     try {
-        const categories = await Category.find();
-        const MenuItems = await MenuItem.find();
+        const categories = await Category.find().lean();
+        const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
 
         MenuItems.forEach(item => {
-            item.base64Image = item.image.data.toString('base64');
+            item.imageUrl = `/menu-image/${item._id}`;
         });
         if (latestImageIdentifier) {
             const latestImage = await Image.findOne({ title: latestImageIdentifier });
@@ -427,13 +484,12 @@ app.get("/UserMenu", async (req, res) => {
                 res.render("UserMenu", { categories, MenuItems, latestImage: null });
             }
         } else {
-            res.render("UserMenu", { latestImage: null, MenuItems: null });
+            res.render("UserMenu", { categories, latestImage: null, MenuItems });
         }
     } catch (error) {
         console.error('Error fetching categories for UserMenu:', error);
         console.error('Error fetching menu items for UserMenu:', error);
         res.status(500).send('Error fetching menu items for UserMenu.');
-        res.status(500).send('Error fetching categories for UserMenu.');
     }
 });
 

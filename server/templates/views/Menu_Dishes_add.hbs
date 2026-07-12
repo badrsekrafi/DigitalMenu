@@ -82,16 +82,20 @@
 
             const categorySelect = document.querySelector('select[name="category"]');
             const selectedCategory = categorySelect.value;
-            
+            const imageAlert = document.querySelector('#imageAlert');
+
+            if (!selectedCategory) {
+                imageAlert.textContent = 'Please select a category first.';
+                return;
+            }
+
             // Check if an image is selected
             if (!imageFile) {
-                const imageAlert = document.querySelector('#imageAlert');
                 imageAlert.textContent = 'Please choose an image first.';
                 return; // Don't proceed further
             }
 
             // If an image is selected, clear the message
-            const imageAlert = document.querySelector('#imageAlert');
             imageAlert.textContent = '';
 
             const formData = new FormData();
@@ -108,7 +112,13 @@
                 body: formData,
             })
 
-                .then(Response => Response.text())
+                .then(async Response => {
+                    const data = await Response.text();
+                    if (!Response.ok) {
+                        throw new Error(data || 'Error adding item.');
+                    }
+                    return data;
+                })
                 .then(data => {
                     $('#successPopup').fadeIn();
                     console.log(data);
@@ -125,7 +135,10 @@
                         $('#successPopup').fadeOut();
                     }, 5000);
                 })
-                .catch(err => console.error('Error:', err));
+                .catch(err => {
+                    imageAlert.textContent = err.message || 'Error adding item.';
+                    console.error('Error:', err);
+                });
         }
 
         function cancelNewItemAdd() {

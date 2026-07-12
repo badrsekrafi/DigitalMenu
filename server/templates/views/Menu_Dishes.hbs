@@ -54,8 +54,7 @@
                                     <td>{{this.size}}</td>
                                     <td>{{this.category}}</td>
                                     <td>
-                                        <img src="data:{{this.image.contentType}};base64,{{base64Image}}"
-                                            alt="{{this.title}}">
+                                        <img src="{{this.imageUrl}}" alt="{{this.title}}">
                                     </td>
                                     <td class="edit_column"><a
                                             href="Menu_Dishes_add?id={{this._id}}&title={{this.title}}&description={{this.description}}&price={{this.price}}&size={{this.size}}"><i
