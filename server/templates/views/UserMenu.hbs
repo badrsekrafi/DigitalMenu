@@ -18,7 +18,10 @@
 <body>
     <!-- header -->
     <input type="checkbox" id="cart">
-    <label for="cart" class="label-cart"><span class="fas fa-shopping-cart"></span></label>
+    <label for="cart" class="label-cart" aria-label="Open cart">
+        <span class="fas fa-shopping-cart"></span>
+        <span class="cart-count-badge" id="cartCountBadge" aria-live="polite">0</span>
+    </label>
     <button class="login-btn {{#if menuUser}}is-authenticated{{/if}}" id="loginButton">
         {{#if menuUser}}
         <a href="/UserMenu_logout" id="menuLogoutLink">{{menuUser.username}}</a>

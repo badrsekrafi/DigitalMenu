@@ -66,6 +66,37 @@ p {
     right: 10px;
     z-index: 4;
     cursor: pointer;
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--darkBlack);
+    box-shadow: 0 8px 22px rgba(23, 24, 29, 0.18);
+}
+
+.cart-count-badge {
+    position: absolute;
+    top: -7px;
+    right: -6px;
+    display: inline-flex;
+    min-width: 21px;
+    height: 21px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: var(--red);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.cart-count-badge.is-empty {
+    display: none;
 }
 
 .logo{

@@ -2,114 +2,172 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Kaffa Menu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/Order_Details.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-
 </head>
 
 <body>
-
     <section class="order" id="order">
+        <div class="checkout-shell">
+            <div class="checkout-panel">
+                <header class="checkout-hero">
+                    <p class="eyebrow">Checkout</p>
+                    <h1>Complete your order</h1>
+                    <p>Confirm your details, choose sur place or reservation, then send the order to Kaffa.</p>
+                </header>
 
-        <h3 class="sub-heading">Order Details</h3>
+                <form action="" method="post" id="orderForm" class="checkout-form">
+                    {{#if checkoutUser.isLoggedIn}}
+                    <div class="checkout-account">
+                        <span>Signed in account</span>
+                        <strong>{{checkoutUser.name}}</strong>
+                    </div>
+                    {{/if}}
 
-        <form action="" method="post" id="orderForm">
-            {{#if checkoutUser.isLoggedIn}}
-            <div class="checkout-account">
-                <span>Account</span>
-                <strong>{{checkoutUser.name}}</strong>
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>1</span>
+                            <div>
+                                <h2>Service</h2>
+                                <p>Choose whether this is a table order or a reservation.</p>
+                            </div>
+                        </div>
+
+                        <div class="service-choice" aria-label="Choose checkout type">
+                            <label class="service-card">
+                                <input type="radio" name="serviceType" value="dine-in" checked>
+                                <span>Commande sur place</span>
+                                <small>For clients already sitting in the cafe.</small>
+                            </label>
+                            <label class="service-card">
+                                <input type="radio" name="serviceType" value="reservation">
+                                <span>Reservation</span>
+                                <small>Choose the exact date and time to come.</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>2</span>
+                            <div>
+                                <h2>Client details</h2>
+                                <p>Logged in clients keep their saved contact details.</p>
+                            </div>
+                        </div>
+
+                        <div class="inputBox">
+                            <div class="input">
+                                <label for="name">Your Name</label>
+                                <input type="text" id="name" name="name" placeholder="Enter Your Name"
+                                    value="{{checkoutUser.name}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
+                            </div>
+                            <div class="input">
+                                <label for="number">Your Phone Number</label>
+                                <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number"
+                                    value="{{checkoutUser.phone}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
+                            </div>
+                        </div>
+
+                        <div class="inputBox">
+                            <div class="input">
+                                <label for="email">Your Email</label>
+                                <input type="email" id="email" name="email" placeholder="Enter Your Email"
+                                    value="{{checkoutUser.email}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
+                            </div>
+                            <div class="input">
+                                <label for="seatCount">Number of seats / people</label>
+                                <input type="number" id="seatCount" name="seatCount" placeholder="How many people?" min="1" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>3</span>
+                            <div>
+                                <h2>Table or reservation time</h2>
+                                <p>Table QR orders keep the scanned table locked.</p>
+                            </div>
+                        </div>
+
+                        <div class="inputBox">
+                            <div class="input" id="tableNumberField">
+                                <label for="TableNumber">Your Table Number</label>
+                                <select id="TableNumber" name="TableNumber" required>
+                                    <option value="">Choose table</option>
+                                    {{#each tables}}
+                                    <option value="{{number}}">Table {{number}} - {{seats}} seats</option>
+                                    {{/each}}
+                                </select>
+                                <p class="table-lock-note" id="tableLockNote" hidden>
+                                    Commande sur place for <strong id="lockedTableLabel"></strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="inputBox reservation-fields" id="reservationFields" hidden>
+                            <div class="input">
+                                <label for="reservationDate">Reservation Date</label>
+                                <input type="date" id="reservationDate" name="reservationDate">
+                            </div>
+                            <div class="input">
+                                <label for="reservationTime">Reservation Time</label>
+                                <input type="time" id="reservationTime" name="reservationTime">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">Send order</button>
+                </form>
             </div>
-            {{/if}}
 
-            <div class="service-choice" aria-label="Choose checkout type">
-                <label class="service-card">
-                    <input type="radio" name="serviceType" value="dine-in" checked>
-                    <span>Commande sur place</span>
-                    <small>For clients already sitting in the cafe.</small>
-                </label>
-                <label class="service-card">
-                    <input type="radio" name="serviceType" value="reservation">
-                    <span>Reservation</span>
-                    <small>Choose the exact date and time to come.</small>
-                </label>
-            </div>
+            <aside class="checkout-summary" aria-label="Order summary">
+                <div class="summary-card">
+                    <div class="summary-title">
+                        <div>
+                            <p class="eyebrow">Your cart</p>
+                            <h2>Order summary</h2>
+                        </div>
+                        <span class="summary-badge">DNT</span>
+                    </div>
 
-            <div class="inputBox">
-                <div class="input">
-                    <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" placeholder="Enter Your Name"
-                        value="{{checkoutUser.name}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
-                </div>
-                <div class="input">
-                    <label for="number">Your Phone Number</label>
-                    <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number"
-                        value="{{checkoutUser.phone}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
-                </div>
-            </div>
-
-            <div class="inputBox">
-                <div class="input">
-                    <label for="email">Your Email</label>
-                    <input type="email" id="email" name="email" placeholder="Enter Your Email"
-                        value="{{checkoutUser.email}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
-                </div>
-                <div class="input">
-                    <label for="seatCount">Number of seats / people</label>
-                    <input type="number" id="seatCount" name="seatCount" placeholder="How many people?" min="1" value="1" required>
-                </div>
-            </div>
-
-            <div class="inputBox">
-                <div class="input" id="tableNumberField">
-                    <label for="TableNumber">Your Table Number</label>
-                    <select id="TableNumber" name="TableNumber" required>
-                        <option value="">Choose table</option>
-                        {{#each tables}}
-                        <option value="{{number}}">Table {{number}} - {{seats}} seats</option>
+                    <div class="order-items-container">
+                        {{#each cart.items}}
+                        <div class="cart-item">
+                            <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
+                            <span class="item-name">{{this.name}}</span>
+                            <span class="item-price">{{formatCurrency this.price}} DNT</span>
+                            <button type="button" class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
+                        </div>
                         {{/each}}
-                    </select>
-                    <p class="table-lock-note" id="tableLockNote" hidden>
-                        Commande sur place for <strong id="lockedTableLabel"></strong>
-                    </p>
+                    </div>
+
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <strong id="total-price-container">0.00 DNT</strong>
+                    </div>
                 </div>
-            </div>
-
-            <div class="inputBox reservation-fields" id="reservationFields" hidden>
-                <div class="input">
-                    <label for="reservationDate">Reservation Date</label>
-                    <input type="date" id="reservationDate" name="reservationDate">
-                </div>
-                <div class="input">
-                    <label for="reservationTime">Reservation Time</label>
-                    <input type="time" id="reservationTime" name="reservationTime">
-                </div>
-            </div>
-
-            <div class="order-items-container">
-                {{#each cart.items}}
-                <div class="cart-item">
-                    <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
-                    <span class="item-name">{{this.name}}</span>
-                    <span class="item-price">{{formatCurrency this.price}} DNT</span>
-                    <button type="button" class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
-                </div>
-                {{/each}}
-            </div>
-
-            <div id="total-price-container">
-                <!-- Total price will be displayed here -->
-
-            </div>
-
-            <input type="submit" value="Order Now" class="btn">
-
-        </form>
+            </aside>
+        </div>
     </section>
+
     <script>
-        // Function to retrieve cart data from local storage
         function getCartFromLocalStorage() {
             const cartData = localStorage.getItem("cart");
             return cartData ? JSON.parse(cartData) : { items: [], subtotal: 0 };
+        }
+
+        function normalizeCart(cart) {
+            const items = Array.isArray(cart.items) ? cart.items : [];
+            const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0), 0);
+            return { items, subtotal, total: subtotal };
         }
 
         function getSelectedServiceType() {
@@ -178,41 +236,35 @@
             }
         }
 
+        function saveCart(cart) {
+            localStorage.setItem("cart", JSON.stringify(normalizeCart(cart)));
+        }
+
         function removeItemFromCart(itemToRemove) {
-            const cart = getCartFromLocalStorage();
+            const cart = normalizeCart(getCartFromLocalStorage());
             const itemIndex = cart.items.findIndex(item => item.name === itemToRemove.name && Number(item.price) === Number(itemToRemove.price));
 
             if (itemIndex > -1) {
                 cart.items.splice(itemIndex, 1);
-                cart.subtotal = cart.items.reduce((sum, item) => sum + Number(item.price || 0), 0);
-                localStorage.setItem("cart", JSON.stringify(cart));
-                window.location.reload();
+                saveCart(cart);
+                renderCartSummary();
             }
         }
 
-        // Retrieve cart data and update the display on page load
-        document.addEventListener("DOMContentLoaded", function () {
-            const cart = getCartFromLocalStorage();
+        function renderCartSummary() {
+            const cart = normalizeCart(getCartFromLocalStorage());
             const orderItemsContainer = document.querySelector(".order-items-container");
             const totalPriceContainer = document.getElementById("total-price-container");
 
-            document.querySelectorAll('input[name="serviceType"]').forEach(input => {
-                input.addEventListener('change', syncCheckoutFields);
-            });
-            document.getElementById('TableNumber').addEventListener('change', (event) => {
-                const tableNumber = normalizeTableNumber(event.target.value);
-
-                if (tableNumber) {
-                    localStorage.setItem(tableStorageKey, tableNumber);
-                    localStorage.setItem(tableLockedStorageKey, 'false');
-                } else {
-                    localStorage.removeItem(tableStorageKey);
-                    localStorage.setItem(tableLockedStorageKey, 'false');
-                }
-            });
-            syncCheckoutFields();
-
             orderItemsContainer.innerHTML = "";
+
+            if (cart.items.length === 0) {
+                const emptyState = document.createElement("p");
+                emptyState.className = "empty-cart-message";
+                emptyState.textContent = "Your cart is empty. Add items from the menu first.";
+                orderItemsContainer.appendChild(emptyState);
+            }
+
             cart.items.forEach(item => {
                 const itemElement = document.createElement("div");
                 itemElement.classList.add("cart-item", "added-food");
@@ -243,19 +295,33 @@
                 itemElement.appendChild(itemPrice);
                 itemElement.appendChild(closeButton);
                 orderItemsContainer.appendChild(itemElement);
-
-
             });
 
-            const subtotal = Number(cart.subtotal || cart.items.reduce((sum, item) => sum + Number(item.price || 0), 0));
-            const total = subtotal;
+            totalPriceContainer.textContent = `${cart.subtotal.toFixed(2)} DNT`;
+            saveCart(cart);
+        }
 
-            // Update the total in the cart object
-            cart.total = total;
-            totalPriceContainer.textContent = `${total.toFixed(2)} DNT`;
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('input[name="serviceType"]').forEach(input => {
+                input.addEventListener('change', syncCheckoutFields);
+            });
 
+            document.getElementById('TableNumber').addEventListener('change', (event) => {
+                const tableNumber = normalizeTableNumber(event.target.value);
 
-            const orderForm = document.querySelector('form');
+                if (tableNumber) {
+                    localStorage.setItem(tableStorageKey, tableNumber);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                } else {
+                    localStorage.removeItem(tableStorageKey);
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                }
+            });
+
+            syncCheckoutFields();
+            renderCartSummary();
+
+            const orderForm = document.getElementById('orderForm');
 
             orderForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
@@ -265,6 +331,17 @@
                 const tableNumber = document.getElementById('TableNumber').value;
                 const reservationDate = document.getElementById('reservationDate').value;
                 const reservationTime = document.getElementById('reservationTime').value;
+                const currentCart = normalizeCart(getCartFromLocalStorage());
+                const itemsData = currentCart.items;
+
+                if (itemsData.length === 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cart is empty',
+                        text: 'Please add at least one item before sending the order.',
+                    });
+                    return;
+                }
 
                 if (!Number.isInteger(seatCount) || seatCount < 1) {
                     Swal.fire({
@@ -293,13 +370,8 @@
                     return;
                 }
 
-                const currentCart = getCartFromLocalStorage();
-                const itemsData = Array.isArray(currentCart.items) ? currentCart.items : [];
-
-                // Create an array of items with the required structure
                 const items = itemsData.map(item => ({ itemName: item.name }));
 
-                // Create an object with the form data
                 const formData = {
                     name: document.getElementById('name').value,
                     PhoneNumber: document.getElementById('number').value,
@@ -309,8 +381,8 @@
                     TableNumber: selectedServiceType === 'dine-in' ? tableNumber : '',
                     reservationDate: selectedServiceType === 'reservation' ? reservationDate : '',
                     reservationTime: selectedServiceType === 'reservation' ? reservationTime : '',
-                    items: items,  // Correctly formatted array of items
-                    totalPrice: parseFloat(document.getElementById('total-price-container').textContent.replace(/[^\d.]/g, '')),
+                    items,
+                    totalPrice: currentCart.total,
                 };
 
                 try {
@@ -323,15 +395,13 @@
                     });
 
                     if (response.ok) {
-                        // Display a success message using SweetAlert2
                         Swal.fire({
                             icon: 'success',
                             title: selectedServiceType === 'reservation' ? 'Reservation Sent Successfully!' : 'Order Placed Successfully!',
                             showConfirmButton: false,
-                            timer: 3000  // Automatically close after 1.5 seconds
+                            timer: 3000
                         });
 
-                        // Redirect to the UserMenu page after a delay
                         setTimeout(() => {
                             localStorage.removeItem("cart");
                             const redirectUrl = new URL('/UserMenu', window.location.origin);
@@ -341,7 +411,6 @@
                             window.location.href = `${redirectUrl.pathname}${redirectUrl.search}`;
                         }, 1500);
                     } else {
-                        // Handle the error
                         Swal.fire({
                             icon: 'error',
                             title: 'Error Placing Order',
@@ -350,16 +419,24 @@
                     }
                 } catch (error) {
                     console.error('Error submitting order:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Connection error',
+                        text: 'Please try again.',
+                    });
                 }
             });
-
         });
 
-        // Function to remove an item from the cart
         function removeItem(name) {
-            // Use an AJAX request or similar to notify the server to remove the item
-            // For simplicity, let's just reload the page in this example
-            location.reload();
+            const cart = normalizeCart(getCartFromLocalStorage());
+            const itemIndex = cart.items.findIndex(item => item.name === name);
+
+            if (itemIndex > -1) {
+                cart.items.splice(itemIndex, 1);
+                saveCart(cart);
+                renderCartSummary();
+            }
         }
     </script>
 </body>

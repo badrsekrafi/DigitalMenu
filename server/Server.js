@@ -78,6 +78,18 @@ function formatReservationLabel(order) {
     return '';
 }
 
+function getAdminDisplayName(req) {
+    const adminUser = req.session && req.session.user;
+    const restaurantName = adminUser && typeof adminUser.Restaurant_name === 'string'
+        ? adminUser.Restaurant_name.trim()
+        : '';
+    const emailName = adminUser && typeof adminUser.email === 'string'
+        ? adminUser.email.split('@')[0]
+        : '';
+
+    return restaurantName || emailName || 'Admin';
+}
+
 function getDefaultFloorTables() {
     return [
         { number: 1, zone: 'Terrace', seats: 4, shape: 'round' },
@@ -225,10 +237,8 @@ app.post("/login", async (req, res) => {
         if (!userModel || userModel.password !== password) {
             return res.send("Invalid login details");
         }
-        // Store user's session upon successful login
         req.session.user = userModel;
-        // Pass user data to the Home template
-        res.render("Home");
+        res.redirect("/Home");
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");
@@ -269,7 +279,12 @@ app.get("/Home", async (req, res) => {
         const categoryCount = await MyCategory.countDocuments(); // Update this line
         const orders = await Order.find();
 
-        res.render("Home", { categories, categoryCount, orders });
+        res.render("Home", {
+            categories,
+            categoryCount,
+            orders,
+            adminName: getAdminDisplayName(req),
+        });
     } catch (error) {
         res.status(500).send("Error in Fetching");
     }

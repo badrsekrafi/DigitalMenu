@@ -40,34 +40,40 @@
 body{
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     margin: 0;
     padding-bottom:0px ;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .main{
     background: var(--color-background);
-    height: 130vh;
+    min-height: 100vh;
+    height: auto;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
+    padding: 1rem 0;
 }
 
 .bigBox{
     display: grid;
-    height: 95%;
+    min-height: calc(100vh - 2rem);
+    height: auto;
     width: 97%;
     border-radius: 2rem;
     background-color: var(--glass);
     overflow: hidden;
-    grid-template-columns: 13.5rem auto 20rem;
+    grid-template-columns: clamp(11rem, 15vw, 13.5rem) minmax(0, 1fr) minmax(16rem, 21vw, 20rem);
 }
 
 /* ================= Main ================== */
 
 main{
     margin: 1.4rem;
+    min-width: 0;
 }
 main .date{
     display: inline-block;
@@ -153,6 +159,8 @@ main .insights .orders{
 
 main .recent-orders{
     margin-top: 2rem;
+    min-width: 0;
+    overflow-x: auto;
 }
 
 main .recent-orders h2{
@@ -161,6 +169,7 @@ main .recent-orders h2{
 main .recent-orders table{
     background: var(--light);
     width: 100%;
+    min-width: 680px;
     border-radius: 1rem;
     padding: 2.5rem;
     text-align: center;
@@ -211,7 +220,7 @@ main .recent-orders a{
 }
 .right .top .profile{
     background: var(--activeItem);
-    width: 82%;
+    width: 100%;
     border-radius: 1rem;
     padding: 0.5rem;
     text-align: center;
@@ -219,11 +228,18 @@ main .recent-orders a{
     transition: all 300ms ease;
     display: flex;
     gap: 1rem;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
 }
 .right .top .info{
     margin-top: 0.4rem;
     text-align: end;
     justify-content: end;
+    min-width: 0;
+}
+.right .top .info b {
+    overflow-wrap: anywhere;
 }
 .right .top .info .text-muted{
     color:var(--dark-pink);
@@ -250,7 +266,13 @@ main .recent-orders a{
     border-radius: 2rem;
     box-shadow: 0rem 1rem 1rem var(--color-light);
     transition: all 300ms ease;
-    padding-left: 45px;
+    display: flex;
+    justify-content: center;
+    padding-left: 1.3rem;
+}
+.right-side .recent-updates .updates12 img {
+    max-width: 100%;
+    height: auto;
 }
 
 .right-side .recent-updates .updates:hover{
@@ -288,11 +310,25 @@ main .recent-orders a{
 /* ================ Media Queries ================== */
 @media screen and (max-width :1200px){
     .main{
-        height: 185vh;
+        height: auto;
+        min-height: 100vh;
     }
     .bigBox {
         width: 94%;
-        grid-template-columns: 7rem auto 23rem;
+        grid-template-columns: 7rem minmax(0, 1fr);
+        grid-template-areas:
+            "sidebar content"
+            "sidebar right";
+    }
+    .sidebar {
+        grid-area: sidebar;
+    }
+    main {
+        grid-area: content;
+    }
+    .right-side {
+        grid-area: right;
+        margin: 0 1.4rem 1.4rem;
     }
     .logo span{
         display: none;
@@ -324,15 +360,75 @@ main .recent-orders a{
         justify-content: center;
     }
     main .recent-orders{
-        width: 92%;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        margin: 2rem 0 0 8.8rem;
-        /*padding: 0 1.4rem;*/
+        width: 100%;
+        position: static;
+        transform: none;
+        margin: 2rem 0 0;
     }
     main .recent-orders table{
-        width: 84%;
+        width: 100%;
         margin-bottom: 1rem;
+    }
+}
+
+@media screen and (max-width: 760px) {
+    .main {
+        padding: 0;
+    }
+
+    .bigBox {
+        display: block;
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .sidebar {
+        padding-top: 1rem;
+    }
+
+    .logo img {
+        height: 5rem;
+        width: 5rem;
+    }
+
+    .menu {
+        margin-top: 2rem;
+        gap: 0.6rem;
+    }
+
+    .menuItem a {
+        height: auto;
+        min-height: 3rem;
+        padding: 12px 16px;
+    }
+
+    .menuItem a:last-child {
+        position: static;
+        margin-top: 1rem;
+    }
+
+    main {
+        margin: 1rem;
+    }
+
+    main .date {
+        width: 100%;
+        padding: 0.5rem 1rem;
+    }
+
+    main .insights {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    main .insights > div {
+        margin-top: 0;
+        padding: 1.2rem;
+    }
+
+    .right-side {
+        margin: 0 1rem 1rem;
     }
 }
