@@ -319,7 +319,8 @@ body {
 
 .table-info span,
 .order-summary span,
-.items-summary {
+.items-summary,
+.reservation-summary {
     color: var(--muted);
     font-size: 13px;
     font-weight: 700;
@@ -344,6 +345,7 @@ body {
 
 .order-summary {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 8px;
     padding: 9px 0;
@@ -354,6 +356,12 @@ body {
 .items-summary {
     min-height: 34px;
     margin-top: 10px;
+    line-height: 1.35;
+}
+
+.reservation-summary {
+    margin-top: 8px;
+    color: #8a4d00;
     line-height: 1.35;
 }
 

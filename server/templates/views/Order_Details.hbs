@@ -13,16 +13,29 @@
 
         <h3 class="sub-heading">Order Details</h3>
 
-        <form action="" method="post">
+        <form action="" method="post" id="orderForm">
+
+            <div class="service-choice" aria-label="Choose checkout type">
+                <label class="service-card">
+                    <input type="radio" name="serviceType" value="dine-in" checked>
+                    <span>Commande sur place</span>
+                    <small>For clients already sitting in the cafe.</small>
+                </label>
+                <label class="service-card">
+                    <input type="radio" name="serviceType" value="reservation">
+                    <span>Reservation</span>
+                    <small>Choose the exact date and time to come.</small>
+                </label>
+            </div>
 
             <div class="inputBox">
                 <div class="input">
                     <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" placeholder="Enter Your Name">
+                    <input type="text" id="name" name="name" placeholder="Enter Your Name" required>
                 </div>
                 <div class="input">
                     <label for="number">Your Phone Number</label>
-                    <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Table number">
+                    <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number" required>
                 </div>
             </div>
 
@@ -32,8 +45,26 @@
                     <input type="email" id="email" name="email" placeholder="Enter Your Email">
                 </div>
                 <div class="input">
+                    <label for="seatCount">Number of seats / people</label>
+                    <input type="number" id="seatCount" name="seatCount" placeholder="How many people?" min="1" value="1" required>
+                </div>
+            </div>
+
+            <div class="inputBox">
+                <div class="input" id="tableNumberField">
                     <label for="TableNumber">Your Table Number</label>
-                    <input type="number" id="TableNumber" name="TableNumber" placeholder="Enter Your Table number ">
+                    <input type="number" id="TableNumber" name="TableNumber" placeholder="Enter Your Table number" min="1" required>
+                </div>
+            </div>
+
+            <div class="inputBox reservation-fields" id="reservationFields" hidden>
+                <div class="input">
+                    <label for="reservationDate">Reservation Date</label>
+                    <input type="date" id="reservationDate" name="reservationDate">
+                </div>
+                <div class="input">
+                    <label for="reservationTime">Reservation Time</label>
+                    <input type="time" id="reservationTime" name="reservationTime">
                 </div>
             </div>
 
@@ -43,7 +74,7 @@
                     <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
                     <span class="item-name">{{this.name}}</span>
                     <span class="item-price">{{formatCurrency this.price}} DNT</span>
-                    <button class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
+                    <button type="button" class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
                 </div>
                 {{/each}}
             </div>
@@ -61,7 +92,46 @@
         // Function to retrieve cart data from local storage
         function getCartFromLocalStorage() {
             const cartData = localStorage.getItem("cart");
-            return cartData ? JSON.parse(cartData) : { items: [] };
+            return cartData ? JSON.parse(cartData) : { items: [], subtotal: 0 };
+        }
+
+        function getSelectedServiceType() {
+            const selected = document.querySelector('input[name="serviceType"]:checked');
+            return selected ? selected.value : 'dine-in';
+        }
+
+        function syncCheckoutFields() {
+            const isReservation = getSelectedServiceType() === 'reservation';
+            const reservationFields = document.getElementById('reservationFields');
+            const reservationDateInput = document.getElementById('reservationDate');
+            const reservationTimeInput = document.getElementById('reservationTime');
+            const tableNumberField = document.getElementById('tableNumberField');
+            const tableNumberInput = document.getElementById('TableNumber');
+
+            reservationFields.hidden = !isReservation;
+            reservationDateInput.required = isReservation;
+            reservationTimeInput.required = isReservation;
+            tableNumberField.classList.toggle('is-hidden', isReservation);
+            tableNumberInput.required = !isReservation;
+
+            if (isReservation) {
+                tableNumberInput.value = '';
+            } else {
+                reservationDateInput.value = '';
+                reservationTimeInput.value = '';
+            }
+        }
+
+        function removeItemFromCart(itemToRemove) {
+            const cart = getCartFromLocalStorage();
+            const itemIndex = cart.items.findIndex(item => item.name === itemToRemove.name && Number(item.price) === Number(itemToRemove.price));
+
+            if (itemIndex > -1) {
+                cart.items.splice(itemIndex, 1);
+                cart.subtotal = cart.items.reduce((sum, item) => sum + Number(item.price || 0), 0);
+                localStorage.setItem("cart", JSON.stringify(cart));
+                window.location.reload();
+            }
         }
 
         // Retrieve cart data and update the display on page load
@@ -69,6 +139,12 @@
             const cart = getCartFromLocalStorage();
             const orderItemsContainer = document.querySelector(".order-items-container");
             const totalPriceContainer = document.getElementById("total-price-container");
+
+            document.querySelectorAll('input[name="serviceType"]').forEach(input => {
+                input.addEventListener('change', syncCheckoutFields);
+            });
+            syncCheckoutFields();
+
             orderItemsContainer.innerHTML = "";
             cart.items.forEach(item => {
                 const itemElement = document.createElement("div");
@@ -84,10 +160,11 @@
                 itemName.classList.add("item-name", "added-food");
 
                 const itemPrice = document.createElement("span");
-                itemPrice.textContent = `${item.price.toFixed(2)} DNT`;
+                itemPrice.textContent = `${Number(item.price || 0).toFixed(2)} DNT`;
                 itemPrice.classList.add("item-price", "added-food");
 
                 const closeButton = document.createElement("button");
+                closeButton.type = "button";
                 closeButton.textContent = "Remove";
                 closeButton.classList.add("close-food-button");
                 closeButton.addEventListener("click", () => {
@@ -116,8 +193,41 @@
             orderForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
 
-                // Get the items data from localStorage
-                const itemsData = JSON.parse(localStorage.getItem("cart")).items;
+                const selectedServiceType = getSelectedServiceType();
+                const seatCount = Number(document.getElementById('seatCount').value);
+                const tableNumber = document.getElementById('TableNumber').value;
+                const reservationDate = document.getElementById('reservationDate').value;
+                const reservationTime = document.getElementById('reservationTime').value;
+
+                if (!Number.isInteger(seatCount) || seatCount < 1) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Seats required',
+                        text: 'Please enter the number of seats / people.',
+                    });
+                    return;
+                }
+
+                if (selectedServiceType === 'dine-in' && !tableNumber) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Table number required',
+                        text: 'Please enter your table number for commande sur place.',
+                    });
+                    return;
+                }
+
+                if (selectedServiceType === 'reservation' && (!reservationDate || !reservationTime)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Reservation date and time required',
+                        text: 'Please choose the exact date and time.',
+                    });
+                    return;
+                }
+
+                const currentCart = getCartFromLocalStorage();
+                const itemsData = Array.isArray(currentCart.items) ? currentCart.items : [];
 
                 // Create an array of items with the required structure
                 const items = itemsData.map(item => ({ itemName: item.name }));
@@ -127,10 +237,13 @@
                     name: document.getElementById('name').value,
                     PhoneNumber: document.getElementById('number').value,
                     email: document.getElementById('email').value,
-                    TableNumber: document.getElementById('TableNumber').value,
+                    serviceType: selectedServiceType,
+                    seatCount,
+                    TableNumber: selectedServiceType === 'dine-in' ? tableNumber : '',
+                    reservationDate: selectedServiceType === 'reservation' ? reservationDate : '',
+                    reservationTime: selectedServiceType === 'reservation' ? reservationTime : '',
                     items: items,  // Correctly formatted array of items
                     totalPrice: parseFloat(document.getElementById('total-price-container').textContent.replace(/[^\d.]/g, '')),
-                    // Add other form fields as needed
                 };
 
                 try {
@@ -146,7 +259,7 @@
                         // Display a success message using SweetAlert2
                         Swal.fire({
                             icon: 'success',
-                            title: 'Order Placed Successfully!',
+                            title: selectedServiceType === 'reservation' ? 'Reservation Sent Successfully!' : 'Order Placed Successfully!',
                             showConfirmButton: false,
                             timer: 3000  // Automatically close after 1.5 seconds
                         });
@@ -160,7 +273,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error Placing Order',
-                            text: 'Please try again.',
+                            text: await response.text() || 'Please try again.',
                         });
                     }
                 } catch (error) {
@@ -176,21 +289,6 @@
             // For simplicity, let's just reload the page in this example
             location.reload();
         }
-
-
-        // Retrieve cart data and update the display on page load
-        const cart = getCartFromLocalStorage();
-        const orderItemsContainer = document.querySelector(".order-items-container");
-
-        orderItemsContainer.innerHTML = "";
-        cart.items.forEach(item => {
-            const itemElement = document.createElement("div");
-            itemElement.classList.add("cart-item");
-
-            // Create elements for the item details (similar to your UserMenu_Cart.js)
-
-            orderItemsContainer.appendChild(itemElement);
-        });
     </script>
 </body>
 

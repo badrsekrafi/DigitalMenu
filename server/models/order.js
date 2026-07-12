@@ -15,7 +15,25 @@ const orderSchema = new mongoose.Schema({
    },
    TableNumber: {
         type:Number,
-        require:true,
+   },
+   serviceType: {
+        type: String,
+        enum: ['dine-in', 'reservation'],
+        default: 'dine-in',
+   },
+   seatCount: {
+        type: Number,
+        min: 1,
+        default: 1,
+   },
+   reservationDate: {
+        type: String,
+   },
+   reservationTime: {
+        type: String,
+   },
+   reservationAt: {
+        type: Date,
    },
    items: [{
         itemName: {

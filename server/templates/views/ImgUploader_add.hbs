@@ -83,9 +83,16 @@
 
                                 {{#if isReserved}}
                                 <div class="order-summary">
-                                    <span>{{orderCount}} order(s)</span>
+                                    <span>{{orderCount}} active</span>
+                                    <span>{{activeSeatCount}} seats</span>
                                     <span>{{orderTotal}} DNT</span>
                                 </div>
+                                {{#if orderKindSummary}}
+                                <p class="items-summary">{{orderKindSummary}}</p>
+                                {{/if}}
+                                {{#if reservationSummary}}
+                                <p class="reservation-summary">Reservation: {{reservationSummary}}</p>
+                                {{/if}}
                                 {{#if itemSummary}}
                                 <p class="items-summary">{{itemSummary}}</p>
                                 {{/if}}

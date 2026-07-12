@@ -52,6 +52,29 @@ Handlebars.registerHelper('formatCurrency', function (value) {
     return value.toFixed(2);
 });
 
+function getServiceTypeLabel(serviceType) {
+    return serviceType === 'reservation' ? 'Reservation' : 'Sur place';
+}
+
+function formatReservationLabel(order) {
+    if (order.serviceType !== 'reservation') {
+        return '';
+    }
+
+    if (order.reservationDate && order.reservationTime) {
+        return `${order.reservationDate} ${order.reservationTime}`;
+    }
+
+    if (order.reservationAt) {
+        return new Date(order.reservationAt).toLocaleString('fr-FR', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+        });
+    }
+
+    return '';
+}
+
 // ============ Admin Login Page ================
 app.get("/health", (req, res) => {
     res.status(200).send("ok");
@@ -331,10 +354,24 @@ app.post("/Menu_Dishes_add", (req, res) => {
 app.get("/Orders", async (req, res) => {
     try {
         // Fetch all orders from the database
-        const orders = await Order.find();
+        const orders = await Order.find().sort({ createdAt: -1 }).lean();
+        const formattedOrders = orders.map((order) => {
+            const isReservation = order.serviceType === 'reservation';
+
+            return {
+                ...order,
+                serviceTypeLabel: getServiceTypeLabel(order.serviceType),
+                serviceTypeClass: isReservation ? 'reservation' : 'dine-in',
+                seatCount: order.seatCount || 1,
+                tableDisplay: order.TableNumber || '-',
+                reservationLabel: formatReservationLabel(order) || '-',
+                statusLabel: order.status === 'closed' ? 'Closed' : 'Active',
+                totalPriceDisplay: Number(order.totalPrice || 0).toFixed(2),
+            };
+        });
 
         // Render the Orders page with the fetched orders
-        res.render("Orders", { orders });
+        res.render("Orders", { orders: formattedOrders });
     } catch (error) {
         console.error('Error Fetching Orders:', error);
         res.status(500).send('Error fetching orders.');
@@ -485,6 +522,17 @@ app.get('/ImgUploader_add', async (req, res) => {
                     .map((item) => item.itemName)
                     .filter(Boolean);
                 const orderTotal = orders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
+                const activeSeatCount = orders.reduce((sum, order) => {
+                    const orderSeats = Number(order.seatCount);
+                    return sum + (orderSeats > 0 ? orderSeats : table.seats);
+                }, 0);
+                const orderKindSummary = [...new Set(orders.map((order) => getServiceTypeLabel(order.serviceType)))].join(' / ');
+                const reservationLabels = orders
+                    .map((order) => formatReservationLabel(order))
+                    .filter(Boolean);
+                const reservationSummary = reservationLabels.length > 2
+                    ? `${reservationLabels.slice(0, 2).join(' | ')} +${reservationLabels.length - 2}`
+                    : reservationLabels.join(' | ');
                 const visibleItems = itemNames.slice(0, 3).join(', ');
                 const itemSummary = itemNames.length > 3
                     ? `${visibleItems} +${itemNames.length - 3}`
@@ -498,7 +546,10 @@ app.get('/ImgUploader_add', async (req, res) => {
                     statusClass: isReserved ? 'reserved' : 'free',
                     statusLabel: isReserved ? 'Reserved' : 'Free',
                     orderCount: orders.length,
+                    activeSeatCount,
                     orderTotal: orderTotal.toFixed(2),
+                    orderKindSummary,
+                    reservationSummary,
                     itemSummary,
                 };
             });
@@ -661,17 +712,57 @@ app.get("/Order_Details", (req, res) => {
 
 app.post('/Order_Details', async (req, res) => {
     try {
-        const { name, PhoneNumber, email, TableNumber, items, totalPrice } = req.body;
-
-        // items is already parsed as an array, no need for JSON.parse
-        const order = new Order({
+        const {
             name,
             PhoneNumber,
             email,
             TableNumber,
+            serviceType,
+            seatCount,
+            reservationDate,
+            reservationTime,
             items,
             totalPrice,
-        });
+        } = req.body;
+
+        const normalizedServiceType = serviceType === 'reservation' ? 'reservation' : 'dine-in';
+        const parsedSeatCount = Number(seatCount);
+        const parsedTableNumber = Number(TableNumber);
+
+        if (!Number.isInteger(parsedSeatCount) || parsedSeatCount < 1) {
+            return res.status(400).send('Please enter the number of seats / people.');
+        }
+
+        if (normalizedServiceType === 'dine-in' && (!Number.isInteger(parsedTableNumber) || parsedTableNumber < 1)) {
+            return res.status(400).send('Please enter your table number for commande sur place.');
+        }
+
+        if (normalizedServiceType === 'reservation' && (!reservationDate || !reservationTime)) {
+            return res.status(400).send('Please choose the reservation date and time.');
+        }
+
+        const orderData = {
+            name,
+            PhoneNumber,
+            email,
+            serviceType: normalizedServiceType,
+            seatCount: parsedSeatCount,
+            TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,
+            items: Array.isArray(items) ? items : [],
+            totalPrice: Number(totalPrice || 0),
+        };
+
+        if (normalizedServiceType === 'reservation') {
+            const reservationAt = new Date(`${reservationDate}T${reservationTime}:00`);
+            orderData.reservationDate = reservationDate;
+            orderData.reservationTime = reservationTime;
+            if (!Number.isNaN(reservationAt.getTime())) {
+                orderData.reservationAt = reservationAt;
+            }
+        }
+
+        // items is already parsed as an array, no need for JSON.parse
+        const order = new Order(orderData);
 
         await order.save();
 

@@ -28,7 +28,10 @@
                                     <th>Name</th>
                                     <th>Phone Number</th>
                                     <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Seats</th>
                                     <th>Table Number</th>
+                                    <th>Reservation</th>
                                     <th>Items</th>
                                     <th>Amount</th>
                                     <th>Status</th>
@@ -41,23 +44,18 @@
                                     <td>{{name}}</td>
                                     <td>{{PhoneNumber}}</td>
                                     <td>{{email}}</td>
-                                    <td>{{TableNumber}}</td>
+                                    <td><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
+                                    <td>{{seatCount}}</td>
+                                    <td>{{tableDisplay}}</td>
+                                    <td>{{reservationLabel}}</td>
                                     <td>
                                         {{#each items}}
                                         {{this.itemName}}
                                         {{#unless @last}}, {{/unless}}
                                         {{/each}}
                                     </td>
-                                    <td>{{totalPrice}}</td>
-                                    <td>
-                                        <select class="status-dropdown">
-                                            <option value="Choose Type">Choose Type</option>
-                                            <option value="Pending">Pending</option>
-                                            <option value="Delivered">Delivered</option>
-                                            <option value="Cancelled">Cancelled</option>
-                                            <option value="On the Way">On the Way</option>
-                                        </select>
-                                    </td>
+                                    <td>{{totalPriceDisplay}} DNT</td>
+                                    <td><span class="order-status">{{statusLabel}}</span></td>
                                     <td><a href="#">Details</a></td>
                                 </tr>
                                 {{/each}}
