@@ -382,9 +382,11 @@ app.get("/Orders", async (req, res) => {
         const orders = await Order.find().sort({ createdAt: -1 }).lean();
         const formattedOrders = orders.map((order) => {
             const isReservation = order.serviceType === 'reservation';
+            const createdAt = order.createdAt ? new Date(order.createdAt) : null;
 
             return {
                 ...order,
+                orderIdDisplay: String(order._id || '').slice(-6).toUpperCase() || '-',
                 serviceTypeLabel: getServiceTypeLabel(order.serviceType),
                 serviceTypeClass: isReservation ? 'reservation' : 'dine-in',
                 seatCount: order.seatCount || 1,
@@ -392,6 +394,9 @@ app.get("/Orders", async (req, res) => {
                 reservationLabel: formatReservationLabel(order) || '-',
                 statusLabel: order.status === 'closed' ? 'Closed' : 'Active',
                 totalPriceDisplay: Number(order.totalPrice || 0).toFixed(2),
+                createdAtDisplay: createdAt && !Number.isNaN(createdAt.getTime())
+                    ? createdAt.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+                    : '-',
             };
         });
 

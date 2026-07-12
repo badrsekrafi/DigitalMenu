@@ -25,6 +25,8 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
                                     <th>Name</th>
                                     <th>Phone Number</th>
                                     <th>Email</th>
@@ -41,22 +43,26 @@
                             <tbody>
                                 {{#each orders}}
                                 <tr>
-                                    <td>{{name}}</td>
-                                    <td>{{PhoneNumber}}</td>
-                                    <td>{{email}}</td>
-                                    <td><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
-                                    <td>{{seatCount}}</td>
-                                    <td>{{tableDisplay}}</td>
-                                    <td>{{reservationLabel}}</td>
-                                    <td>
+                                    <td data-label="ID">{{orderIdDisplay}}</td>
+                                    <td data-label="Date">{{createdAtDisplay}}</td>
+                                    <td data-label="Name">{{name}}</td>
+                                    <td data-label="Phone Number">{{PhoneNumber}}</td>
+                                    <td data-label="Email">{{email}}</td>
+                                    <td data-label="Type"><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
+                                    <td data-label="Seats">{{seatCount}}</td>
+                                    <td data-label="Table Number">{{tableDisplay}}</td>
+                                    <td data-label="Reservation">{{reservationLabel}}</td>
+                                    <td data-label="Items" class="items-cell">
                                         {{#each items}}
                                         {{this.itemName}}
                                         {{#unless @last}}, {{/unless}}
                                         {{/each}}
                                     </td>
-                                    <td>{{totalPriceDisplay}} DNT</td>
-                                    <td><span class="order-status">{{statusLabel}}</span></td>
-                                    <td><a href="#">Details</a></td>
+                                    <td data-label="Amount">{{totalPriceDisplay}} DNT</td>
+                                    <td data-label="Status"><span class="order-status">{{statusLabel}}</span></td>
+                                    <td data-label="View">
+                                        <button type="button" class="details-button">Afficher tous</button>
+                                    </td>
                                 </tr>
                                 {{/each}}
                             </tbody>
@@ -66,6 +72,73 @@
             </main>
         </div>
     </div>
+
+    <div class="order-modal" id="orderDetailsModal" hidden>
+        <div class="modal-backdrop" data-close-modal></div>
+        <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="orderDetailsTitle">
+            <div class="modal-header">
+                <div>
+                    <p>Notification</p>
+                    <h3 id="orderDetailsTitle">Coordonnees commande</h3>
+                </div>
+                <button type="button" class="modal-close" data-close-modal aria-label="Close details">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-content" id="orderDetailsContent"></div>
+        </section>
+    </div>
+
+    <script>
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        const orderDetailsContent = document.getElementById('orderDetailsContent');
+
+        function closeOrderModal() {
+            orderDetailsModal.hidden = true;
+            document.body.classList.remove('modal-open');
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        document.querySelectorAll('.details-button').forEach((button) => {
+            button.addEventListener('click', () => {
+                const row = button.closest('tr');
+                const details = Array.from(row.querySelectorAll('td[data-label]'))
+                    .filter((cell) => cell.dataset.label !== 'View')
+                    .map((cell) => ({
+                        label: cell.dataset.label,
+                        value: cell.innerText.trim() || '-',
+                    }));
+
+                orderDetailsContent.innerHTML = details.map((detail) => `
+                    <div class="detail-line">
+                        <span>${escapeHtml(detail.label)}</span>
+                        <strong>${escapeHtml(detail.value)}</strong>
+                    </div>
+                `).join('');
+
+                orderDetailsModal.hidden = false;
+                document.body.classList.add('modal-open');
+            });
+        });
+
+        document.querySelectorAll('[data-close-modal]').forEach((button) => {
+            button.addEventListener('click', closeOrderModal);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !orderDetailsModal.hidden) {
+                closeOrderModal();
+            }
+        });
+    </script>
 </body>
 
 </html>
