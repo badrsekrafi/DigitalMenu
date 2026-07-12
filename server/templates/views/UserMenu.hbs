@@ -61,6 +61,17 @@
             </label>
         </div>
 
+        <div class="client-order-status" id="clientOrderStatus" hidden>
+            <div class="client-order-status-title">
+                <div>
+                    <p>Suivi commande</p>
+                    <strong>Status des articles</strong>
+                </div>
+                <span id="clientOrderStatusCount">0 article</span>
+            </div>
+            <div class="client-order-status-list" id="clientOrderStatusList"></div>
+        </div>
+
         <div class="menu-heading">
             <div>
                 <p class="menu-kicker">Digital menu</p>
@@ -136,6 +147,11 @@
         </div>
     </div>
 
+    <div class="ready-order-toast" id="readyOrderToast" hidden>
+        <strong>Commande prete</strong>
+        <span id="readyOrderToastText">Votre article est pret.</span>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const tableStorageKey = 'kaffaSelectedTableNumber';
@@ -149,7 +165,14 @@
             const checkoutLink = document.getElementById('checkoutLink');
             const loginLink = document.getElementById('menuLoginLink');
             const logoutLink = document.getElementById('menuLogoutLink');
+            const orderStatusPanel = document.getElementById('clientOrderStatus');
+            const orderStatusList = document.getElementById('clientOrderStatusList');
+            const orderStatusCount = document.getElementById('clientOrderStatusCount');
+            const readyOrderToast = document.getElementById('readyOrderToast');
+            const readyOrderToastText = document.getElementById('readyOrderToastText');
             const currentReturnTo = `${window.location.pathname}${window.location.search}`;
+            const lastOrderStorageKey = 'kaffaLastOrderId';
+            const notifiedReadyStorageKey = 'kaffaReadyNotifiedItems';
 
             if (loginLink) {
                 loginLink.href = `/UserMenu_loginpage?returnTo=${encodeURIComponent(currentReturnTo)}`;
@@ -233,6 +256,97 @@
             });
 
             renderTableContext();
+
+            function getNotifiedReadyItems() {
+                try {
+                    return JSON.parse(localStorage.getItem(notifiedReadyStorageKey) || '[]');
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function saveNotifiedReadyItems(items) {
+                localStorage.setItem(notifiedReadyStorageKey, JSON.stringify(items.slice(-80)));
+            }
+
+            function showReadyToast(item) {
+                readyOrderToastText.textContent = `${item.itemName} est PRET. Venez recuperer votre commande.`;
+                readyOrderToast.hidden = false;
+                readyOrderToast.classList.add('is-visible');
+                setTimeout(() => {
+                    readyOrderToast.classList.remove('is-visible');
+                    readyOrderToast.hidden = true;
+                }, 6500);
+            }
+
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function renderOrderStatus(data) {
+                const allItems = data.orders.flatMap((order) => order.items.map((item) => ({
+                    ...item,
+                    orderIdDisplay: order.orderIdDisplay,
+                    serviceTypeLabel: order.serviceTypeLabel,
+                    tableDisplay: order.tableDisplay,
+                })));
+
+                if (allItems.length === 0) {
+                    orderStatusPanel.hidden = true;
+                    return;
+                }
+
+                orderStatusPanel.hidden = false;
+                orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
+                orderStatusList.innerHTML = allItems.map((item) => `
+                    <div class="client-order-status-row">
+                        <div>
+                            <span>${escapeHtml(item.orderIdDisplay)}</span>
+                            <strong>${escapeHtml(item.itemName)}</strong>
+                        </div>
+                        <em class="${escapeHtml(item.statusClass)}">${escapeHtml(item.statusLabel)}</em>
+                    </div>
+                `).join('');
+
+                const notifiedReadyItems = getNotifiedReadyItems();
+                const nextNotifiedReadyItems = [...notifiedReadyItems];
+                data.readyItems.forEach((item) => {
+                    if (!notifiedReadyItems.includes(item.readyKey)) {
+                        showReadyToast(item);
+                        nextNotifiedReadyItems.push(item.readyKey);
+                    }
+                });
+                saveNotifiedReadyItems(nextNotifiedReadyItems);
+            }
+
+            async function refreshOrderStatus() {
+                try {
+                    const lastOrderId = localStorage.getItem(lastOrderStorageKey);
+                    const url = new URL('/UserMenu/order-status', window.location.origin);
+                    if (lastOrderId) {
+                        url.searchParams.set('orderId', lastOrderId);
+                    }
+
+                    const response = await fetch(`${url.pathname}${url.search}`, {
+                        headers: { 'Accept': 'application/json' },
+                    });
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        renderOrderStatus(data);
+                    }
+                } catch (error) {
+                    console.error('Error refreshing order status:', error);
+                }
+            }
+
+            refreshOrderStatus();
+            setInterval(refreshOrderStatus, 15000);
         });
     </script>
     <script src="/javascript/MenuFitering.js"></script>

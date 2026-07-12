@@ -3,6 +3,7 @@ const express = require("express");
 const session = require('express-session');
 const path = require("path");
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const app = express();
 const http = require('http');
 const socketIO = require('socket.io');
@@ -76,6 +77,55 @@ function formatReservationLabel(order) {
     }
 
     return '';
+}
+
+const ITEM_STATUS_OPTIONS = [
+    { value: 'pending', label: 'PENDING', className: 'status-pending' },
+    { value: 'en_cours', label: 'EN COURS DE TRAITER', className: 'status-en-cours' },
+    { value: 'pret', label: 'PRET', className: 'status-pret' },
+    { value: 'cancel', label: 'CANCEL', className: 'status-cancel' },
+];
+
+function normalizeItemStatus(status) {
+    const value = String(status || '').trim().toLowerCase();
+    return ITEM_STATUS_OPTIONS.some((option) => option.value === value) ? value : 'pending';
+}
+
+function getItemStatusMeta(status) {
+    const normalizedStatus = normalizeItemStatus(status);
+    return ITEM_STATUS_OPTIONS.find((option) => option.value === normalizedStatus) || ITEM_STATUS_OPTIONS[0];
+}
+
+function formatOrderItemsForAdmin(items, orderId) {
+    return (Array.isArray(items) ? items : []).map((item, itemIndex) => {
+        const statusMeta = getItemStatusMeta(item.status);
+        return {
+            itemIndex,
+            orderId,
+            itemName: item.itemName,
+            status: statusMeta.value,
+            statusLabel: statusMeta.label,
+            statusClass: statusMeta.className,
+            statusOptions: ITEM_STATUS_OPTIONS.map((option) => ({
+                ...option,
+                selected: option.value === statusMeta.value,
+            })),
+        };
+    });
+}
+
+function formatOrderItemsForClient(items, orderId) {
+    return (Array.isArray(items) ? items : []).map((item, itemIndex) => {
+        const statusMeta = getItemStatusMeta(item.status);
+        return {
+            itemIndex,
+            itemName: item.itemName,
+            status: statusMeta.value,
+            statusLabel: statusMeta.label,
+            statusClass: statusMeta.className,
+            readyKey: `${orderId}-${itemIndex}-${statusMeta.value}`,
+        };
+    });
 }
 
 function getAdminDisplayName(req) {
@@ -507,9 +557,11 @@ app.get("/Orders", async (req, res) => {
         const formattedOrders = orders.map((order) => {
             const isReservation = order.serviceType === 'reservation';
             const createdAt = order.createdAt ? new Date(order.createdAt) : null;
+            const orderId = String(order._id || '');
 
             return {
                 ...order,
+                orderId,
                 orderIdDisplay: String(order._id || '').slice(-6).toUpperCase() || '-',
                 serviceTypeLabel: getServiceTypeLabel(order.serviceType),
                 serviceTypeClass: isReservation ? 'reservation' : 'dine-in',
@@ -518,6 +570,7 @@ app.get("/Orders", async (req, res) => {
                 reservationLabel: formatReservationLabel(order) || '-',
                 statusLabel: order.status === 'closed' ? 'Closed' : 'Active',
                 totalPriceDisplay: Number(order.totalPrice || 0).toFixed(2),
+                items: formatOrderItemsForAdmin(order.items, orderId),
                 createdAtDisplay: createdAt && !Number.isNaN(createdAt.getTime())
                     ? createdAt.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
                     : '-',
@@ -531,6 +584,44 @@ app.get("/Orders", async (req, res) => {
         res.status(500).send('Error fetching orders.');
     }
 })
+
+app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
+    const { orderId } = req.params;
+    const itemIndex = Number(req.params.itemIndex);
+    const nextStatus = String(req.body.status || '').trim().toLowerCase();
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !Number.isInteger(itemIndex) || itemIndex < 0) {
+        return res.status(400).json({ success: false, error: 'Invalid order item.' });
+    }
+
+    if (!ITEM_STATUS_OPTIONS.some((option) => option.value === nextStatus)) {
+        return res.status(400).json({ success: false, error: 'Invalid status.' });
+    }
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order || !order.items[itemIndex]) {
+            return res.status(404).json({ success: false, error: 'Order item not found.' });
+        }
+
+        order.items[itemIndex].status = nextStatus;
+        await order.save();
+
+        const statusMeta = getItemStatusMeta(nextStatus);
+        res.json({
+            success: true,
+            item: {
+                itemIndex,
+                status: statusMeta.value,
+                statusLabel: statusMeta.label,
+                statusClass: statusMeta.className,
+            },
+        });
+    } catch (error) {
+        console.error('Error updating order item status:', error);
+        res.status(500).json({ success: false, error: 'Error updating item status.' });
+    }
+});
 
 app.get("/Messages", (req, res) => {
     res.render("Messages");
@@ -1175,6 +1266,56 @@ app.get("/UserMenu", async (req, res) => {
     }
 });
 
+app.get('/UserMenu/order-status', async (req, res) => {
+    const menuUser = getMenuSessionUser(req);
+    const requestedOrderId = String(req.query.orderId || '').trim();
+
+    try {
+        const query = { status: { $ne: 'closed' } };
+        let limit = 3;
+
+        if (requestedOrderId) {
+            if (!mongoose.Types.ObjectId.isValid(requestedOrderId)) {
+                return res.status(400).json({ success: false, error: 'Invalid order id.' });
+            }
+            query._id = requestedOrderId;
+            limit = 1;
+        } else if (menuUser && menuUser.email) {
+            query.email = menuUser.email;
+        } else {
+            return res.json({ success: true, orders: [], readyItems: [] });
+        }
+
+        const orders = await Order.find(query).sort({ createdAt: -1 }).limit(limit).lean();
+        const formattedOrders = orders.map((order) => {
+            const orderId = String(order._id || '');
+            const items = formatOrderItemsForClient(order.items, orderId);
+
+            return {
+                orderId,
+                orderIdDisplay: orderId.slice(-6).toUpperCase(),
+                serviceTypeLabel: getServiceTypeLabel(order.serviceType),
+                tableDisplay: order.TableNumber || '',
+                reservationLabel: formatReservationLabel(order),
+                items,
+            };
+        });
+
+        const readyItems = formattedOrders.flatMap((order) => order.items
+            .filter((item) => item.status === 'pret')
+            .map((item) => ({
+                ...item,
+                orderId: order.orderId,
+                orderIdDisplay: order.orderIdDisplay,
+            })));
+
+        res.json({ success: true, orders: formattedOrders, readyItems });
+    } catch (error) {
+        console.error('Error fetching client order status:', error);
+        res.status(500).json({ success: false, error: 'Error fetching order status.' });
+    }
+});
+
 app.get("/Order_Details", async (req, res) => {
     try {
         const menuUser = getMenuSessionUser(req);
@@ -1238,7 +1379,10 @@ app.post('/Order_Details', async (req, res) => {
             serviceType: normalizedServiceType,
             seatCount: parsedSeatCount,
             TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,
-            items: Array.isArray(items) ? items : [],
+            items: Array.isArray(items) ? items.map((item) => ({
+                itemName: item.itemName,
+                status: 'pending',
+            })) : [],
             totalPrice: Number(totalPrice || 0),
         };
 
@@ -1260,7 +1404,12 @@ app.post('/Order_Details', async (req, res) => {
         // localStorage.removeItem("cart");
 
         // Redirect to a success page or send a success response
-        res.status(201).send('Order submitted successfully.');
+        res.status(201).json({
+            success: true,
+            message: 'Order submitted successfully.',
+            orderId: String(order._id),
+            orderIdDisplay: String(order._id).slice(-6).toUpperCase(),
+        });
     } catch (error) {
         console.error('Error submitting order:', error);
         res.status(500).send('Internal Server Error');

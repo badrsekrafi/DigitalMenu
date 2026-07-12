@@ -53,10 +53,21 @@
                                     <td data-label="Table Number">{{tableDisplay}}</td>
                                     <td data-label="Reservation">{{reservationLabel}}</td>
                                     <td data-label="Items" class="items-cell">
+                                        <div class="item-status-list">
                                         {{#each items}}
-                                        {{this.itemName}}
-                                        {{#unless @last}}, {{/unless}}
+                                            <div class="item-status-row" data-order-id="{{orderId}}" data-item-index="{{itemIndex}}">
+                                                <span class="item-status-name">{{this.itemName}}</span>
+                                                <span class="item-status-pill {{statusClass}}">{{statusLabel}}</span>
+                                                <select class="item-status-select" data-order-id="{{orderId}}"
+                                                    data-item-index="{{itemIndex}}" data-current-status="{{status}}"
+                                                    aria-label="Status for {{this.itemName}}">
+                                                    {{#each statusOptions}}
+                                                    <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                                                    {{/each}}
+                                                </select>
+                                            </div>
                                         {{/each}}
+                                        </div>
                                     </td>
                                     <td data-label="Amount">{{totalPriceDisplay}} DNT</td>
                                     <td data-label="Status"><span class="order-status">{{statusLabel}}</span></td>
@@ -137,6 +148,42 @@
             if (event.key === 'Escape' && !orderDetailsModal.hidden) {
                 closeOrderModal();
             }
+        });
+
+        document.querySelectorAll('.item-status-select').forEach((select) => {
+            select.addEventListener('change', async () => {
+                const previousStatus = select.dataset.currentStatus;
+                const row = select.closest('.item-status-row');
+                const pill = row.querySelector('.item-status-pill');
+                const selectedOption = select.options[select.selectedIndex];
+
+                select.disabled = true;
+
+                try {
+                    const response = await fetch(`/orders/${encodeURIComponent(select.dataset.orderId)}/items/${encodeURIComponent(select.dataset.itemIndex)}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ status: select.value }),
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.error || 'Could not update status.');
+                    }
+
+                    select.dataset.currentStatus = data.item.status;
+                    pill.className = `item-status-pill ${data.item.statusClass}`;
+                    pill.textContent = data.item.statusLabel;
+                } catch (error) {
+                    select.value = previousStatus;
+                    alert(error.message || 'Could not update status.');
+                } finally {
+                    select.disabled = false;
+                }
+            });
         });
     </script>
 </body>

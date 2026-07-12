@@ -395,6 +395,11 @@
                     });
 
                     if (response.ok) {
+                        const responseData = await response.json();
+                        if (responseData.orderId) {
+                            localStorage.setItem('kaffaLastOrderId', responseData.orderId);
+                        }
+
                         Swal.fire({
                             icon: 'success',
                             title: selectedServiceType === 'reservation' ? 'Reservation Sent Successfully!' : 'Order Placed Successfully!',
