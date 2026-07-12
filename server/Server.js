@@ -312,7 +312,11 @@ app.get("/categories", async (req, res) => {
     try {
         const categories = await Category.find();
         const categoryCount = categories.length; // Get the count of categories
-        res.render("Categories", { categories, categoryCount });
+        res.render("Categories", {
+            categories,
+            categoryCount,
+            hasCategories: categoryCount > 0,
+        });
     } catch (error) {
         res.status(500).send("Error Fetching Categories.");
     }

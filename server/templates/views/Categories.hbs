@@ -13,7 +13,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
         rel="stylesheet">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
 <body>
@@ -22,17 +22,26 @@
             {{>Sidebar}}
             <!-- -------------- Start of main ---------------- -->
             <main class="boxes">
-                <div class="upperbox">
+                <section class="upperbox">
                     <div class="upperbox-text">
-                        <p>Categories</p>
+                        <p class="eyebrow">Inventory</p>
+                        <h1>Categories</h1>
                     </div>
-                    <div class="upperbox-btn">
-                        <a href="Categories_add" style="color:#000;font-size:16px">Add New Categories</a>   
+                    <a class="upperbox-btn" href="/Categories_add">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add New Category</span>
+                    </a>
+                </section>
+                <section class="lowerbox">
+                    <div class="list-heading">
+                        <div>
+                            <p class="eyebrow">Groups</p>
+                            <h2>Category List</h2>
+                        </div>
+                        <span id="categoryCountLabel">{{categoryCount}} categories</span>
                     </div>
-                </div>
-                <div class="lowerbox">
-                    <h4>Categorie List</h4>
-                    <div class="lowerbox-table">
+                    <div class="lowerbox-table" aria-label="Categories table">
+                        {{#if hasCategories}}
                         <table>
                             <thead>
                                 <tr>
@@ -45,26 +54,45 @@
                             <tbody>
                                 {{#each categories}}
                                 <tr data-id="{{this._id}}" id="category-{{this._id}}">
-                                    <td>{{this.title}}</td>
-                                    <td>{{this.description}}</td>
-                                    <td><a href="Categories_add?id={{this._id}}&title={{this.title}}&description={{this.description}}"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                                    <!-- <td><a href="Categories_add"><i class="fa-solid fa-pen-to-square"></i></a></td> -->
-                                    <td><button onclick="confirmDelete('{{this._id}}')"><i class="fa-solid fa-trash"></i></button></td>
+                                    <td class="name-cell" data-label="Name">
+                                        <span class="cell-text strong-text">{{this.title}}</span>
+                                    </td>
+                                    <td class="description-cell" data-label="Description">
+                                        <span class="cell-text">{{this.description}}</span>
+                                    </td>
+                                    <td class="action-cell" data-label="Edit">
+                                        <a class="icon-action edit-action" href="/Categories_add?id={{this._id}}"
+                                            aria-label="Edit {{this.title}}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                    </td>
+                                    <td class="action-cell" data-label="Delete">
+                                        <button class="icon-action delete-action" type="button"
+                                            onclick="confirmDelete('{{this._id}}')" aria-label="Delete {{this.title}}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {{/each}}
                             </tbody>
                         </table>
+                        {{else}}
+                        <div class="empty-state">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <p>No categories yet.</p>
+                        </div>
+                        {{/if}}
                     </div>
-                </div>
+                </section>
                 <div id="successPopup" class="popup">
                     <div class="popup_content">
                         <p><i class="fa-solid fa-check"></i>Category deleted successfully!</p>
                     </div>
                 </div>
             </main>
-            
+
             <!-- ------------ End of Main --------------- -->
-            
+
         </div>
     </div>
     <script>
@@ -74,57 +102,52 @@
                 deleteCategory(id);
             }
         }
-        function deleteCategory(id) {
-            fetch(`/deleteCategory/${id}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove the row from the table
-                    const row = document.querySelector(`tr[data-id="${id}"]`);
-                    if (row) {
-                        row.remove();
-                        $('#successPopup').fadeIn();
-                    }
-        
-                    // Update the table with the updated category list
-                    const tableBody = document.querySelector('tbody');
-                    tableBody.innerHTML = ''; // Clear the existing table rows
-        
-                    data.categories.forEach(category => {
-                        const newRow = document.createElement('tr');
-                        newRow.setAttribute('data-id', category._id);
-                        newRow.innerHTML = `
-                            <td>${category.title}</td>
-                            <td>${category.description}</td>
-                            <td><a href="Categories_add?id=${category._id}&title=${category.title}&description=${category.description}"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                            <td><button onclick="confirmDelete('${category._id}')"><i class="fa-solid fa-trash"></i></button></td>
-                            <td></td>
-                        `;
-                        tableBody.appendChild(newRow);
-                    });
 
-                    setTimeout(function() {
-                        $('#successPopup').fadeOut();
-                    },3000);
-                } else {
-                    alert('Failed to delete category. Please try again later.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to delete category. Please try again later.');
-            });
+        function updateCategoryCount() {
+            const countLabel = document.getElementById('categoryCountLabel');
+            const count = document.querySelectorAll('.lowerbox-table tbody tr').length;
+
+            if (countLabel) {
+                countLabel.textContent = `${count} ${count === 1 ? 'category' : 'categories'}`;
+            }
         }
 
-        $(document).ready(function() {
+        async function deleteCategory(id) {
+            try {
+                const response = await fetch(`/deleteCategory/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error('Request failed');
+                }
+
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    row.remove();
+                    updateCategoryCount();
+                    $('#successPopup').fadeIn();
+                }
+
+                setTimeout(function () {
+                    $('#successPopup').fadeOut();
+                }, 3000);
+            } catch (error) {
+                alert('Failed to delete category. Please try again later.');
+            }
+        }
+
+        $(document).ready(function () {
             // Hide the popup when clicking anywhere on the window
-            $(window).click(function() {
+            $(window).click(function () {
                 $('#successPopup').fadeOut();
             });
         });
-        
+
     </script>
 </body>
 
