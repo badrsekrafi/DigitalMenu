@@ -355,7 +355,11 @@ app.get("/Menu_Dishes", async (req, res) => {
         MenuItems.forEach(item => {
             item.imageUrl = `/menu-image/${item._id}`;
         });
-        res.render("Menu_Dishes", { MenuItems });
+        res.render("Menu_Dishes", {
+            MenuItems,
+            itemCount: MenuItems.length,
+            hasMenuItems: MenuItems.length > 0,
+        });
 
     } catch (error) {
         console.error('Error fetching menu items:', error);
