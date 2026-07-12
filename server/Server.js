@@ -120,7 +120,7 @@ app.get("/Home", async (req, res) => {
         const categoryCount = await MyCategory.countDocuments(); // Update this line
         const orders = await Order.find();
 
-        res.render("home", { categories, categoryCount, orders });
+        res.render("Home", { categories, categoryCount, orders });
     } catch (error) {
         res.status(500).send("Error in Fetching");
     }
@@ -163,7 +163,7 @@ app.get("/categories", async (req, res) => {
     try {
         const categories = await Category.find();
         const categoryCount = categories.length; // Get the count of categories
-        res.render("categories", { categories, categoryCount });
+        res.render("Categories", { categories, categoryCount });
     } catch (error) {
         res.status(500).send("Error Fetching Categories.");
     }
@@ -253,7 +253,7 @@ app.get("/Menu_Dishes_add", async (req, res) => {
     try {
         // Fetch categories from your database
         const categories = await Category.find();
-        res.render("menu_dishes_add", { categories });
+        res.render("Menu_Dishes_add", { categories });
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Error rendering Menu_Dishes_add page.');
@@ -333,7 +333,7 @@ app.get("/Orders", async (req, res) => {
         const orders = await Order.find();
 
         // Render the Orders page with the fetched orders
-        res.render("orders", { orders });
+        res.render("Orders", { orders });
     } catch (error) {
         console.error('Error Fetching Orders:', error);
         res.status(500).send('Error fetching orders.');
@@ -341,7 +341,7 @@ app.get("/Orders", async (req, res) => {
 })
 
 app.get("/Messages", (req, res) => {
-    res.render("messages");
+    res.render("Messages");
 })
 
 app.get("/QR_Code", (req, res) => {
