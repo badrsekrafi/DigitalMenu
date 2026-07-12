@@ -934,6 +934,24 @@ function buildMenuSessionUser(userDocument) {
     };
 }
 
+function buildCheckoutUser(menuUser) {
+    if (!menuUser) {
+        return {
+            isLoggedIn: false,
+            name: '',
+            phone: '',
+            email: '',
+        };
+    }
+
+    return {
+        isLoggedIn: true,
+        name: menuUser.username || '',
+        phone: menuUser.phonenumber ? String(menuUser.phonenumber) : '',
+        email: menuUser.email || '',
+    };
+}
+
 function parseCookies(req) {
     return String(req.headers.cookie || '')
         .split(';')
@@ -1135,7 +1153,11 @@ app.get("/UserMenu", async (req, res) => {
 
 app.get("/Order_Details", async (req, res) => {
     try {
-        res.render("Order_Details", { tables: await getConfiguredFloorTables() });
+        const menuUser = getMenuSessionUser(req);
+        res.render("Order_Details", {
+            tables: await getConfiguredFloorTables(),
+            checkoutUser: buildCheckoutUser(menuUser),
+        });
     } catch (error) {
         console.error('Error fetching checkout table config:', error);
         res.status(500).send('Error fetching checkout table config.');
@@ -1157,9 +1179,21 @@ app.post('/Order_Details', async (req, res) => {
             totalPrice,
         } = req.body;
 
+        const checkoutUser = buildCheckoutUser(getMenuSessionUser(req));
+        const customerName = checkoutUser.isLoggedIn ? checkoutUser.name : String(name || '').trim();
+        const customerPhone = checkoutUser.isLoggedIn ? checkoutUser.phone : String(PhoneNumber || '').trim();
+        const customerEmail = checkoutUser.isLoggedIn ? checkoutUser.email : String(email || '').trim();
         const normalizedServiceType = serviceType === 'reservation' ? 'reservation' : 'dine-in';
         const parsedSeatCount = Number(seatCount);
         const parsedTableNumber = Number(TableNumber);
+
+        if (!customerName) {
+            return res.status(400).send('Please enter your name.');
+        }
+
+        if (!customerPhone) {
+            return res.status(400).send('Please enter your phone number.');
+        }
 
         if (!Number.isInteger(parsedSeatCount) || parsedSeatCount < 1) {
             return res.status(400).send('Please enter the number of seats / people.');
@@ -1174,9 +1208,9 @@ app.post('/Order_Details', async (req, res) => {
         }
 
         const orderData = {
-            name,
-            PhoneNumber,
-            email,
+            name: customerName,
+            PhoneNumber: customerPhone,
+            email: customerEmail,
             serviceType: normalizedServiceType,
             seatCount: parsedSeatCount,
             TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,

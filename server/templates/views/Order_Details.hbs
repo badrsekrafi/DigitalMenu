@@ -14,6 +14,12 @@
         <h3 class="sub-heading">Order Details</h3>
 
         <form action="" method="post" id="orderForm">
+            {{#if checkoutUser.isLoggedIn}}
+            <div class="checkout-account">
+                <span>Account</span>
+                <strong>{{checkoutUser.name}}</strong>
+            </div>
+            {{/if}}
 
             <div class="service-choice" aria-label="Choose checkout type">
                 <label class="service-card">
@@ -31,18 +37,21 @@
             <div class="inputBox">
                 <div class="input">
                     <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" placeholder="Enter Your Name" required>
+                    <input type="text" id="name" name="name" placeholder="Enter Your Name"
+                        value="{{checkoutUser.name}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
                 </div>
                 <div class="input">
                     <label for="number">Your Phone Number</label>
-                    <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number" required>
+                    <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number"
+                        value="{{checkoutUser.phone}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
                 </div>
             </div>
 
             <div class="inputBox">
                 <div class="input">
                     <label for="email">Your Email</label>
-                    <input type="email" id="email" name="email" placeholder="Enter Your Email">
+                    <input type="email" id="email" name="email" placeholder="Enter Your Email"
+                        value="{{checkoutUser.email}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
                 </div>
                 <div class="input">
                     <label for="seatCount">Number of seats / people</label>
