@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    const deliveryFee = 3; // Fixed delivery fee
+    const deliveryFee = 0; // Fixed delivery fee
 
     const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
     const cartWrapper = document.querySelector(".cart-wrapper");
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
             itemName.classList.add("item-name", "added-food");
 
             const itemPrice = document.createElement("span");
-            itemPrice.textContent = `$${item.price.toFixed(2)}`;
+            itemPrice.textContent = `${item.price.toFixed(2)} DT`;
             itemPrice.classList.add("item-price", "added-food");
 
             const closeButton = document.createElement("button");
@@ -82,10 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
             orderItemsContainer.appendChild(itemElement);
         });
 
-        subtotalElement.textContent = `$${cart.subtotal.toFixed(2)}`;
-        taxElement.textContent = `$${cart.tax.toFixed(2)}`;
+        subtotalElement.textContent = `${cart.subtotal.toFixed(2)} DT`;
+        taxElement.textContent = `${cart.tax.toFixed(2)} DT`;
         const total = cart.subtotal + cart.tax + deliveryFee;
-        grandTotalElement.textContent = `$${total.toFixed(2)}`;
+        grandTotalElement.textContent = `${total.toFixed(2)} DT`;
 
         cartWrapper.style.display = "block";
     }

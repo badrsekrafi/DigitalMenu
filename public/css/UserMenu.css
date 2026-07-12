@@ -137,26 +137,67 @@ p {
 .dashboard-title {
     padding: 0 1rem;
     margin-bottom: 20px;
-} 
+}
+
+.menu-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 90px 1rem 1rem;
+}
+
+.menu-heading h2 {
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.menu-heading > span {
+    color: var(--darkGrey);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.menu-kicker {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
 
 .dashboard-menu {
     display: flex;
-    gap: 40px;
-    padding: 0.3rem 1rem;
+    gap: 10px;
+    position: sticky;
+    top: 60px;
+    z-index: 1;
+    padding: 0.6rem 1rem;
     overflow-x: auto;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
+    background: rgba(235, 242, 255, 0.96);
+    border-bottom: 1px solid rgba(23, 24, 29, 0.08);
+    scrollbar-width: thin;
 }
 
  .dashboard-menu > a {
    text-decoration: none;
    text-align: center;
    border-radius: 20px;
-   min-width: 120px;
-   padding: 0.5rem 0;
+   min-width: max-content;
+   padding: 0.55rem 0.85rem;
    font-size: 0.9rem;
    color: var(--darkBlack);
-   background-color: var(--yellow);
+   background-color: #fff;
+   border: 1px solid rgba(23, 24, 29, 0.12);
    cursor: pointer;
+}
+
+.dashboard-menu > a > span {
+    margin-left: 6px;
+    color: var(--darkGrey);
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 .dashboard-menu > a:hover {
@@ -177,6 +218,8 @@ p {
     border-radius: 15px;
     position: relative;
     cursor: pointer;
+    min-height: 430px;
+    overflow: hidden;
 }
 
 .dashboard-card:hover {
@@ -191,11 +234,32 @@ p {
 }
 
 .card-detail {
-    padding: 10px;
+    padding: 10px 10px 58px;
+}
+
+.card-detail > h4 {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+    line-height: 1.35;
 }
 
 .card-detail > h4 > span {
-    float: right;
+    color: var(--red);
+    flex: 0 0 auto;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.card-detail > p:first-of-type {
+    display: -webkit-box;
+    margin-top: 8px;
+    overflow: hidden;
+    color: var(--darkGrey);
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
 }
 
 .card-time {
@@ -229,6 +293,54 @@ p {
 .dashboard-menu .active {
     background-color: var(--red);
     color: var(--lightGrey);
+}
+
+.dashboard-menu .active > span {
+    color: var(--lightGrey);
+}
+
+.menu-sections {
+    padding-bottom: 2rem;
+}
+
+.menu-category-section {
+    scroll-margin-top: 122px;
+    padding: 0 0 1.5rem;
+}
+
+.menu-category-section[hidden],
+.dashboard-card[hidden] {
+    display: none;
+}
+
+.category-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0.8rem 1rem 0.2rem;
+}
+
+.category-heading h3 {
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.category-heading span {
+    color: var(--darkGrey);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.no-results {
+    margin: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid rgba(23, 24, 29, 0.12);
+    border-radius: 8px;
+    color: var(--darkGrey);
+    text-align: center;
 }
 
 /* <!-- order dashboard --> */
@@ -486,6 +598,14 @@ p {
         width: 20%; /* Adjust the width as needed */
         padding: 0 5px; /* Adjust padding as needed */
     }
+
+    .dashboard {
+        padding-right: 0;
+    }
+
+    .dashboard-menu {
+        top: 60px;
+    }
 }
 
 /* Mobile Phones */
@@ -531,6 +651,31 @@ p {
 
     .dashboard {
         padding-right: 0;
+    }
+
+    .menu-heading {
+        display: block;
+        padding-top: 120px;
+    }
+
+    .menu-heading > span {
+        display: block;
+        margin-top: 6px;
+    }
+
+    .dashboard-menu {
+        top: 90px;
+        padding-left: 0;
+    }
+
+    .dashboard-content {
+        grid-template-columns: 1fr;
+        padding-left: 0;
+        padding-right: 0.8rem;
+    }
+
+    .category-heading {
+        padding-left: 0;
     }
 
     .dashboard-banner {

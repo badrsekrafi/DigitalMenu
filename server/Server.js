@@ -474,19 +474,65 @@ app.get("/UserMenu", async (req, res) => {
         MenuItems.forEach(item => {
             item.imageUrl = `/menu-image/${item._id}`;
         });
+
+        const slugify = (value) => String(value || "other")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "other";
+        const sectionsByCategory = new Map(categories.map((category) => [
+            category.title,
+            {
+                title: category.title,
+                sectionId: `category-${category._id}`,
+                items: [],
+            },
+        ]));
+        const extraSections = new Map();
+
+        MenuItems.forEach((item) => {
+            const section = sectionsByCategory.get(item.category);
+            if (section) {
+                section.items.push(item);
+                return;
+            }
+
+            const fallbackTitle = item.category || "Other";
+            if (!extraSections.has(fallbackTitle)) {
+                extraSections.set(fallbackTitle, {
+                    title: fallbackTitle,
+                    sectionId: `category-${slugify(fallbackTitle)}`,
+                    items: [],
+                });
+            }
+            extraSections.get(fallbackTitle).items.push(item);
+        });
+
+        const categorySections = [
+            ...sectionsByCategory.values(),
+            ...extraSections.values(),
+        ]
+            .filter((section) => section.items.length > 0)
+            .map((section) => ({
+                ...section,
+                itemCount: section.items.length,
+            }));
+
+        let latestImage = null;
         if (latestImageIdentifier) {
-            const latestImage = await Image.findOne({ title: latestImageIdentifier });
+            latestImage = await Image.findOne({ title: latestImageIdentifier });
 
             if (latestImage) {
                 latestImage.base64Image = `data:${latestImage.image.contentType};base64,${latestImage.image.data.toString('base64')}`;
-                console.log(categories);
-                res.render("UserMenu", { categories, latestImage, MenuItems });
-            } else {
-                res.render("UserMenu", { categories, MenuItems, latestImage: null });
             }
-        } else {
-            res.render("UserMenu", { categories, latestImage: null, MenuItems });
         }
+
+        res.render("UserMenu", {
+            categories,
+            latestImage,
+            MenuItems,
+            categorySections,
+            totalItems: MenuItems.length,
+        });
     } catch (error) {
         console.error('Error fetching categories for UserMenu:', error);
         console.error('Error fetching menu items for UserMenu:', error);

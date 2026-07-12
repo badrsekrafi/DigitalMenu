@@ -20,7 +20,7 @@
     <input type="checkbox" id="cart">
     <label for="cart" class="label-cart"><span class="fas fa-shopping-cart"></span></label>
     <button class="login-btn" id="loginButton"><a href="UserMenu_loginpage">Login</a></button>
-    <h3 class="logo"><span class="logo-text">Quick Dinning Delight</span></h3>
+    <h3 class="logo"><span class="logo-text">Kaffa Menu</span></h3>
     <div class="search-bar">
         <span class="fas fa-search"></span>
         <input type="text" placeholder="Search">
@@ -28,37 +28,53 @@
 
     <!-- main dashbaord -->
     <div class="dashboard">
+        {{#if latestImage}}
         <div class="dashboard-banner">
             {{#if latestImage}}
             <img src="{{latestImage.base64Image}}" alt="{{latestImage.title}}">
-            {{else}}
-            <p>No image available</p>
             {{/if}}
         </div>
+        {{/if}}
 
-
-        <h3 class="dashboard-title">Recommend Food For You</h3>
-        <!-- <div class="dashboard-menu">
-            <a class="menu-item active" data-category="all">All</a>
-            {{#each categories}}
-            <a class="menu-item" data-category="{{this.title}}">{{this.title}}</a>
-            {{/each}}
-        </div> -->
-
-        <!-- <div id="cakes" class="cakes"> -->
-        <div class="dashboard-content">
-            {{#each MenuItems}}
-            <div class="dashboard-card">
-                <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
-                <div class="card-detail">
-                    <h4>{{this.title}}<span>${{this.price}}</span></h4>
-                    <p>{{this.description}}</p>
-                    <p class="card-time"></p>
-                </div>
-                <button class="add-to-cart-btn" data-name="{{this.title}}" data-price="{{this.price}}"
-                    data-img="{{this.imageUrl}}">Add to Cart</button>
-
+        <div class="menu-heading">
+            <div>
+                <p class="menu-kicker">Digital menu</p>
+                <h2>Choose by category</h2>
             </div>
+            <span>{{totalItems}} items</span>
+        </div>
+
+        <div class="dashboard-menu" aria-label="Menu categories">
+            <a class="menu-item active" href="#all-products" data-category="all">All <span>{{totalItems}}</span></a>
+            {{#each categorySections}}
+            <a class="menu-item" href="#{{this.sectionId}}" data-category="{{this.title}}">{{this.title}} <span>{{this.itemCount}}</span></a>
+            {{/each}}
+        </div>
+
+        <p class="no-results" hidden>No menu items match your search.</p>
+
+        <div class="menu-sections" id="all-products">
+            {{#each categorySections}}
+            <section class="menu-category-section" id="{{this.sectionId}}" data-category="{{this.title}}">
+                <div class="category-heading">
+                    <h3>{{this.title}}</h3>
+                    <span>{{this.itemCount}} items</span>
+                </div>
+                <div class="dashboard-content">
+                    {{#each this.items}}
+                    <div class="dashboard-card" data-category="{{this.category}}" data-title="{{this.title}}">
+                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
+                        <div class="card-detail">
+                            <h4>{{this.title}}<span>{{this.price}} DT</span></h4>
+                            <p>{{this.description}}</p>
+                            <p class="card-time">{{this.category}}</p>
+                        </div>
+                        <button class="add-to-cart-btn" data-name="{{this.title}}" data-price="{{this.price}}"
+                            data-img="{{this.imageUrl}}">Add to Cart</button>
+                    </div>
+                    {{/each}}
+                </div>
+            </section>
             {{/each}}
         </div>
     </div>
@@ -85,11 +101,11 @@
 
             <hr class="divider">
             <div class="order-total">
-                <p>Subtotal <span class="subtotal">$0</span></p>
-                <p>Tax (10%) <span class="tax">$0</span></p>
-                <p>Delivery Fee <span>$0.</span></p>
+                <p>Subtotal <span class="subtotal">0 DT</span></p>
+                <p>Tax (10%) <span class="tax">0 DT</span></p>
+                <p>Delivery Fee <span>0 DT</span></p>
                 <hr class="divider">
-                <p>Total<span id="grand-total">$0.00</span></p>
+                <p>Total<span id="grand-total">0.00 DT</span></p>
             </div>
             <a href="/Order_Details" class="checkout">Checkout</a>
             <!-- <button>Checkout</button> -->
@@ -98,73 +114,6 @@
 
     <script src="/javascript/MenuFitering.js"></script>
     <script src="/javascript/UserMenu_Cart.js"></script>
-
-    <script>
-
-        document.addEventListener("DOMContentLoaded", function () {
-            // Get all the category links
-            const categoryLinks = document.querySelectorAll(".dashboard-menu .menu-item");
-
-            // Get all the menu items
-            const menuItems = document.querySelectorAll(".dashboard-card");
-
-            // Add a click event listener to each category link
-            categoryLinks.forEach(link => {
-                link.addEventListener("click", () => {
-                    // Get the selected category
-                    const selectedCategory = link.getAttribute("data-category");
-
-                    console.log("Selected Category:", selectedCategory);
-
-                    // Show or hide menu items based on the selected category
-                    menuItems.forEach(item => {
-                        const itemCategory = item.getAttribute("data-category");
-                        if (selectedCategory === "all" || itemCategory === selectedCategory) {
-                            item.style.display = "block";
-                        } else {
-                            item.style.display = "none";
-                        }
-                    });
-
-                    // Add or remove the 'active' class to the category links
-                    categoryLinks.forEach(catLink => {
-                        catLink.classList.remove("active");
-                    });
-                    link.classList.add("active");
-                });
-            });
-        });
-
-
-        // this is for the search bar 
-        // Get the search input element and food cards
-        const searchInput = document.querySelector('.search-bar input');
-        const foodCards = document.querySelectorAll('.dashboard-card');
-
-        // Store the default CSS style for dashboard cards
-        //const defaultCardStyle = getComputedStyle(foodCards[0]);
-
-        // Add an input event listener to the search input
-        searchInput.addEventListener('input', () => {
-            const searchQuery = searchInput.value.toLowerCase().trim();
-
-            // Loop through all food cards
-            foodCards.forEach(card => {
-                const cardTitle = card.querySelector('h4').textContent.toLowerCase();
-
-                // Check if the card title contains the search query
-                if (cardTitle.includes(searchQuery)) {
-                    // If the search query is found, reset the card's style to the default
-                    card.style.cssText = defaultCardStyle.cssText;
-                } else {
-                    // If the search query is not found, hide the card
-                    card.style.display = 'none';
-                }
-            });
-        });
-
-
-    </script>
 </body>
 
 </html>
