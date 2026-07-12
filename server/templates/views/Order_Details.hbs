@@ -42,7 +42,7 @@
                 <div class="cart-item">
                     <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
                     <span class="item-name">{{this.name}}</span>
-                    <span class="item-price">${{formatCurrency this.price}}</span>
+                    <span class="item-price">{{formatCurrency this.price}} DNT</span>
                     <button class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
                 </div>
                 {{/each}}
@@ -84,7 +84,7 @@
                 itemName.classList.add("item-name", "added-food");
 
                 const itemPrice = document.createElement("span");
-                itemPrice.textContent = `$${item.price.toFixed(2)}`;
+                itemPrice.textContent = `${item.price.toFixed(2)} DNT`;
                 itemPrice.classList.add("item-price", "added-food");
 
                 const closeButton = document.createElement("button");
@@ -103,12 +103,12 @@
 
             });
 
-            // Calculate the total by summing up subtotal, tax, and any other fees
-            const total = cart.subtotal + cart.tax;
+            const subtotal = Number(cart.subtotal || cart.items.reduce((sum, item) => sum + Number(item.price || 0), 0));
+            const total = subtotal;
 
             // Update the total in the cart object
             cart.total = total;
-            totalPriceContainer.textContent = `$${total.toFixed(2)}`;
+            totalPriceContainer.textContent = `${total.toFixed(2)} DNT`;
 
 
             const orderForm = document.querySelector('form');
@@ -129,7 +129,7 @@
                     email: document.getElementById('email').value,
                     TableNumber: document.getElementById('TableNumber').value,
                     items: items,  // Correctly formatted array of items
-                    totalPrice: parseFloat(document.getElementById('total-price-container').textContent.replace('$', '')),
+                    totalPrice: parseFloat(document.getElementById('total-price-container').textContent.replace(/[^\d.]/g, '')),
                     // Add other form fields as needed
                 };
 

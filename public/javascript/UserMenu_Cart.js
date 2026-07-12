@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const cart = {
         items: [],
         subtotal: 0,
-        tax: 0,
     };
 
 
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkoutButton = document.querySelector(".checkout");
     const orderItemsContainer = document.querySelector(".order-items-container");
     const subtotalElement = document.querySelector(".subtotal");
-    const taxElement = document.querySelector(".tax");
     const grandTotalElement = document.getElementById("grand-total");
 
     function updateLocalStorage() {
@@ -28,11 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const price = parseFloat(button.getAttribute("data-price"));
             const img = button.getAttribute("data-img");
 
-            // Calculate the tax for this item
-            const tax = price * 0.10; // 10% tax
-            cart.items.push({ name, price, tax, img });
+            cart.items.push({ name, price, img });
             cart.subtotal += price;
-            cart.tax += tax;
 
             updateLocalStorage();
             // Update the cart display
@@ -65,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             itemName.classList.add("item-name", "added-food");
 
             const itemPrice = document.createElement("span");
-            itemPrice.textContent = `${item.price.toFixed(2)} DT`;
+            itemPrice.textContent = `${item.price.toFixed(2)} DNT`;
             itemPrice.classList.add("item-price", "added-food");
 
             const closeButton = document.createElement("button");
@@ -82,10 +77,9 @@ document.addEventListener("DOMContentLoaded", function () {
             orderItemsContainer.appendChild(itemElement);
         });
 
-        subtotalElement.textContent = `${cart.subtotal.toFixed(2)} DT`;
-        taxElement.textContent = `${cart.tax.toFixed(2)} DT`;
-        const total = cart.subtotal + cart.tax + deliveryFee;
-        grandTotalElement.textContent = `${total.toFixed(2)} DT`;
+        subtotalElement.textContent = `${cart.subtotal.toFixed(2)} DNT`;
+        const total = cart.subtotal + deliveryFee;
+        grandTotalElement.textContent = `${total.toFixed(2)} DNT`;
 
         cartWrapper.style.display = "block";
     }
@@ -94,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const itemIndex = cart.items.indexOf(item);
         if (itemIndex !== -1) {
             cart.subtotal -= item.price;
-            cart.tax -= item.tax;
             cart.items.splice(itemIndex, 1);
             updateLocalStorage();
             updateCartDisplay();
