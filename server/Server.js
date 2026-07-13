@@ -31,6 +31,7 @@ const TableConfig = require('./models/tableConfig');
 const PORT = process.env.PORT || 5000;
 const MENU_AUTH_COOKIE = 'kaffa_menu_user';
 const MENU_AUTH_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
+const GOOGLE_REVIEWS_URL = 'https://share.google/WCXyC8x5zBscbLOKW';
 
 const static_path = path.join(__dirname, "../server/public");
 const templates_path = path.join(__dirname, "../server/templates/views");
@@ -1229,6 +1230,7 @@ async function buildUserMenuViewData(req) {
         totalItems: MenuItems.length,
         tables: await getConfiguredFloorTables(),
         menuUser: getMenuSessionUser(req),
+        googleReviewsUrl: GOOGLE_REVIEWS_URL,
     };
 }
 

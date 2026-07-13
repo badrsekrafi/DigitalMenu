@@ -83,8 +83,41 @@
                 <p class="menu-kicker">Digital menu</p>
                 <h2>Choose by category</h2>
             </div>
-            <span>{{totalItems}} items</span>
+            <div class="menu-heading-actions">
+                <span>{{totalItems}} items</span>
+                <a class="google-review-button" href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-google"></i>
+                    Avis Google
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
         </div>
+
+        <section class="google-reviews-panel" aria-label="Avis Google Maps">
+            <div class="google-reviews-copy">
+                <span class="google-review-icon"><i class="fab fa-google"></i></span>
+                <div>
+                    <p class="menu-kicker">Avis Google Maps</p>
+                    <h3>Votre avis compte</h3>
+                    <p>Partagez votre experience chez Le Patio Djerba.</p>
+                </div>
+            </div>
+            <div class="google-review-stars" aria-label="Avis Google">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="google-review-actions">
+                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
+                    Voir les avis
+                </a>
+                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="is-primary">
+                    Laisser un avis
+                </a>
+            </div>
+        </section>
 
         <div class="dashboard-menu" aria-label="Menu categories">
             <a class="menu-item active" href="#all-products" data-category="all">All <span>{{totalItems}}</span></a>
