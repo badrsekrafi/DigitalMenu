@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const deliveryFee = 0;
     const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
+    const cartToggle = document.getElementById("cart");
+    const cartLabel = document.querySelector("label[for='cart']");
     const cartWrapper = document.querySelector(".cart-wrapper");
     const closeCartButton = document.getElementById("close-cart");
     const orderItemsContainer = document.querySelector(".order-items-container");
@@ -9,6 +11,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const cartCountBadge = document.getElementById("cartCountBadge");
 
     let cart = loadCart();
+
+    function setCartOpen(isOpen) {
+        if (cartToggle) {
+            cartToggle.checked = !isOpen;
+        }
+
+        if (cartLabel) {
+            cartLabel.setAttribute("aria-expanded", String(isOpen));
+            cartLabel.setAttribute("aria-label", isOpen ? "Close cart" : "Open cart");
+        }
+    }
 
     function normalizeCart(rawCart) {
         const items = Array.isArray(rawCart.items) ? rawCart.items : [];
@@ -55,7 +68,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (closeCartButton) {
         closeCartButton.addEventListener("click", () => {
-            cartWrapper.style.display = "none";
+            setCartOpen(false);
+        });
+    }
+
+    if (cartToggle) {
+        cartToggle.addEventListener("change", () => {
+            setCartOpen(!cartToggle.checked);
         });
     }
 
@@ -111,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (cartWrapper && openCart) {
             cartWrapper.style.display = "block";
+            setCartOpen(true);
         }
 
         updateCartCount();
@@ -128,4 +148,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateLocalStorage();
     updateCartDisplay();
+    setCartOpen(false);
 });
