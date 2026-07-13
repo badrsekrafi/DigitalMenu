@@ -67,7 +67,13 @@
                     <p>Suivi commande</p>
                     <strong>Status des articles</strong>
                 </div>
-                <span id="clientOrderStatusCount">0 article</span>
+                <div class="client-order-status-actions">
+                    <span id="clientOrderStatusCount">0 article</span>
+                    <button type="button" class="status-close-button" id="clientOrderStatusClose"
+                        aria-label="Masquer le suivi commande">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div class="client-order-status-list" id="clientOrderStatusList"></div>
         </div>
@@ -148,6 +154,10 @@
     </div>
 
     <div class="ready-order-toast" id="readyOrderToast" hidden>
+        <button type="button" class="ready-toast-close" id="readyOrderToastClose"
+            aria-label="Masquer la notification">
+            <i class="fas fa-times"></i>
+        </button>
         <strong>Commande prete</strong>
         <span id="readyOrderToastText">Votre article est pret.</span>
     </div>
@@ -168,11 +178,16 @@
             const orderStatusPanel = document.getElementById('clientOrderStatus');
             const orderStatusList = document.getElementById('clientOrderStatusList');
             const orderStatusCount = document.getElementById('clientOrderStatusCount');
+            const orderStatusClose = document.getElementById('clientOrderStatusClose');
             const readyOrderToast = document.getElementById('readyOrderToast');
             const readyOrderToastText = document.getElementById('readyOrderToastText');
+            const readyOrderToastClose = document.getElementById('readyOrderToastClose');
             const currentReturnTo = `${window.location.pathname}${window.location.search}`;
             const lastOrderStorageKey = 'kaffaLastOrderId';
             const notifiedReadyStorageKey = 'kaffaReadyNotifiedItems';
+            let orderStatusDismissed = false;
+            let lastOrderStatusKeys = '';
+            let readyToastTimer = null;
 
             if (loginLink) {
                 loginLink.href = `/UserMenu_loginpage?returnTo=${encodeURIComponent(currentReturnTo)}`;
@@ -273,10 +288,19 @@
                 readyOrderToastText.textContent = `${item.itemName} est PRET. Venez recuperer votre commande.`;
                 readyOrderToast.hidden = false;
                 readyOrderToast.classList.add('is-visible');
-                setTimeout(() => {
-                    readyOrderToast.classList.remove('is-visible');
-                    readyOrderToast.hidden = true;
-                }, 6500);
+                if (readyToastTimer) {
+                    clearTimeout(readyToastTimer);
+                }
+                readyToastTimer = setTimeout(hideReadyToast, 6500);
+            }
+
+            function hideReadyToast() {
+                if (readyToastTimer) {
+                    clearTimeout(readyToastTimer);
+                    readyToastTimer = null;
+                }
+                readyOrderToast.classList.remove('is-visible');
+                readyOrderToast.hidden = true;
             }
 
             function escapeHtml(value) {
@@ -297,21 +321,31 @@
                 })));
 
                 if (allItems.length === 0) {
+                    orderStatusDismissed = false;
+                    lastOrderStatusKeys = '';
                     orderStatusPanel.hidden = true;
                     return;
                 }
 
-                orderStatusPanel.hidden = false;
-                orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
-                orderStatusList.innerHTML = allItems.map((item) => `
-                    <div class="client-order-status-row">
-                        <div>
-                            <span>${escapeHtml(item.orderIdDisplay)}</span>
-                            <strong>${escapeHtml(item.itemName)}</strong>
+                const orderStatusKeys = data.orders.map((order) => order.orderId).join('|');
+                if (orderStatusKeys !== lastOrderStatusKeys) {
+                    orderStatusDismissed = false;
+                    lastOrderStatusKeys = orderStatusKeys;
+                }
+
+                if (!orderStatusDismissed) {
+                    orderStatusPanel.hidden = false;
+                    orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
+                    orderStatusList.innerHTML = allItems.map((item) => `
+                        <div class="client-order-status-row">
+                            <div>
+                                <span>${escapeHtml(item.orderIdDisplay)}</span>
+                                <strong>${escapeHtml(item.itemName)}</strong>
+                            </div>
+                            <em class="${escapeHtml(item.statusClass)}">${escapeHtml(item.statusLabel)}</em>
                         </div>
-                        <em class="${escapeHtml(item.statusClass)}">${escapeHtml(item.statusLabel)}</em>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
 
                 const notifiedReadyItems = getNotifiedReadyItems();
                 const nextNotifiedReadyItems = [...notifiedReadyItems];
@@ -347,6 +381,13 @@
 
             refreshOrderStatus();
             setInterval(refreshOrderStatus, 15000);
+
+            orderStatusClose.addEventListener('click', () => {
+                orderStatusDismissed = true;
+                orderStatusPanel.hidden = true;
+            });
+
+            readyOrderToastClose.addEventListener('click', hideReadyToast);
         });
     </script>
     <script src="/javascript/MenuFitering.js"></script>

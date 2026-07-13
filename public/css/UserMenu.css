@@ -488,7 +488,14 @@ p {
     font-size: 15px;
 }
 
-.client-order-status-title > span {
+.client-order-status-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.client-order-status-actions > span {
     flex: 0 0 auto;
     padding: 5px 8px;
     border-radius: 999px;
@@ -496,6 +503,34 @@ p {
     color: var(--darkGrey);
     font-size: 11px;
     font-weight: 900;
+}
+
+.status-close-button,
+.ready-toast-close {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 9px;
+    background: #eef0f8;
+    color: var(--darkGrey);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.status-close-button:hover,
+.ready-toast-close:hover {
+    background: var(--orange);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+
+.status-close-button:focus-visible,
+.ready-toast-close:focus-visible {
+    outline: 3px solid rgba(255, 81, 0, 0.25);
+    outline-offset: 2px;
 }
 
 .client-order-status-list {
@@ -569,7 +604,7 @@ p {
     right: 16px;
     z-index: 8;
     width: min(340px, calc(100vw - 32px));
-    padding: 14px 16px;
+    padding: 14px 48px 14px 16px;
     border-left: 5px solid #29A22E;
     border-radius: 12px;
     background: #ffffff;
@@ -578,6 +613,12 @@ p {
     opacity: 0;
     transform: translateY(-8px);
     transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ready-toast-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
 .ready-order-toast[hidden] {
@@ -983,6 +1024,10 @@ p {
         right: 10px;
         bottom: 10px;
         width: auto;
+    }
+
+    .client-order-status-title {
+        align-items: flex-start;
     }
 
     .client-order-status-row {
