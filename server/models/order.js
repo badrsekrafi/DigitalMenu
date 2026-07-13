@@ -35,6 +35,12 @@ const orderSchema = new mongoose.Schema({
    reservationAt: {
         type: Date,
    },
+   comment: {
+        type: String,
+        trim: true,
+        maxlength: 800,
+        default: '',
+   },
    items: [{
         itemName: {
             type: String,

@@ -91,7 +91,7 @@ main .lowerbox h4{
 
 .lowerbox-table table {
     width: 100%;
-    min-width: 1460px;
+    min-width: 1640px;
     border-collapse: collapse;
     margin-top: 20px; /* Add some top margin for spacing */
     table-layout: fixed;
@@ -146,7 +146,19 @@ main .lowerbox h4{
 
 .lowerbox-table th:nth-child(10),
 .lowerbox-table td:nth-child(10) {
+    width: 230px;
+}
+
+.lowerbox-table th:nth-child(11),
+.lowerbox-table td:nth-child(11) {
     width: 360px;
+}
+
+.comment-cell {
+    color: #252b3f;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: pre-wrap;
 }
 
 .items-cell {

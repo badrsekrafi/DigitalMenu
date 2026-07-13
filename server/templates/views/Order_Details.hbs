@@ -124,6 +124,23 @@
                         </div>
                     </div>
 
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>4</span>
+                            <div>
+                                <h2>Commentaire</h2>
+                                <p>Add any special request for the kitchen or service team.</p>
+                            </div>
+                        </div>
+
+                        <div class="input comment-input">
+                            <label for="orderComment">Remarque client</label>
+                            <textarea id="orderComment" name="comment" rows="4" maxlength="800"
+                                placeholder="Ex: pizza sans harissa, extra fromage, pas trop sucre..."></textarea>
+                            <p class="comment-hint">Optional. Maximum 800 caracteres.</p>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn">Send order</button>
                 </form>
             </div>
@@ -331,6 +348,7 @@
                 const tableNumber = document.getElementById('TableNumber').value;
                 const reservationDate = document.getElementById('reservationDate').value;
                 const reservationTime = document.getElementById('reservationTime').value;
+                const comment = document.getElementById('orderComment').value.trim();
                 const currentCart = normalizeCart(getCartFromLocalStorage());
                 const itemsData = currentCart.items;
 
@@ -381,6 +399,7 @@
                     TableNumber: selectedServiceType === 'dine-in' ? tableNumber : '',
                     reservationDate: selectedServiceType === 'reservation' ? reservationDate : '',
                     reservationTime: selectedServiceType === 'reservation' ? reservationTime : '',
+                    comment,
                     items,
                     totalPrice: currentCart.total,
                 };

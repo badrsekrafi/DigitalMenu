@@ -568,6 +568,7 @@ app.get("/Orders", async (req, res) => {
                 seatCount: order.seatCount || 1,
                 tableDisplay: order.TableNumber || '-',
                 reservationLabel: formatReservationLabel(order) || '-',
+                commentDisplay: order.comment || '-',
                 statusLabel: order.status === 'closed' ? 'Closed' : 'Active',
                 totalPriceDisplay: Number(order.totalPrice || 0).toFixed(2),
                 items: formatOrderItemsForAdmin(order.items, orderId),
@@ -1340,6 +1341,7 @@ app.post('/Order_Details', async (req, res) => {
             seatCount,
             reservationDate,
             reservationTime,
+            comment,
             items,
             totalPrice,
         } = req.body;
@@ -1351,6 +1353,7 @@ app.post('/Order_Details', async (req, res) => {
         const normalizedServiceType = serviceType === 'reservation' ? 'reservation' : 'dine-in';
         const parsedSeatCount = Number(seatCount);
         const parsedTableNumber = Number(TableNumber);
+        const customerComment = String(comment || '').trim();
 
         if (!customerName) {
             return res.status(400).send('Please enter your name.');
@@ -1372,6 +1375,10 @@ app.post('/Order_Details', async (req, res) => {
             return res.status(400).send('Please choose the reservation date and time.');
         }
 
+        if (customerComment.length > 800) {
+            return res.status(400).send('Commentaire trop long. Maximum 800 caracteres.');
+        }
+
         const orderData = {
             name: customerName,
             PhoneNumber: customerPhone,
@@ -1379,6 +1386,7 @@ app.post('/Order_Details', async (req, res) => {
             serviceType: normalizedServiceType,
             seatCount: parsedSeatCount,
             TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,
+            comment: customerComment,
             items: Array.isArray(items) ? items.map((item) => ({
                 itemName: item.itemName,
                 status: 'pending',
