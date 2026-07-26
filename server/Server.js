@@ -29,6 +29,28 @@ const Order = require('./models/order');
 const TableConfig = require('./models/tableConfig');
 const Settings = require('./models/settings');
 
+async function getSettings() {
+    try {
+        const settings = await Settings.findOne().lean();
+        return {
+            restaurantName: settings?.restaurantName || 'Le Patio Djerba',
+            address: settings?.address || 'Marina 4180 Houmt Souk Djerba, Tunis',
+            phone: settings?.phone || '+216 75 000 000',
+            openingHours: settings?.openingHours || '08:00 - 23:00 (Tous les jours)',
+            currency: settings?.currency || 'DNT',
+        };
+    } catch (error) {
+        console.error('Error getting settings:', error);
+        return {
+            restaurantName: 'Le Patio Djerba',
+            address: 'Marina 4180 Houmt Souk Djerba, Tunis',
+            phone: '+216 75 000 000',
+            openingHours: '08:00 - 23:00 (Tous les jours)',
+            currency: 'DNT',
+        };
+    }
+}
+
 const PORT = process.env.PORT || 5000;
 const MENU_AUTH_COOKIE = 'kaffa_menu_user';
 const MENU_AUTH_COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
@@ -1439,6 +1461,7 @@ async function buildUserMenuViewData(req) {
     }
 
     return {
+        settings: await getSettings(),
         categories,
         latestImage,
         MenuItems,
@@ -1539,12 +1562,22 @@ app.get("/Order_Details", async (req, res) => {
     try {
         const menuUser = getMenuSessionUser(req);
         res.render("Order_Details", {
+            settings: await getSettings(),
             tables: await getConfiguredFloorTables(),
             checkoutUser: buildCheckoutUser(menuUser),
         });
     } catch (error) {
         console.error('Error fetching checkout table config:', error);
         res.status(500).send('Error fetching checkout table config.');
+    }
+});
+
+app.get("/api/settings", async (req, res) => {
+    try {
+        const settings = await getSettings();
+        res.json(settings);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching settings' });
     }
 });
 

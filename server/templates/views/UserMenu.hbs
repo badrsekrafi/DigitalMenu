@@ -3,14 +3,22 @@
 
 <head>
     <meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/UserMenu.css">
     <!-- font:Notosnas -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap">
     <!-- icons:font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <title>Quick Dine_Delight</title>
+    <title>{{#if settings.restaurantName}}{{settings.restaurantName}}{{else}}Le Patio Djerba{{/if}} - Menu</title>
     <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
+    <script>
+        window.RESTAURANT_CURRENCY = "{{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}";
+    </script>
 
 
 </head>
@@ -29,7 +37,7 @@
         <a href="/UserMenu_loginpage" id="menuLoginLink">Login</a>
         {{/if}}
     </button>
-    <h3 class="logo"><span class="logo-text">Kaffa Menu</span></h3>
+    <h3 class="logo"><span class="logo-text">{{#if settings.restaurantName}}{{settings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</span></h3>
     <div class="search-bar">
         <span class="fas fa-search"></span>
         <input type="text" placeholder="Search">
@@ -101,7 +109,7 @@
                     <div class="dashboard-card" data-category="{{this.category}}" data-title="{{this.title}}">
                         <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
                         <div class="card-detail">
-                            <h4>{{this.title}}<span>{{this.price}} DNT</span></h4>
+                            <h4>{{this.title}}<span>{{this.price}} {{#if ../settings.currency}}{{../settings.currency}}{{else}}DNT{{/if}}</span></h4>
                             <p>{{this.description}}</p>
                             <p class="card-time">{{this.category}}</p>
                         </div>
@@ -120,7 +128,7 @@
                 <div>
                     <p class="menu-kicker">Avis Google Maps</p>
                     <h3>Votre avis compte</h3>
-                    <p>Partagez votre experience chez Le Patio Djerba.</p>
+                    <p>Partagez votre experience chez {{#if settings.restaurantName}}{{settings.restaurantName}}{{else}}Le Patio Djerba{{/if}}.</p>
                 </div>
             </div>
             <div class="google-review-stars" aria-label="Avis Google">
@@ -151,9 +159,10 @@
                 </label>
             </div>
             <div class="order-address">
-                <p>Cafe Location</p>
-                <h4>Marina 4180 Houmt Souk Djerba, Tunis</h4>
-                <span class="fas fa-clock"></span> 30 mins <span class="fas fa-map-marker-alt"></span> 2 Km
+                <p>{{#if settings.restaurantName}}{{settings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</p>
+                <h4>{{#if settings.address}}{{settings.address}}{{else}}Marina 4180 Houmt Souk Djerba, Tunis{{/if}}</h4>
+                {{#if settings.phone}}<p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;"><i class="fas fa-phone"></i> {{settings.phone}}</p>{{/if}}
+                {{#if settings.openingHours}}<p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 2px;"><i class="fas fa-clock"></i> {{settings.openingHours}}</p>{{/if}}
             </div>
 
             <div class="cart-wrapper">
@@ -166,10 +175,10 @@
 
             <hr class="divider">
             <div class="order-total">
-                <p>Subtotal <span class="subtotal">0 DNT</span></p>
-                <p>Delivery Fee <span>0 DNT</span></p>
+                <p>Subtotal <span class="subtotal">0 {{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}</span></p>
+                <p>Delivery Fee <span>0 {{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}</span></p>
                 <hr class="divider">
-                <p>Total<span id="grand-total">0.00 DNT</span></p>
+                <p>Total<span id="grand-total">0.00 {{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}</span></p>
             </div>
             <a href="/Order_Details" class="checkout" id="checkoutLink">Checkout</a>
         </div>

@@ -106,8 +106,9 @@ document.addEventListener("DOMContentLoaded", function () {
             itemName.textContent = item.name;
             itemName.classList.add("item-name", "added-food");
 
+            const currency = window.RESTAURANT_CURRENCY || 'DNT';
             const itemPrice = document.createElement("span");
-            itemPrice.textContent = `${Number(item.price || 0).toFixed(2)} DNT`;
+            itemPrice.textContent = `${Number(item.price || 0).toFixed(2)} ${currency}`;
             itemPrice.classList.add("item-price", "added-food");
 
             const closeButton = document.createElement("button");
@@ -125,8 +126,9 @@ document.addEventListener("DOMContentLoaded", function () {
             orderItemsContainer.appendChild(itemElement);
         });
 
-        subtotalElement.textContent = `${cart.subtotal.toFixed(2)} DNT`;
-        grandTotalElement.textContent = `${cart.total.toFixed(2)} DNT`;
+        const currency = window.RESTAURANT_CURRENCY || 'DNT';
+        subtotalElement.textContent = `${cart.subtotal.toFixed(2)} ${currency}`;
+        grandTotalElement.textContent = `${cart.total.toFixed(2)} ${currency}`;
 
         if (cartWrapper && openCart) {
             cartWrapper.style.display = "block";
