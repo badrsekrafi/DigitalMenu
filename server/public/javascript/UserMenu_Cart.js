@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setCartOpen(isOpen) {
         if (cartToggle) {
-            cartToggle.checked = !isOpen;
+            cartToggle.checked = isOpen;
         }
 
         if (cartLabel) {
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (cartToggle) {
         cartToggle.addEventListener("change", () => {
-            setCartOpen(!cartToggle.checked);
+            setCartOpen(cartToggle.checked);
         });
     }
 

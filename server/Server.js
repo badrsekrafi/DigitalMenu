@@ -1,4 +1,5 @@
 
+// Modern SaaS Admin Server
 const express = require("express");
 const session = require('express-session');
 const path = require("path");
@@ -11,7 +12,6 @@ const server = http.createServer(app);
 const io = socketIO(server);
 const hbs = require("hbs");
 const multer = require('multer');
-const Handlebars = require('handlebars');
 require("./database/connection");
 
 const secretKey = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
@@ -27,6 +27,7 @@ const Image = require('./models/ImgUploader');
 const UserNew = require('./models/UserMenu_SignUp');
 const Order = require('./models/order');
 const TableConfig = require('./models/tableConfig');
+const Settings = require('./models/settings');
 
 const PORT = process.env.PORT || 5000;
 const MENU_AUTH_COOKIE = 'kaffa_menu_user';
@@ -42,6 +43,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static(static_path));
 app.use("/vendor/qrious", express.static(path.join(__dirname, "../node_modules/qrious/dist")));
+app.use("/vendor/chartjs", express.static(path.join(__dirname, "../node_modules/chart.js/dist")));
 app.set("view engine", "hbs");
 app.set("views", templates_path);
 hbs.registerPartials(partials_path);
@@ -53,8 +55,23 @@ app.use(session({
     saveUninitialized: true,
 }));
 
-Handlebars.registerHelper('formatCurrency', function (value) {
+hbs.registerHelper('formatCurrency', function (value) {
     return value.toFixed(2);
+});
+
+hbs.registerHelper('inc', function (value) {
+    return Number(value) + 1;
+});
+
+hbs.registerHelper('formatTime', function (value) {
+    if (!value) {
+        return '-';
+    }
+    return new Date(value).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+});
+
+hbs.registerHelper('json', function (value) {
+    return new hbs.SafeString(JSON.stringify(value || null));
 });
 
 function getServiceTypeLabel(serviceType) {
@@ -139,6 +156,127 @@ function getAdminDisplayName(req) {
         : '';
 
     return restaurantName || emailName || 'Admin';
+}
+
+const FR_DAY_LABELS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+function computeTrend(current, previous) {
+    if (previous <= 0) {
+        return current > 0 ? { direction: 'up', pct: 100 } : { direction: 'flat', pct: 0 };
+    }
+
+    const pct = Math.round(((current - previous) / previous) * 100);
+    return {
+        direction: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat',
+        pct: Math.abs(pct),
+    };
+}
+
+    const emptyAnalytics = {
+        revenueToday: 0,
+        ordersToday: 0,
+        revenueTrend: { direction: 'flat', pct: 0 },
+        ordersTrend: { direction: 'flat', pct: 0 },
+        revenueByDay: [],
+        ordersByDay: [],
+        revenueWeekTotal: 0,
+        ordersWeekTotal: 0,
+        topItems: [],
+        categoryDistribution: [],
+    };
+
+async function computeDashboardAnalytics() {
+    try {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    const sevenDaysAgo = new Date(startOfToday);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    const [recentOrders, allMenuItems] = await Promise.all([
+        Order.find({ createdAt: { $gte: sevenDaysAgo } }).select('createdAt totalPrice items').lean(),
+        MenuItem.find().select('category').lean(),
+    ]);
+
+    const dayBuckets = [];
+    for (let i = 6; i >= 0; i -= 1) {
+        const date = new Date(startOfToday);
+        date.setDate(date.getDate() - i);
+        dayBuckets.push({ date, label: FR_DAY_LABELS[date.getDay()], revenue: 0, orders: 0 });
+    }
+
+    const itemFrequency = new Map();
+    let revenueToday = 0;
+    let ordersToday = 0;
+    let revenueYesterday = 0;
+    let ordersYesterday = 0;
+
+    recentOrders.forEach((order) => {
+        const createdAt = new Date(order.createdAt);
+        const price = Number(order.totalPrice) || 0;
+        const bucket = dayBuckets.find((entry) => entry.date.toDateString() === createdAt.toDateString());
+
+        if (bucket) {
+            bucket.revenue += price;
+            bucket.orders += 1;
+        }
+
+        if (createdAt >= startOfToday) {
+            revenueToday += price;
+            ordersToday += 1;
+        } else if (createdAt >= startOfYesterday && createdAt < startOfToday) {
+            revenueYesterday += price;
+            ordersYesterday += 1;
+        }
+
+        (order.items || []).forEach((item) => {
+            if (!item || !item.itemName || item.status === 'cancel') {
+                return;
+            }
+            itemFrequency.set(item.itemName, (itemFrequency.get(item.itemName) || 0) + 1);
+        });
+    });
+
+    const topItems = Array.from(itemFrequency.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([name, count]) => ({ name, count }));
+
+    const categoryCounts = new Map();
+    allMenuItems.forEach((item) => {
+        const category = (item.category || 'Uncategorized').trim() || 'Uncategorized';
+        categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+    });
+
+    const totalMenuItems = allMenuItems.length || 1;
+    const categoryDistribution = Array.from(categoryCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([category, count]) => ({
+            category,
+            count,
+            pct: Math.round((count / totalMenuItems) * 100),
+        }));
+
+    const revenueWeekTotal = dayBuckets.reduce((sum, entry) => sum + entry.revenue, 0);
+    const ordersWeekTotal = dayBuckets.reduce((sum, entry) => sum + entry.orders, 0);
+
+    return {
+        revenueToday: Number(revenueToday.toFixed(2)),
+        ordersToday,
+        revenueTrend: computeTrend(revenueToday, revenueYesterday),
+        ordersTrend: computeTrend(ordersToday, ordersYesterday),
+        revenueByDay: dayBuckets.map((entry) => ({ day: entry.label, total: Number(entry.revenue.toFixed(2)) })),
+        ordersByDay: dayBuckets.map((entry) => ({ day: entry.label, count: entry.orders })),
+        revenueWeekTotal: Number(revenueWeekTotal.toFixed(2)),
+        ordersWeekTotal,
+        topItems,
+        categoryDistribution,
+    };
+    } catch (err) {
+        console.error('computeDashboardAnalytics error:', err.message);
+        return emptyAnalytics;
+    }
 }
 
 function getDefaultFloorTables() {
@@ -324,11 +462,12 @@ app.post("/index", async (req, res) => {
 });
 
 // =========== Home Page =============
-app.get("/Home", async (req, res) => {
+app.get(["/Home", "/home"], async (req, res) => {
     try {
         const categories = await Category.find();
         const categoryCount = await MyCategory.countDocuments(); // Update this line
         const orders = await Order.find().sort({ createdAt: -1 }).limit(8);
+        const analytics = await computeDashboardAnalytics();
 
         res.render("Home", {
             categories,
@@ -336,6 +475,7 @@ app.get("/Home", async (req, res) => {
             orders,
             hasOrders: orders.length > 0,
             adminName: getAdminDisplayName(req),
+            analytics,
         });
     } catch (error) {
         res.status(500).send("Error in Fetching");
@@ -375,7 +515,7 @@ app.get('/getorderCount', async (req, res) => {
 
 
 // ==============  Categories Page =================
-app.get("/categories", async (req, res) => {
+app.get(["/Categories", "/categories"], async (req, res) => {
     try {
         const categories = await Category.find();
         const categoryCount = categories.length; // Get the count of categories
@@ -420,7 +560,7 @@ app.post("/Categories_add", async (req, res) => {
 });
 
 // ================ Menu_Dishes Page ==================
-app.get("/Menu_Dishes", async (req, res) => {
+app.get(["/Menu_Dishes", "/menu_dishes"], async (req, res) => {
     try {
         const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
         MenuItems.forEach(item => {
@@ -551,7 +691,7 @@ app.post("/Menu_Dishes_add", (req, res) => {
     });
 });
 
-app.get("/Orders", async (req, res) => {
+app.get(["/Orders", "/orders"], async (req, res) => {
     try {
         // Fetch all orders from the database
         const orders = await Order.find().sort({ createdAt: -1 }).lean();
@@ -629,7 +769,7 @@ app.get("/Messages", (req, res) => {
     res.render("Messages");
 })
 
-app.get("/QR_Code", async (req, res) => {
+app.get(["/QR_Code", "/qr_code"], async (req, res) => {
     try {
         const tables = await getConfiguredFloorTables();
         res.render("QR_Code", { tables, tableCount: tables.length });
@@ -638,6 +778,82 @@ app.get("/QR_Code", async (req, res) => {
         res.status(500).send('Error fetching QR table config.');
     }
 })
+
+// =========== Reports Page =============
+app.get(["/Reports", "/reports"], async (req, res) => {
+    try {
+        const analytics = await computeDashboardAnalytics();
+        res.render("Reports", {
+            analytics,
+            adminName: getAdminDisplayName(req),
+        });
+    } catch (error) {
+        console.error('Error building reports:', error);
+        res.status(500).send('Error building reports.');
+    }
+});
+
+// =========== Settings Page =============
+app.get(["/Settings", "/settings"], async (req, res) => {
+    try {
+        const settingsData = (await Settings.findOne().lean()) || {};
+        res.render("Settings", {
+            settingsData,
+            adminName: getAdminDisplayName(req),
+            saved: req.query.saved === '1',
+        });
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).send('Error fetching settings.');
+    }
+});
+
+app.post("/Settings", async (req, res) => {
+    try {
+        const { restaurantName, address, phone, openingHours, currency } = req.body;
+        await Settings.findOneAndUpdate(
+            {},
+            {
+                restaurantName: String(restaurantName || '').trim(),
+                address: String(address || '').trim(),
+                phone: String(phone || '').trim(),
+                openingHours: String(openingHours || '').trim(),
+                currency: String(currency || 'DNT').trim() || 'DNT',
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.redirect("/Settings?saved=1");
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        res.status(500).send('Error saving settings.');
+    }
+});
+
+// =========== Users Page (customer accounts) =============
+app.get(["/Users", "/users"], async (req, res) => {
+    try {
+        const users = await UserNew.find().sort({ _id: -1 }).lean();
+        res.render("Users", {
+            users,
+            userCount: users.length,
+            hasUsers: users.length > 0,
+            adminName: getAdminDisplayName(req),
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).send('Error fetching users.');
+    }
+});
+
+app.delete('/Users/:id', async (req, res) => {
+    try {
+        await UserNew.findByIdAndDelete(req.params.id);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
 
 
 app.get("/ImgUploader", async (req, res) => {

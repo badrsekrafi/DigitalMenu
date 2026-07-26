@@ -1,60 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Dine_Delight</title>
+    <title>Commandes | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/Orders.css">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-
 <body>
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            <main class="boxes">
-                <div class="lowerbox">
-                    <h4>Orders</h4>
+            <main class="boxes fade-in">
+                <section class="upperbox">
+                    <div class="upperbox-text">
+                        <p class="eyebrow">Activité en direct</p>
+                        <h1>Commandes Clientèle</h1>
+                    </div>
+                    <div class="upperbox-actions">
+                        <span class="badge badge-paid" style="padding: 8px 16px; font-size: 13px; gap: 8px;">
+                            <i class="fa-solid fa-bell-concierge"></i> {{orders.length}} Commandes
+                        </span>
+                    </div>
+                </section>
+
+                <section class="lowerbox">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                        <div>
+                            <p class="eyebrow">Historique & Suivi</p>
+                            <h4>Liste des commandes</h4>
+                        </div>
+                    </div>
                     <div class="lowerbox-table">
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Date</th>
-                                    <th>Name</th>
-                                    <th>Phone Number</th>
+                                    <th>Nom</th>
+                                    <th>Téléphone</th>
                                     <th>Email</th>
                                     <th>Type</th>
-                                    <th>Seats</th>
-                                    <th>Table Number</th>
-                                    <th>Reservation</th>
+                                    <th>Places</th>
+                                    <th>Table</th>
+                                    <th>Réservation</th>
                                     <th>Commentaire</th>
-                                    <th>Items</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>View</th>
+                                    <th>Articles</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Détails</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {{#each orders}}
                                 <tr>
-                                    <td data-label="ID">{{orderIdDisplay}}</td>
-                                    <td data-label="Date">{{createdAtDisplay}}</td>
-                                    <td data-label="Name">{{name}}</td>
-                                    <td data-label="Phone Number">{{PhoneNumber}}</td>
-                                    <td data-label="Email">{{email}}</td>
+                                    <td data-label="ID"><code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;">{{orderIdDisplay}}</code></td>
+                                    <td data-label="Date" style="color:#64748B;font-size:12px;white-space:nowrap;">{{createdAtDisplay}}</td>
+                                    <td data-label="Nom"><strong style="font-size:13px;">{{name}}</strong></td>
+                                    <td data-label="Téléphone" style="color:#64748B;font-size:12px;">{{PhoneNumber}}</td>
+                                    <td data-label="Email" style="color:#64748B;font-size:12px;">{{email}}</td>
                                     <td data-label="Type"><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
-                                    <td data-label="Seats">{{seatCount}}</td>
-                                    <td data-label="Table Number">{{tableDisplay}}</td>
-                                    <td data-label="Reservation">{{reservationLabel}}</td>
+                                    <td data-label="Places" style="color:#64748B;">{{seatCount}}</td>
+                                    <td data-label="Table" style="font-weight:600;">{{tableDisplay}}</td>
+                                    <td data-label="Réservation" style="color:#64748B;font-size:12px;">{{reservationLabel}}</td>
                                     <td data-label="Commentaire" class="comment-cell">{{commentDisplay}}</td>
-                                    <td data-label="Items" class="items-cell">
+                                    <td data-label="Articles" class="items-cell">
                                         <div class="item-status-list">
                                         {{#each items}}
                                             <div class="item-status-row" data-order-id="{{orderId}}" data-item-index="{{itemIndex}}">
@@ -62,7 +74,7 @@
                                                 <span class="item-status-pill {{statusClass}}">{{statusLabel}}</span>
                                                 <select class="item-status-select" data-order-id="{{orderId}}"
                                                     data-item-index="{{itemIndex}}" data-current-status="{{status}}"
-                                                    aria-label="Status for {{this.itemName}}">
+                                                    aria-label="Statut pour {{this.itemName}}">
                                                     {{#each statusOptions}}
                                                     <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
                                                     {{/each}}
@@ -71,17 +83,17 @@
                                         {{/each}}
                                         </div>
                                     </td>
-                                    <td data-label="Amount">{{totalPriceDisplay}} DNT</td>
-                                    <td data-label="Status"><span class="order-status">{{statusLabel}}</span></td>
-                                    <td data-label="View">
-                                        <button type="button" class="details-button">Afficher tous</button>
+                                    <td data-label="Montant"><strong style="color:#16A34A;">{{totalPriceDisplay}} DNT</strong></td>
+                                    <td data-label="Statut"><span class="order-status">{{statusLabel}}</span></td>
+                                    <td data-label="Détails">
+                                        <button type="button" class="details-button">Voir tout</button>
                                     </td>
                                 </tr>
                                 {{/each}}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
             </main>
         </div>
     </div>
@@ -91,10 +103,10 @@
         <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="orderDetailsTitle">
             <div class="modal-header">
                 <div>
-                    <p>Notification</p>
-                    <h3 id="orderDetailsTitle">Coordonnees commande</h3>
+                    <p style="font-size:11px;font-weight:600;color:#F97316;text-transform:uppercase;letter-spacing:.05em;">Commande</p>
+                    <h3 id="orderDetailsTitle">Détails de la commande</h3>
                 </div>
-                <button type="button" class="modal-close" data-close-modal aria-label="Close details">
+                <button type="button" class="modal-close" data-close-modal aria-label="Fermer">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -102,6 +114,7 @@
         </section>
     </div>
 
+    <script src="/javascript/index.js"></script>
     <script>
         const orderDetailsModal = document.getElementById('orderDetailsModal');
         const orderDetailsContent = document.getElementById('orderDetailsContent');
@@ -124,7 +137,7 @@
             button.addEventListener('click', () => {
                 const row = button.closest('tr');
                 const details = Array.from(row.querySelectorAll('td[data-label]'))
-                    .filter((cell) => cell.dataset.label !== 'View')
+                    .filter((cell) => cell.dataset.label !== 'Détails')
                     .map((cell) => ({
                         label: cell.dataset.label,
                         value: cell.innerText.trim() || '-',
@@ -157,31 +170,24 @@
                 const previousStatus = select.dataset.currentStatus;
                 const row = select.closest('.item-status-row');
                 const pill = row.querySelector('.item-status-pill');
-                const selectedOption = select.options[select.selectedIndex];
-
                 select.disabled = true;
 
                 try {
                     const response = await fetch(`/orders/${encodeURIComponent(select.dataset.orderId)}/items/${encodeURIComponent(select.dataset.itemIndex)}/status`, {
                         method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify({ status: select.value }),
                     });
                     const data = await response.json();
 
-                    if (!response.ok || !data.success) {
-                        throw new Error(data.error || 'Could not update status.');
-                    }
+                    if (!response.ok || !data.success) throw new Error(data.error || 'Erreur.');
 
                     select.dataset.currentStatus = data.item.status;
                     pill.className = `item-status-pill ${data.item.statusClass}`;
                     pill.textContent = data.item.statusLabel;
                 } catch (error) {
                     select.value = previousStatus;
-                    alert(error.message || 'Could not update status.');
+                    alert(error.message || 'Impossible de mettre à jour le statut.');
                 } finally {
                     select.disabled = false;
                 }
@@ -189,5 +195,4 @@
         });
     </script>
 </body>
-
 </html>

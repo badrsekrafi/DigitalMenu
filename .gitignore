@@ -5,3 +5,5 @@ server.log
 server.err.log
 
 .vercel
+.claude/
+.codex-screen-render*.png

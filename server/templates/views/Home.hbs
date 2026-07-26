@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu</title>
+    <title>Dashboard Admin | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/homepage.css">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700;800&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
@@ -19,105 +18,224 @@
         <div class="bigBox">
             {{>Sidebar}}
 
-            <main class="boxes dashboard-page">
-                <section class="upperbox dashboard-hero">
-                    <div class="upperbox-text">
-                        <p class="eyebrow">Overview</p>
-                        <h1>Dashboard</h1>
-                        <p class="welcome-text">Hey, <strong>{{adminName}}</strong></p>
+            <main class="dashboard-page fade-in">
+                <!-- Top Header Bar -->
+                <header class="main-header">
+                    <div class="header-mobile-toggle">
+                        <button id="sidebarToggle" class="btn-icon" aria-label="Menu Mobile">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
                     </div>
 
-                    <div class="dashboard-tools">
-                        <label class="date-pill" for="date">
-                            <i class="fa-regular fa-calendar"></i>
-                            <input type="date" id="date" class="unstyled">
-                        </label>
-                        <div class="admin-chip">
-                            <div>
-                                <span>Admin</span>
-                                <strong>{{adminName}}</strong>
-                            </div>
-                            <img src="/images/Admin_image.png" alt="Admin profile">
+                    <div class="header-welcome">
+                        <h1>Bonjour, {{adminName}} <span class="wave-emoji">👋</span></h1>
+                        <p class="header-subtitle">Voici un aperçu de votre restaurant aujourd'hui.</p>
+                    </div>
+
+                    <div class="header-search">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="globalSearch" placeholder="Rechercher..." aria-label="Rechercher">
+                            <kbd class="search-kbd">/</kbd>
                         </div>
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="btn-icon notification-btn" aria-label="Notifications" title="Notifications">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+
+                        <div class="header-user-profile" title="Profil Admin">
+                            <img src="/images/Admin_image.png" alt="Avatar Admin" class="header-user-avatar">
+                            <div class="header-user-details">
+                                <span class="header-user-name">{{adminName}}</span>
+                                <span class="header-user-role">Admin</span>
+                            </div>
+                        </div>
+
+                        <div class="header-date-picker">
+                            <i class="fa-regular fa-calendar date-icon"></i>
+                            <input type="date" id="date" class="date-input">
+                            <i class="fa-solid fa-chevron-down date-chevron"></i>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Statistics Cards (4 Cards Grid) -->
+                <section class="stats-grid" aria-label="Chiffres clés">
+                    <article class="stat-card stat-card-orange fade-in-1">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">MENU ITEMS</span>
+                            <h3 class="stat-value" id="menuItemCount">0</h3>
+                            <div class="stat-trend is-flat">
+                                <span class="stat-trend-period">Total actif</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-purple fade-in-2">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-gift"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">CATEGORIES</span>
+                            <h3 class="stat-value" id="categoryCount">{{#if categoryCount}}{{categoryCount}}{{else}}0{{/if}}</h3>
+                            <div class="stat-trend is-flat">
+                                <span class="stat-trend-period">Total actif</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-pink fade-in-3">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">ORDERS</span>
+                            <h3 class="stat-value" id="orderCount">0</h3>
+                            <div class="stat-trend is-flat" id="orderStatTrend">
+                                <span class="stat-trend-period">vs hier</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-green fade-in-4">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">REVENUE (AUJ.)</span>
+                            <h3 class="stat-value" id="revenueTodayDisplay">{{analytics.revenueToday}} DNT</h3>
+                            <div class="stat-trend is-flat" id="revenueStatTrend">
+                                <span class="stat-trend-period">vs hier</span>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Analytics Section ("Aperçu Analytique") -->
+                <section class="analytics-section">
+                    <div class="section-header">
+                        <h2>Aperçu Analytique</h2>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <!-- Chart 1: Revenue Overview -->
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Revenus</span>
+                                    <div class="analytics-card-metric">
+                                        <span class="metric-value" id="revenueWeekMetric">0 DNT</span>
+                                        <span class="metric-trend is-flat" id="revenueWeekTrend"></span>
+                                    </div>
+                                </div>
+                                <select class="analytics-period-select" aria-label="Période Revenus">
+                                    <option>Cette semaine</option>
+                                    <option>Ce mois</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </article>
+
+                        <!-- Chart 2: Orders Per Day -->
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Commandes par jour</span>
+                                    <div class="analytics-card-metric">
+                                        <span class="metric-value" id="ordersWeekMetric">0</span>
+                                        <span class="metric-trend is-flat" id="ordersWeekTrend"></span>
+                                    </div>
+                                </div>
+                                <select class="analytics-period-select" aria-label="Période Commandes">
+                                    <option>Cette semaine</option>
+                                    <option>Ce mois</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </article>
+
+                        <!-- Chart 3: Top Menu Items -->
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Top plats</span>
+                                </div>
+                                <select class="analytics-period-select" aria-label="Période Top Plats">
+                                    <option>Cette semaine</option>
+                                    <option>Ce mois</option>
+                                </select>
+                            </div>
+                            <div class="top-items-list" id="topItemsList"></div>
+                        </article>
+
+                        <!-- Chart 4: Popular Categories -->
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <span class="analytics-card-title">Catégories populaires</span>
+                            </div>
+                            <div class="doughnut-chart-wrapper">
+                                <div class="chart-container doughnut-container">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                                <div class="doughnut-legend" id="categoryLegend"></div>
+                            </div>
+                        </article>
                     </div>
                 </section>
 
-                <section class="insights" aria-label="Dashboard stats">
-                    <article class="stat-card sales">
-                        <i class="fa fa-line-chart"></i>
-                        <div>
-                            <h2 id="menuItemCount">0</h2>
-                            <p>Menu Items</p>
-                        </div>
-                    </article>
-
-                    <article class="stat-card items">
-                        <i class="fa fa-gift"></i>
-                        <div>
-                            <h2 id="categoryCount">0</h2>
-                            <p>Categories</p>
-                        </div>
-                    </article>
-
-                    <article class="stat-card orders">
-                        <i class="fa fa-shopping-basket"></i>
-                        <div>
-                            <h2 id="orderCount">0</h2>
-                            <p>Orders</p>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="dashboard-grid">
-                    <section class="lowerbox recent-orders">
-                        <div class="list-heading">
-                            <div>
-                                <p class="eyebrow">Latest activity</p>
-                                <h2>Recent Orders</h2>
-                            </div>
-                            <a class="view-all-link" href="/Orders">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                Show All
-                            </a>
+                <!-- Bottom Section: Recent Orders & Quick Access QR Card -->
+                <div class="dashboard-bottom-grid">
+                    <!-- Recent Orders Table -->
+                    <section class="orders-card">
+                        <div class="orders-card-header">
+                            <h2>Dernières commandes</h2>
+                            <a href="/Orders" class="btn btn-ghost btn-sm">Voir tout</a>
                         </div>
 
-                        <div class="lowerbox-table" aria-label="Recent orders table">
+                        <div class="orders-table-wrapper" aria-label="Table des dernières commandes">
                             {{#if hasOrders}}
-                            <table>
+                            <table class="orders-table">
                                 <thead>
                                     <tr>
-                                        <th>Table</th>
-                                        <th>Name</th>
-                                        <th>Items</th>
-                                        <th>Amount</th>
-                                        <th>View</th>
+                                        <th>TABLE</th>
+                                        <th>CLIENT</th>
+                                        <th>ARTICLES</th>
+                                        <th>MONTANT</th>
+                                        <th>STATUT</th>
+                                        <th>HEURE</th>
+                                        <th>ACTIONS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {{#each orders}}
                                     <tr>
-                                        <td data-label="Table">
-                                            <span class="cell-text strong-text">
-                                                {{#if TableNumber}}Table {{TableNumber}}{{else}}Reservation{{/if}}
+                                        <td><strong>{{#if TableNumber}}Table {{TableNumber}}{{else}}Reservation{{/if}}</strong></td>
+                                        <td>{{name}}</td>
+                                        <td style="color: #64748B;">
+                                            {{#each items}}
+                                            {{this.itemName}}{{#unless @last}}, {{/unless}}
+                                            {{/each}}
+                                        </td>
+                                        <td><strong>{{totalPrice}} DNT</strong></td>
+                                        <td>
+                                            <span class="badge badge-{{status}}">
+                                                <i class="fa-solid fa-circle" style="font-size: 6px;"></i> {{status}}
                                             </span>
                                         </td>
-                                        <td data-label="Name">
-                                            <span class="cell-text">{{name}}</span>
-                                        </td>
-                                        <td data-label="Items">
-                                            <span class="cell-text">
-                                                {{#each items}}
-                                                {{this.itemName}}
-                                                {{#unless @last}}, {{/unless}}
-                                                {{/each}}
-                                            </span>
-                                        </td>
-                                        <td data-label="Amount">
-                                            <span class="cell-text strong-text">{{totalPrice}} DNT</span>
-                                        </td>
-                                        <td data-label="View" class="action-cell">
-                                            <a class="icon-action" href="/Orders" aria-label="View orders">
-                                                <i class="fa-solid fa-eye"></i>
+                                        <td style="color: #64748B; font-size: 12px;">{{formatTime createdAt}}</td>
+                                        <td>
+                                            <a class="btn-action-eye" href="/Orders" title="Voir détails">
+                                                <i class="fa-regular fa-eye"></i>
                                             </a>
                                         </td>
                                     </tr>
@@ -125,99 +243,187 @@
                                 </tbody>
                             </table>
                             {{else}}
-                            <div class="empty-state">
+                            <div class="admin-empty">
                                 <i class="fa-solid fa-receipt"></i>
-                                <p>No orders yet.</p>
+                                <p class="admin-title" style="font-size: 14px;">Pas encore de commandes</p>
+                                <p class="admin-subtitle" style="font-size: 12px;">Les nouvelles commandes apparaitront ici.</p>
                             </div>
                             {{/if}}
                         </div>
                     </section>
 
-                    <section class="lowerbox dashboard-qr-card">
-                        <div class="list-heading">
-                            <div>
-                                <p class="eyebrow">Quick access</p>
-                                <h2>General QR</h2>
-                            </div>
-                            <a class="view-all-link" href="/QR_Code">
-                                <i class="fa-solid fa-qrcode"></i>
-                                QR Page
-                            </a>
+                    <!-- QR Code Section Card -->
+                    <section class="qr-quick-card">
+                        <div class="qr-card-header">
+                            <h2>Accès rapide</h2>
                         </div>
-                        <div class="dashboard-qr-frame">
-                            <div class="updates12"></div>
+
+                        <div class="qr-card-body">
+                            <div class="qr-menu-title">
+                                <h3>QR Menu</h3>
+                                <p>Scannez pour voir le menu</p>
+                            </div>
+
+                            <div class="qr-code-display-box">
+                                <div class="updates12"></div>
+                            </div>
+
+                            <div class="qr-url-copy-row">
+                                <input type="text" id="qrUrlInput" readonly class="qr-url-input">
+                                <button id="copyQrUrlBtn" class="btn-icon-square" title="Copier le lien" type="button">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+
+                            <div class="qr-actions-row">
+                                <button id="downloadQrBtn" class="btn btn-primary btn-block" type="button">
+                                    <i class="fa-solid fa-download"></i>
+                                    Télécharger
+                                </button>
+                                <button id="shareQrBtn" class="btn btn-ghost btn-block" type="button">
+                                    <i class="fa-solid fa-share-nodes"></i>
+                                    Partager
+                                </button>
+                            </div>
                         </div>
                     </section>
-                </section>
+                </div>
+
+                <!-- Main Footer -->
+                <footer class="main-footer">
+                    <p>© 2026 Dine/Delight. Tous droits réservés.</p>
+                    <p>Version 2.0.0</p>
+                </footer>
             </main>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script>window.__DASHBOARD_ANALYTICS__ = {{{json analytics}}};</script>
     <script src="/vendor/qrious/qrious.min.js"></script>
+    <script src="/vendor/chartjs/chart.umd.js"></script>
     <script>
-        document.getElementById('date').valueAsDate = new Date();
+        if (typeof Chart === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+        }
+    </script>
+    <script src="/javascript/dashboard-charts.js"></script>
+    <script src="/javascript/index.js"></script>
+    <script>
+        // Set today's date in header date picker
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            dateInput.valueAsDate = new Date();
+        }
 
-        const updateMenuItemCount = (count) => {
-            const menuItemCountElement = document.getElementById('menuItemCount');
-            if (menuItemCountElement) {
-                menuItemCountElement.innerText = count;
+        // Fetch counts from existing backend endpoints
+        const updateCount = (id, count) => {
+            const el = document.getElementById(id);
+            if (el && count !== undefined) {
+                el.innerText = count;
             }
         };
 
         fetch('/getMenuItemCount')
-            .then(response => response.json())
-            .then(data => updateMenuItemCount(data.menuItemCount))
-            .catch(error => {
-                console.error('Error fetching menu item count:', error);
-                updateMenuItemCount(0);
-            });
-
-        const updateCategoryCount = (count) => {
-            const categoryCountElement = document.getElementById('categoryCount');
-            if (categoryCountElement) {
-                categoryCountElement.innerText = count;
-            }
-        };
+            .then(res => res.json())
+            .then(data => updateCount('menuItemCount', data.menuItemCount))
+            .catch(() => {});
 
         fetch('/getCategoryCount')
-            .then(response => response.json())
-            .then(data => updateCategoryCount(data.categoryCount))
-            .catch(error => console.error('Error fetching category count:', error));
-
-        const updateOrderCount = (count) => {
-            const orderCountElement = document.getElementById('orderCount');
-            if (orderCountElement) {
-                orderCountElement.innerText = count;
-            }
-        };
+            .then(res => res.json())
+            .then(data => updateCount('categoryCount', data.categoryCount))
+            .catch(() => {});
 
         fetch('/getorderCount')
-            .then(response => response.json())
-            .then(data => updateOrderCount(data.OrderCount))
-            .catch(error => console.error('Error fetching Order count:', error));
+            .then(res => res.json())
+            .then(data => updateCount('orderCount', data.OrderCount))
+            .catch(() => {});
 
-        function generateQRCode() {
-            if (typeof QRious === 'undefined') {
-                return;
-            }
+        // QR Code Generator & Actions
+        function initQRCode() {
+            if (typeof QRious === 'undefined') return;
 
-            const qrText = new URL('/UserMenu', window.location.origin).href;
+            const qrUrl = window.location.origin + '/UserMenu';
             const canvas = document.createElement('canvas');
             new QRious({
                 element: canvas,
-                size: 184,
+                size: 180,
                 level: 'H',
-                value: qrText,
+                value: qrUrl,
             });
 
             const qrSlot = document.querySelector('.updates12');
-            qrSlot.innerHTML = '';
-            qrSlot.appendChild(canvas);
+            if (qrSlot) {
+                qrSlot.innerHTML = '';
+                qrSlot.appendChild(canvas);
+            }
+
+            const urlInput = document.getElementById('qrUrlInput');
+            if (urlInput) {
+                urlInput.value = qrUrl;
+            }
+
+            // Copy Link
+            const copyBtn = document.getElementById('copyQrUrlBtn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(urlInput ? urlInput.value : qrUrl).then(() => {
+                        showToast('Lien copié dans le presse-papier !');
+                    });
+                });
+            }
+
+            // Download QR Image
+            const downloadBtn = document.getElementById('downloadQrBtn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', () => {
+                    const link = document.createElement('a');
+                    link.download = 'menu-qr-code.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast('Téléchargement du QR Code lancé.');
+                });
+            }
+
+            // Share QR
+            const shareBtn = document.getElementById('shareQrBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'Menu QR Code Dine/Delight',
+                            url: urlInput ? urlInput.value : qrUrl
+                        }).catch(() => {});
+                    } else {
+                        navigator.clipboard.writeText(urlInput ? urlInput.value : qrUrl).then(() => {
+                            showToast('Lien copié pour le partage !');
+                        });
+                    }
+                });
+            }
         }
 
-        window.addEventListener('load', generateQRCode);
+        function showToast(message) {
+            let toast = document.querySelector('.toast-notification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.className = 'toast-notification';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #22C55E;"></i> ${message}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        window.addEventListener('load', () => {
+            initQRCode();
+            if (typeof initDashboardCharts === 'function') {
+                initDashboardCharts();
+            }
+        });
     </script>
-    <script src="/javascript/index.js"></script>
 </body>
 
 </html>

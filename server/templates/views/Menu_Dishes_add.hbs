@@ -1,101 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Dine_Delight</title>
-    <!-- <link rel="stylesheet" href="/css/Menu_Dishes_add.css"> -->
-    <link rel="stylesheet" href="/css/Menu_Dishes_add.css">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
-        rel="stylesheet">
+    <title>Nouvel Article | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
+    <link rel="stylesheet" href="/css/form-page.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-
 <body>
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            <!-- -------------- Start of main ---------------- -->
-            <main>
-                <div class="addItemBox">
-                    <h2>Add New Item</h2>
-                    <div class="addItemBoxInside">
-                        <div class="addItemBoxInputField">
-                            <label for="title">Title</label>
-                            <input type="text" name="title" required value="{{this.title}}" placeholder="New Item Name">
+            <main class="form-page fade-in">
+                <a href="/Menu_Dishes" class="back-link">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Retour au menu
+                </a>
 
-                            <label for="description">Menu description</label>
-                            <textarea name="description" cols="95" rows="3">{{this.description}}</textarea>
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <div>
+                            <p class="eyebrow">Menu</p>
+                            <h1>Nouvel article</h1>
+                        </div>
+                        <div style="width:40px;height:40px;background:var(--primary-soft);border-radius:10px;display:grid;place-items:center;color:var(--primary);">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                    </div>
 
-                            <label for="price">Price</label>
-                            <input type="number" name="price" value="{{this.price}}" required>
-
-                            <label for="size">Item Size</label>
-                            <input type="text" name="size" value="{{this.size}}"
-                                placeholder="Item variant size (half,Full,Large,Medium...)">
-
-                            <label for="category">Category</label>
-                            <select name="category">
-                                <option value="">Select a Category</option>
-                                {{#each categories}}
-                                <option value="{{this._id}}">{{this.title}}</option>
-                                {{/each}}
-                            </select>
-
-                            <label for="image">Image</label>
-                            <input type="file" name="image" accept="image/*">
-                            <span id="imageAlert" style="color: red;"></span>
-
-                            <div class="buttons">
-                                <button class="cancel-button" onclick="cancelNewItemAdd()">Cancel</button>
-                                <button class="submit-button" onclick="addNewItem()">Submit</button>
+                    <div class="form-card-body">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="field-group">
+                                <label for="dishTitle">Titre</label>
+                                <input type="text" id="dishTitle" name="title" required value="{{this.title}}" placeholder="Nom du plat">
                             </div>
+                            <div class="field-group">
+                                <label for="dishPrice">Prix (DNT)</label>
+                                <input type="number" id="dishPrice" name="price" value="{{this.price}}" required placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="dishDescription">Description</label>
+                            <textarea id="dishDescription" name="description" rows="3" placeholder="Décrivez ce plat…">{{this.description}}</textarea>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="field-group">
+                                <label for="dishSize">Variante / Taille</label>
+                                <input type="text" id="dishSize" name="size" value="{{this.size}}" placeholder="Half, Full, Large…">
+                            </div>
+                            <div class="field-group">
+                                <label for="dishCategory">Catégorie</label>
+                                <select id="dishCategory" name="category">
+                                    <option value="">Sélectionner une catégorie</option>
+                                    {{#each categories}}
+                                    <option value="{{this._id}}">{{this.title}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="dishImage">Image</label>
+                            <input type="file" id="dishImage" name="image" accept="image/*">
+                            <p class="field-hint">Formats acceptés : JPG, PNG, WEBP. Recommandé : 800×600px.</p>
+                            <span id="imageAlert" class="field-error"></span>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-submit" onclick="addNewItem()">
+                                <i class="fa-solid fa-plus" style="margin-right:6px;"></i>
+                                Ajouter l'article
+                            </button>
+                            <button type="button" class="btn-cancel" onclick="cancelNewItemAdd()">
+                                Annuler
+                            </button>
                         </div>
                     </div>
                 </div>
+
                 <div id="successPopup" class="popup">
                     <div class="popup_content">
-                        <p><i class="fa-solid fa-check"></i>Item added successfully!</p>
+                        <i class="fa-solid fa-circle-check" style="color:#22C55E;"></i>
+                        Article ajouté avec succès !
                     </div>
                 </div>
             </main>
-
-            <!-- ------------ End of Main --------------- -->
-
         </div>
     </div>
+
+    <script src="/javascript/index.js"></script>
     <script>
-
         function addNewItem() {
-            const title = document.querySelector('input[type="text"]').value;
-            const description = document.querySelector('textarea').value;
-            const price = document.querySelector('input[name="price"]').value;
-            const size = document.querySelector('input[name="size"]').value;
-
-            const imageInput = document.querySelector('input[name="image"]');
-            const imageFile = imageInput.files[0]; // Get the selected file
-
-            const categorySelect = document.querySelector('select[name="category"]');
+            const title = document.getElementById('dishTitle').value;
+            const description = document.getElementById('dishDescription').value;
+            const price = document.getElementById('dishPrice').value;
+            const size = document.getElementById('dishSize').value;
+            const imageInput = document.getElementById('dishImage');
+            const imageFile = imageInput.files[0];
+            const categorySelect = document.getElementById('dishCategory');
             const selectedCategory = categorySelect.value;
-            const imageAlert = document.querySelector('#imageAlert');
+            const imageAlert = document.getElementById('imageAlert');
 
-            if (!selectedCategory) {
-                imageAlert.textContent = 'Please select a category first.';
-                return;
-            }
-
-            // Check if an image is selected
-            if (!imageFile) {
-                imageAlert.textContent = 'Please choose an image first.';
-                return; // Don't proceed further
-            }
-
-            // If an image is selected, clear the message
+            if (!selectedCategory) { imageAlert.textContent = 'Veuillez sélectionner une catégorie.'; return; }
+            if (!imageFile) { imageAlert.textContent = 'Veuillez choisir une image.'; return; }
             imageAlert.textContent = '';
 
             const formData = new FormData();
@@ -103,40 +115,26 @@
             formData.append('description', description);
             formData.append('price', price);
             formData.append('size', size);
-            formData.append('image', imageInput.files[0]); // Assuming `imageInput` is an input element for the file
-
+            formData.append('image', imageFile);
             formData.append('category', selectedCategory);
 
-            fetch('/Menu_Dishes_add', {
-                method: 'POST',
-                body: formData,
-            })
-
+            fetch('/Menu_Dishes_add', { method: 'POST', body: formData })
                 .then(async Response => {
                     const data = await Response.text();
-                    if (!Response.ok) {
-                        throw new Error(data || 'Error adding item.');
-                    }
+                    if (!Response.ok) throw new Error(data || "Erreur lors de l'ajout.");
                     return data;
                 })
                 .then(data => {
                     $('#successPopup').fadeIn();
-                    console.log(data);
-
-                    // Clear input fields after success
-                    document.querySelector('input[name="title"]').value = '';
-                    document.querySelector('textarea[name="description"]').value = '';
-                    document.querySelector('input[name="price"]').value = '';
-                    document.querySelector('input[name="size"]').value = '';
-                    document.querySelector('input[name="image"]').value = ''; // Clear the file input
-
-                    // Hide the popup after 5 sec
-                    setTimeout(function () {
-                        $('#successPopup').fadeOut();
-                    }, 5000);
+                    document.getElementById('dishTitle').value = '';
+                    document.getElementById('dishDescription').value = '';
+                    document.getElementById('dishPrice').value = '';
+                    document.getElementById('dishSize').value = '';
+                    imageInput.value = '';
+                    setTimeout(function() { $('#successPopup').fadeOut(); }, 5000);
                 })
                 .catch(err => {
-                    imageAlert.textContent = err.message || 'Error adding item.';
+                    imageAlert.textContent = err.message || "Erreur lors de l'ajout.";
                     console.error('Error:', err);
                 });
         }
@@ -145,13 +143,13 @@
             window.location.href = '/Menu_Dishes';
         }
 
-        $(document).ready(function () {
-            // Hide the popup when clicking anywhere on the window
-            $(window).click(function () {
-                $('#successPopup').fadeOut();
+        $(document).ready(function() {
+            $(window).click(function(e) {
+                if (!$(e.target).closest('.form-card').length) {
+                    $('#successPopup').fadeOut();
+                }
             });
         });
     </script>
 </body>
-
 </html>

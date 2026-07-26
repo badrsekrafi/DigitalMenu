@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres du Restaurant | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
+    <link rel="stylesheet" href="/css/form-page.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="main">
+        <div class="bigBox">
+            {{>Sidebar}}
+            <main class="form-page fade-in">
+                <section class="upperbox" style="margin-bottom: 24px;">
+                    <div class="upperbox-text">
+                        <p class="eyebrow">Administration</p>
+                        <h1>Paramètres généraux</h1>
+                    </div>
+                </section>
+
+                {{#if saved}}
+                <div style="background:#DCFCE7;border:1px solid #BBF7D0;color:#15803D;padding:14px 20px;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;">
+                    <i class="fa-solid fa-circle-check" style="font-size:18px;"></i>
+                    Paramètres enregistrés avec succès !
+                </div>
+                {{/if}}
+
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <div>
+                            <p class="eyebrow">Profil Établissement</p>
+                            <h2>Informations du restaurant</h2>
+                        </div>
+                        <div style="width:40px;height:40px;background:var(--primary-soft);border-radius:10px;display:grid;place-items:center;color:var(--primary);">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                    </div>
+
+                    <form action="/Settings" method="POST" class="form-card-body">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="field-group">
+                                <label for="restaurantName">Nom du restaurant</label>
+                                <input type="text" id="restaurantName" name="restaurantName" value="{{settingsData.restaurantName}}" placeholder="Ex: Dine & Delight Cafe">
+                            </div>
+                            <div class="field-group">
+                                <label for="phone">Numéro de téléphone</label>
+                                <input type="tel" id="phone" name="phone" value="{{settingsData.phone}}" placeholder="Ex: +216 20 000 000">
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="address">Adresse du restaurant</label>
+                            <input type="text" id="address" name="address" value="{{settingsData.address}}" placeholder="Ex: Avenue Habib Bourguiba, Tunis">
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="field-group">
+                                <label for="openingHours">Horaires d'ouverture</label>
+                                <input type="text" id="openingHours" name="openingHours" value="{{settingsData.openingHours}}" placeholder="Ex: 08:00 - 23:00 (Tous les jours)">
+                            </div>
+                            <div class="field-group">
+                                <label for="currency">Devise monétaire</label>
+                                <input type="text" id="currency" name="currency" value="{{#if settingsData.currency}}{{settingsData.currency}}{{else}}DNT{{/if}}" placeholder="Ex: DNT">
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 12px;">
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/javascript/index.js"></script>
+</body>
+</html>

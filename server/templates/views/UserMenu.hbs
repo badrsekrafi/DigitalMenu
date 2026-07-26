@@ -17,7 +17,7 @@
 
 <body>
     <!-- header -->
-    <input type="checkbox" id="cart" checked>
+    <input type="checkbox" id="cart">
     <label for="cart" class="label-cart" aria-label="Open cart" aria-expanded="false">
         <span class="fas fa-shopping-cart"></span>
         <span class="cart-count-badge" id="cartCountBadge" aria-live="polite">0</span>
@@ -78,46 +78,7 @@
             <div class="client-order-status-list" id="clientOrderStatusList"></div>
         </div>
 
-        <div class="menu-heading">
-            <div>
-                <p class="menu-kicker">Digital menu</p>
-                <h2>Choose by category</h2>
-            </div>
-            <div class="menu-heading-actions">
-                <span>{{totalItems}} items</span>
-                <a class="google-review-button" href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-google"></i>
-                    Avis Google
-                    <i class="fas fa-external-link-alt"></i>
-                </a>
-            </div>
-        </div>
 
-        <section class="google-reviews-panel" aria-label="Avis Google Maps">
-            <div class="google-reviews-copy">
-                <span class="google-review-icon"><i class="fab fa-google"></i></span>
-                <div>
-                    <p class="menu-kicker">Avis Google Maps</p>
-                    <h3>Votre avis compte</h3>
-                    <p>Partagez votre experience chez Le Patio Djerba.</p>
-                </div>
-            </div>
-            <div class="google-review-stars" aria-label="Avis Google">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="google-review-actions">
-                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
-                    Voir les avis
-                </a>
-                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="is-primary">
-                    Laisser un avis
-                </a>
-            </div>
-        </section>
 
         <div class="dashboard-menu" aria-label="Menu categories">
             <a class="menu-item active" href="#all-products" data-category="all">All <span>{{totalItems}}</span></a>
@@ -152,17 +113,46 @@
             </section>
             {{/each}}
         </div>
+
+        <section class="google-reviews-panel" aria-label="Avis Google Maps">
+            <div class="google-reviews-copy">
+                <span class="google-review-icon"><i class="fab fa-google"></i></span>
+                <div>
+                    <p class="menu-kicker">Avis Google Maps</p>
+                    <h3>Votre avis compte</h3>
+                    <p>Partagez votre experience chez Le Patio Djerba.</p>
+                </div>
+            </div>
+            <div class="google-review-stars" aria-label="Avis Google">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="google-review-actions">
+                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
+                    Voir les avis
+                </a>
+                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="is-primary">
+                    Laisser un avis
+                </a>
+            </div>
+        </section>
     </div>
 
     <!-- order dashboard -->
     <div class="dashboard-order" id="dashboard-order">
         <div class="dashboard-text">
-            <h3>Order Menu</h3>
+            <div class="cart-header">
+                <h3>Order Menu</h3>
+                <label for="cart" class="cart-close-icon" aria-label="Fermer le panier">
+                    <i class="fas fa-times"></i>
+                </label>
+            </div>
             <div class="order-address">
                 <p>Cafe Location</p>
                 <h4>Marina 4180 Houmt Souk Djerba, Tunis</h4>
-            </div>
-            <div class="order-time">
                 <span class="fas fa-clock"></span> 30 mins <span class="fas fa-map-marker-alt"></span> 2 Km
             </div>
 
@@ -182,9 +172,28 @@
                 <p>Total<span id="grand-total">0.00 DNT</span></p>
             </div>
             <a href="/Order_Details" class="checkout" id="checkoutLink">Checkout</a>
-            <!-- <button>Checkout</button> -->
         </div>
     </div>
+
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="bottom-navigation">
+        <a href="#all-products" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <label for="cart" class="nav-item" style="cursor: pointer;">
+            <i class="fas fa-shopping-bag"></i>
+            <span>Panier</span>
+        </label>
+        <button type="button" id="navOrderStatusBtn" class="nav-item" style="background: none; border: none; cursor: pointer;">
+            <i class="fas fa-receipt"></i>
+            <span>Commandes</span>
+        </button>
+        <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="nav-item">
+            <i class="fas fa-star"></i>
+            <span>Avis</span>
+        </a>
+    </nav>
 
     <div class="ready-order-toast" id="readyOrderToast" hidden>
         <button type="button" class="ready-toast-close" id="readyOrderToastClose"
@@ -209,6 +218,17 @@
             const loginLink = document.getElementById('menuLoginLink');
             const logoutLink = document.getElementById('menuLogoutLink');
             const orderStatusPanel = document.getElementById('clientOrderStatus');
+            const navOrderStatusBtn = document.getElementById('navOrderStatusBtn');
+
+            if (navOrderStatusBtn) {
+                navOrderStatusBtn.addEventListener('click', () => {
+                    orderStatusDismissed = false;
+                    orderStatusPanel.hidden = !orderStatusPanel.hidden;
+                    if (!orderStatusPanel.hidden) {
+                        orderStatusPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }
             const orderStatusList = document.getElementById('clientOrderStatusList');
             const orderStatusCount = document.getElementById('clientOrderStatusCount');
             const orderStatusClose = document.getElementById('clientOrderStatusClose');
@@ -270,9 +290,14 @@
             function renderTableContext() {
                 const selectedTable = getSelectedTable();
                 const locked = isTableLocked();
-                const shouldShowContext = Boolean(selectedTable || urlTable || isCounterMode);
+                
+                // Hide table prompt completely if table is already selected or scanned via QR code
+                if (locked || selectedTable) {
+                    tableContext.hidden = true;
+                } else {
+                    tableContext.hidden = false;
+                }
 
-                tableContext.hidden = !shouldShowContext;
                 tableContext.classList.toggle('is-locked', locked);
                 tableSelectorWrap.hidden = locked;
 

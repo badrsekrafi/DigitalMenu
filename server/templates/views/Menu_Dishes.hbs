@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Dine_Delight</title>
+    <title>Plats du Menu | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/Menu_Dishes.css">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
@@ -19,71 +18,71 @@
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            <!-- -------------- Start of main ---------------- -->
-            <main class="boxes">
+
+            <main class="boxes fade-in">
                 <section class="upperbox">
                     <div class="upperbox-text">
-                        <p class="eyebrow">Inventory</p>
-                        <h1>Menu Items</h1>
+                        <p class="eyebrow">Inventaire</p>
+                        <h1>Plats du Menu</h1>
                     </div>
                     <a class="upperbox-btn" href="/Menu_Dishes_add">
                         <i class="fa-solid fa-plus"></i>
-                        <span>Add New Item</span>
+                        <span>Ajouter un plat</span>
                     </a>
                 </section>
+
                 <section class="lowerbox">
                     <div class="list-heading">
                         <div>
-                            <p class="eyebrow">Products</p>
-                            <h2>Menu Items List</h2>
+                            <p class="eyebrow">Produits</p>
+                            <h2>Liste des plats</h2>
                         </div>
-                        <span id="menuItemCount">{{itemCount}} items</span>
+                        <span id="menuItemCount">{{itemCount}} plats</span>
                     </div>
-                    <div class="lowerbox-table" aria-label="Menu items table">
+
+                    <div class="lowerbox-table" aria-label="Table des plats">
                         {{#if hasMenuItems}}
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Nom</th>
                                     <th>Description</th>
-                                    <th>Price</th>
-                                    <th>Size</th>
-                                    <th>Category</th>
+                                    <th>Prix</th>
+                                    <th>Taille</th>
+                                    <th>Catégorie</th>
                                     <th>Image</th>
-                                    <th>Edit</th>
-                                    <th>Delete</th>
+                                    <th style="text-align: center;">Modifier</th>
+                                    <th style="text-align: center;">Supprimer</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {{#each MenuItems}}
                                 <tr data-id="{{this._id}}" id="Menu_Dishes-{{this._id}}">
-                                    <td class="name-cell" data-label="Name">
+                                    <td class="name-cell" data-label="Nom">
                                         <span class="cell-text strong-text">{{this.title}}</span>
                                     </td>
                                     <td class="description-cell" data-label="Description">
-                                        <span class="cell-text">{{this.description}}</span>
+                                        <span class="cell-text" style="color: #64748B;">{{this.description}}</span>
                                     </td>
-                                    <td class="price-cell" data-label="Price">
+                                    <td class="price-cell" data-label="Prix">
                                         <span class="price-pill">{{this.price}} DNT</span>
                                     </td>
-                                    <td class="size-cell" data-label="Size">
-                                        <span class="cell-text">{{#if this.size}}{{this.size}}{{else}}-{{/if}}</span>
+                                    <td class="size-cell" data-label="Taille">
+                                        <span class="cell-text" style="color: #64748B;">{{#if this.size}}{{this.size}}{{else}}-{{/if}}</span>
                                     </td>
-                                    <td class="category-cell" data-label="Category">
-                                        <span class="category-pill">{{#if this.category}}{{this.category}}{{else}}No category{{/if}}</span>
+                                    <td class="category-cell" data-label="Catégorie">
+                                        <span class="category-pill">{{#if this.category}}{{this.category}}{{else}}Sans catégorie{{/if}}</span>
                                     </td>
                                     <td class="image-cell" data-label="Image">
-                                        <img src="{{this.imageUrl}}" alt="{{this.title}}" loading="lazy">
+                                        <img src="{{this.imageUrl}}" alt="{{this.title}}" loading="lazy" onerror="this.src='/images/Admin_image.png'">
                                     </td>
-                                    <td class="edit_column action-cell" data-label="Edit">
-                                        <a class="icon-action edit-action" href="/Menu_Dishes_add?id={{this._id}}"
-                                            aria-label="Edit {{this.title}}">
+                                    <td class="edit_column action-cell" data-label="Modifier" style="text-align: center;">
+                                        <a class="icon-action edit-action" href="/Menu_Dishes_add?id={{this._id}}" aria-label="Modifier {{this.title}}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
                                     </td>
-                                    <td class="delete_column action-cell" data-label="Delete">
-                                        <button class="icon-action delete-action" type="button"
-                                            onclick="confirmDelete('{{this._id}}')" aria-label="Delete {{this.title}}">
+                                    <td class="delete_column action-cell" data-label="Supprimer" style="text-align: center;">
+                                        <button class="icon-action delete-action" type="button" onclick="confirmDelete('{{this._id}}')" aria-label="Supprimer {{this.title}}">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
@@ -94,26 +93,25 @@
                         {{else}}
                         <div class="empty-state">
                             <i class="fa-solid fa-utensils"></i>
-                            <p>No menu items yet.</p>
+                            <p>Aucun plat pour le moment.</p>
                         </div>
                         {{/if}}
                     </div>
                 </section>
+
                 <div id="successPopup" class="popup">
                     <div class="popup_content">
-                        <p><i class="fa-solid fa-check"></i>Item deleted successfully!</p>
+                        <p><i class="fa-solid fa-circle-check"></i> Plat supprimé avec succès !</p>
                     </div>
                 </div>
             </main>
-
-            <!-- ------------ End of Main --------------- -->
-
         </div>
     </div>
-    <script>
 
+    <script src="/javascript/index.js"></script>
+    <script>
         function confirmDelete(id) {
-            if (confirm('Are you sure you want to delete this Item?')) {
+            if (confirm('Voulez-vous vraiment supprimer ce plat ?')) {
                 deleteItem(id);
             }
         }
@@ -123,7 +121,7 @@
             const count = document.querySelectorAll('.lowerbox-table tbody tr').length;
 
             if (countLabel) {
-                countLabel.textContent = `${count} ${count === 1 ? 'item' : 'items'}`;
+                countLabel.textContent = `${count} ${count === 1 ? 'plat' : 'plats'}`;
             }
         }
 
@@ -131,9 +129,7 @@
             try {
                 const response = await fetch(`/deleteMenuItem/${encodeURIComponent(id)}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
+                    headers: { 'Accept': 'application/json' },
                 });
 
                 if (!response.ok) {
@@ -150,16 +146,15 @@
                     }, 3000);
                 }
             } catch (error) {
-                alert('Failed to delete Item. Please try again later!');
+                alert('Impossible de supprimer le plat.');
             }
         }
+
         $(document).ready(function () {
-            // Hide the popup when clicking anywhere on the window
             $(window).click(function () {
                 $('#successPopup').fadeOut();
             });
         });
-
     </script>
 </body>
 

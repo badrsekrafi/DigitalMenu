@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports & Analytiques | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="main">
+        <div class="bigBox">
+            {{>Sidebar}}
+
+            <main class="boxes fade-in">
+                <section class="upperbox">
+                    <div class="upperbox-text">
+                        <p class="eyebrow">Analytiques</p>
+                        <h1>Rapports & Performances</h1>
+                    </div>
+                    <button class="upperbox-btn" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Exporter le rapport</span>
+                    </button>
+                </section>
+
+                <section class="stats-grid" aria-label="Chiffres clés des rapports">
+                    <article class="stat-card stat-card-orange fade-in-1">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">REVENUS (AUJ.)</span>
+                            <h3 class="stat-value">{{analytics.revenueToday}} DNT</h3>
+                            <div class="stat-trend is-{{analytics.revenueTrend.direction}}">
+                                <i class="fa-solid fa-arrow-{{analytics.revenueTrend.direction}}"></i>
+                                <span>{{analytics.revenueTrend.pct}}%</span>
+                                <span class="stat-trend-period">vs hier</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-purple fade-in-2">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">COMMANDES (AUJ.)</span>
+                            <h3 class="stat-value">{{analytics.ordersToday}}</h3>
+                            <div class="stat-trend is-{{analytics.ordersTrend.direction}}">
+                                <i class="fa-solid fa-arrow-{{analytics.ordersTrend.direction}}"></i>
+                                <span>{{analytics.ordersTrend.pct}}%</span>
+                                <span class="stat-trend-period">vs hier</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-pink fade-in-3">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">TOP VENTES</span>
+                            <h3 class="stat-value" style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                {{#each analytics.topItems}}{{#if @first}}{{this.name}}{{/if}}{{else}}N/A{{/each}}
+                            </h3>
+                            <span class="stat-trend-period">Plus populaire cette semaine</span>
+                        </div>
+                    </article>
+
+                    <article class="stat-card stat-card-green fade-in-4">
+                        <div class="stat-icon-wrapper">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">CATÉGORIES ACTIVES</span>
+                            <h3 class="stat-value">{{analytics.categoryDistribution.length}}</h3>
+                            <span class="stat-trend-period">Groupes au catalogue</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="analytics-section">
+                    <div class="section-header">
+                        <h2>Graphiques d'activité (7 derniers jours)</h2>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Évolution des revenus</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportRevenueChart"></canvas>
+                            </div>
+                        </article>
+
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Volume des commandes</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportOrdersChart"></canvas>
+                            </div>
+                        </article>
+
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <div>
+                                    <span class="analytics-card-title">Top 5 des plats les plus vendus</span>
+                                </div>
+                            </div>
+                            <div class="top-items-list">
+                                {{#each analytics.topItems}}
+                                <div class="top-item-row">
+                                    <div class="top-item-info">
+                                        <span class="top-item-rank">{{inc @index}}.</span>
+                                        <span class="top-item-name">{{this.name}}</span>
+                                        <span class="top-item-count">{{this.count}} ventes</span>
+                                    </div>
+                                </div>
+                                {{else}}
+                                <p style="color:#64748B;font-size:13px;padding:12px;">Aucune donnée de vente pour le moment.</p>
+                                {{/each}}
+                            </div>
+                        </article>
+
+                        <article class="analytics-card">
+                            <div class="analytics-card-header">
+                                <span class="analytics-card-title">Répartition par catégorie</span>
+                            </div>
+                            <div class="doughnut-chart-wrapper">
+                                <div class="chart-container doughnut-container">
+                                    <canvas id="reportCategoryChart"></canvas>
+                                </div>
+                                <div class="doughnut-legend">
+                                    {{#each analytics.categoryDistribution}}
+                                    <div class="legend-item">
+                                        <div>
+                                            <span class="legend-label">{{this.category}}</span>
+                                        </div>
+                                        <span class="legend-value">{{this.pct}}% ({{this.count}})</span>
+                                    </div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="/vendor/chartjs/chart.umd.js"></script>
+    <script>
+        if (typeof Chart === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+        }
+    </script>
+    <script src="/javascript/index.js"></script>
+    <script>
+        const analyticsData = {{{json analytics}}} || {};
+
+        window.addEventListener('load', () => {
+            if (!analyticsData || typeof Chart === 'undefined') return;
+
+            // Revenue Chart
+            const revCanvas = document.getElementById('reportRevenueChart');
+            if (revCanvas && analyticsData.revenueByDay) {
+                const labels = analyticsData.revenueByDay.map(d => d.day);
+                const totals = analyticsData.revenueByDay.map(d => d.total);
+                const ctx = revCanvas.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 140);
+                gradient.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
+                gradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: totals,
+                            borderColor: '#F97316',
+                            borderWidth: 2.5,
+                            fill: true,
+                            backgroundColor: gradient,
+                            tension: 0.4,
+                            pointBackgroundColor: '#F97316',
+                            pointRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { color: '#F1F5F9' } }
+                        }
+                    }
+                });
+            }
+
+            // Orders Chart
+            const ordCanvas = document.getElementById('reportOrdersChart');
+            if (ordCanvas && analyticsData.ordersByDay) {
+                const labels = analyticsData.ordersByDay.map(d => d.day);
+                const counts = analyticsData.ordersByDay.map(d => d.count);
+                const ctx = ordCanvas.getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: '#C084FC',
+                            borderRadius: 6,
+                            barThickness: 12
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { color: '#F1F5F9' } }
+                        }
+                    }
+                });
+            }
+
+            // Category Chart
+            const catCanvas = document.getElementById('reportCategoryChart');
+            if (catCanvas && analyticsData.categoryDistribution) {
+                const labels = analyticsData.categoryDistribution.map(c => c.category);
+                const counts = analyticsData.categoryDistribution.map(c => c.count);
+                const colors = ['#F97316', '#8B5CF6', '#F59E0B', '#EC4899', '#3B82F6', '#10B981'];
+                const ctx = catCanvas.getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: colors.slice(0, counts.length),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -12,40 +12,41 @@
 
 :root {
     --light: #ffffff;
-    --color-background: linear-gradient(106.37deg, #ffe1bc 29.63%, #ffcfd1 51.55%, #f3c6f1 90.85%);
-    --glass: rgba(255, 255, 255, 0.54);
-    --ink: #20243a;
-    --muted: #6d7285;
-    --line: #e7e9f2;
-    --free: #1f9d55;
-    --free-soft: #e8f8ef;
-    --reserved: #d93636;
-    --reserved-soft: #fdecec;
-    --amber: #f5a524;
+    --color-background: #F8FAFC;
+    --glass: #FFFFFF;
+    --ink: #0F172A;
+    --muted: #64748B;
+    --line: #E2E8F0;
+    --free: #16A34A;
+    --free-soft: #F0FDF4;
+    --reserved: #EF4444;
+    --reserved-soft: #FEF2F2;
+    --amber: #F59E0B;
+    --primary: #F97316;
+    --shadow: 0 4px 20px -2px rgba(15,23,42,.06);
+    --radius: 16px;
+    --transition: 200ms cubic-bezier(.4,0,.2,1);
 }
 
 body {
     margin: 0;
-    background: #f7f3f7;
+    background: var(--color-background);
+    color: var(--ink);
 }
 
 .main {
     background: var(--color-background);
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
 }
 
 .bigBox {
-    display: grid;
-    min-height: 95vh;
-    width: 97%;
-    border-radius: 28px;
-    background-color: var(--glass);
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--color-background);
     overflow: hidden;
-    grid-template-columns: 13.5rem minmax(0, 1fr);
 }
 
 .table-map-page {
@@ -91,7 +92,14 @@ body {
     min-height: 42px;
     padding: 0 16px;
     color: #ffffff;
-    background: var(--ink);
+    background: var(--primary);
+    border-radius: 10px;
+    font-size: 13px;
+    transition: all var(--transition);
+}
+.orders-link:hover {
+    background: #EA580C;
+    box-shadow: 0 4px 12px rgba(249,115,22,.25);
 }
 
 .table-stats {
@@ -164,10 +172,11 @@ body {
 
 .table-config-panel {
     margin-bottom: 18px;
-    padding: 18px;
-    background: rgba(255, 255, 255, 0.76);
-    border: 1px solid rgba(255, 255, 255, 0.92);
-    border-radius: 8px;
+    padding: 20px;
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
 }
 
 .config-title {
@@ -258,7 +267,12 @@ body {
 
 .primary-action {
     color: #ffffff;
-    background: var(--ink);
+    background: var(--primary);
+    transition: all var(--transition);
+}
+.primary-action:hover {
+    background: #EA580C;
+    box-shadow: 0 4px 12px rgba(249,115,22,.25);
 }
 
 .secondary-action,
@@ -289,10 +303,11 @@ body {
 }
 
 .floor-zone {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    padding: 18px;
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
 }
 
 .zone-title {
@@ -499,7 +514,11 @@ body {
     min-height: 38px;
     margin-top: 12px;
     color: #ffffff;
-    background: var(--ink);
+    background: var(--free);
+    transition: all var(--transition);
+}
+.mark-free-button:hover {
+    background: #15803D;
 }
 
 .mark-free-button:disabled {

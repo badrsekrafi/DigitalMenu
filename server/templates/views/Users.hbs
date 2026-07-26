@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catégories | Dine/Delight</title>
+    <title>Utilisateurs Client | Dine/Delight</title>
     <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/categories.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,51 +22,45 @@
             <main class="boxes fade-in">
                 <section class="upperbox">
                     <div class="upperbox-text">
-                        <p class="eyebrow">Inventaire</p>
-                        <h1>Catégories</h1>
+                        <p class="eyebrow">Clientèle</p>
+                        <h1>Comptes Clients</h1>
                     </div>
-                    <a class="upperbox-btn" href="/Categories_add">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Ajouter une catégorie</span>
-                    </a>
                 </section>
 
                 <section class="lowerbox">
                     <div class="list-heading">
                         <div>
-                            <p class="eyebrow">Groupes</p>
-                            <h2>Liste des catégories</h2>
+                            <p class="eyebrow">Utilisateurs inscrits</p>
+                            <h2>Liste des clients</h2>
                         </div>
-                        <span id="categoryCountLabel">{{categoryCount}} catégories</span>
+                        <span id="userCountLabel">{{userCount}} clients</span>
                     </div>
 
-                    <div class="lowerbox-table" aria-label="Table des catégories">
-                        {{#if hasCategories}}
+                    <div class="lowerbox-table" aria-label="Table des utilisateurs">
+                        {{#if hasUsers}}
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Description</th>
-                                    <th style="text-align: center;">Modifier</th>
-                                    <th style="text-align: center;">Supprimer</th>
+                                    <th>Nom / Identifiant</th>
+                                    <th>Téléphone</th>
+                                    <th>Email</th>
+                                    <th style="text-align: center;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {{#each categories}}
-                                <tr data-id="{{this._id}}" id="category-{{this._id}}">
+                                {{#each users}}
+                                <tr data-id="{{this._id}}" id="user-{{this._id}}">
                                     <td class="name-cell" data-label="Nom">
-                                        <span class="cell-text strong-text">{{this.title}}</span>
+                                        <span class="cell-text strong-text">{{this.username}}</span>
                                     </td>
-                                    <td class="description-cell" data-label="Description">
-                                        <span class="cell-text" style="color: #64748B;">{{this.description}}</span>
+                                    <td data-label="Téléphone">
+                                        <span class="cell-text" style="color: #64748B;">{{this.phonenumber}}</span>
                                     </td>
-                                    <td class="action-cell" data-label="Modifier" style="text-align: center;">
-                                        <a class="icon-action edit-action" href="/Categories_add?id={{this._id}}" aria-label="Modifier {{this.title}}">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
+                                    <td data-label="Email">
+                                        <span class="cell-text" style="color: #64748B;">{{this.email}}</span>
                                     </td>
-                                    <td class="action-cell" data-label="Supprimer" style="text-align: center;">
-                                        <button class="icon-action delete-action" type="button" onclick="confirmDelete('{{this._id}}')" aria-label="Supprimer {{this.title}}">
+                                    <td class="action-cell" data-label="Actions" style="text-align: center;">
+                                        <button class="icon-action delete-action" type="button" onclick="confirmDeleteUser('{{this._id}}')" aria-label="Supprimer {{this.username}}">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
@@ -76,8 +70,8 @@
                         </table>
                         {{else}}
                         <div class="empty-state">
-                            <i class="fa-solid fa-layer-group"></i>
-                            <p>Aucune catégorie pour le moment.</p>
+                            <i class="fa-solid fa-users"></i>
+                            <p>Aucun utilisateur inscrit pour le moment.</p>
                         </div>
                         {{/if}}
                     </div>
@@ -85,7 +79,7 @@
 
                 <div id="successPopup" class="popup">
                     <div class="popup_content">
-                        <p><i class="fa-solid fa-circle-check"></i> Catégorie supprimée avec succès !</p>
+                        <p><i class="fa-solid fa-circle-check"></i> Compte supprimé avec succès !</p>
                     </div>
                 </div>
             </main>
@@ -94,24 +88,24 @@
 
     <script src="/javascript/index.js"></script>
     <script>
-        function confirmDelete(id) {
-            if (confirm('Voulez-vous vraiment supprimer cette catégorie ?')) {
-                deleteCategory(id);
+        function confirmDeleteUser(id) {
+            if (confirm('Voulez-vous vraiment supprimer ce compte client ?')) {
+                deleteUser(id);
             }
         }
 
-        function updateCategoryCount() {
-            const countLabel = document.getElementById('categoryCountLabel');
+        function updateUserCount() {
+            const countLabel = document.getElementById('userCountLabel');
             const count = document.querySelectorAll('.lowerbox-table tbody tr').length;
 
             if (countLabel) {
-                countLabel.textContent = `${count} ${count === 1 ? 'catégorie' : 'catégories'}`;
+                countLabel.textContent = `${count} ${count === 1 ? 'client' : 'clients'}`;
             }
         }
 
-        async function deleteCategory(id) {
+        async function deleteUser(id) {
             try {
-                const response = await fetch(`/deleteCategory/${encodeURIComponent(id)}`, {
+                const response = await fetch(`/Users/${encodeURIComponent(id)}`, {
                     method: 'DELETE',
                     headers: { 'Accept': 'application/json' },
                 });
@@ -124,7 +118,7 @@
                 const row = document.querySelector(`tr[data-id="${id}"]`);
                 if (row) {
                     row.remove();
-                    updateCategoryCount();
+                    updateUserCount();
                     $('#successPopup').fadeIn();
                 }
 
@@ -132,7 +126,7 @@
                     $('#successPopup').fadeOut();
                 }, 3000);
             } catch (error) {
-                alert('Impossible de supprimer la catégorie.');
+                alert('Impossible de supprimer le compte.');
             }
         }
 

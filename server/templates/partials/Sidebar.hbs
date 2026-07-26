@@ -1,71 +1,79 @@
 <link rel="stylesheet" href="/css/Sidebar.css">
 
-<body>
-    <div class="sidebar">
-        <div class="logo">
-            <img src="/images/logo.png" alt="error">
-            <span>
-                Dine<span>/</span>Delight
-            </span>
-        </div>
-
-        <div class="menu">
-            <div class="menuItem">
-                <a href="/Home" class="nav-link" id="dashboard">
-                    <i class="fa fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="/Categories" class="nav-link" id="categories">
-                    <i class="fa fa-pencil-square-o"></i>
-                    <span>Categories</span>
-                </a>
-                <a href="/Menu_Dishes" class="nav-link" id="menudishes">
-                    <i class="fa fa-th-list"></i>
-                    <span>Menu Dishes</span>
-                </a>
-                <a href="/Orders" class="nav-link" id="orders">
-                    <i class="fa fa-codiepie"></i>
-                    <span>Orders</span>
-                </a>
-                <!-- <a href="/Messages" class="nav-link" id="messages">
-                    <i class="fa fa-envelope-o"></i>
-                    <span>Messages</span>
-                    <span id="message">26</span>
-                </a> -->
-                <a href="/QR_Code" class="nav-link" id="qrcode">
-                    <i class="fa fa-qrcode"></i>
-                    <span>QR Code</span>
-                </a>
-                <!-- <a href="#" class="nav-link" id="testimonial">
-                    <i class="fa fa-street-view"></i>
-                    <span>Testimonials</span>
-                </a> -->
-                <a href="/ImgUploader_add" class="nav-link" id="imguploader">
-                    <i class="fa fa-table"></i>
-                    <span>Tables</span>
-                </a>
-                <a href="/signout" class="nav-link" id="signout">
-                    <i class="fa fa-sign-out"></i>
-                    <!-- <span>Sign Out</span> -->
-                    <button id="signout-button" style="background: transparent">Sign Out</button>
-                </a>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/Home" class="logo">
+            <div class="logo-icon">
+                <img src="/images/logo.png" alt="Dine/Delight Logo" onerror="this.src='/images/Admin_image.png'">
             </div>
-        </div>
+            <div class="logo-text">
+                <span class="brand-title">Dine<span class="brand-accent">/</span>Delight</span>
+                <span class="brand-subtitle">Restaurant Management</span>
+            </div>
+        </a>
     </div>
 
-    <script src="/javascript/index.js"></script>
-    <script>
-        // Add this to your JavaScript file
-        document.getElementById('signout-button').addEventListener('click', function () {
-            // Display a confirmation dialog
-            const confirmSignout = confirm('Are you sure you want to sign out?');
+    <nav class="sidebar-nav">
+        <a href="/Home" class="nav-link" id="dashboard">
+            <i class="fa-solid fa-border-all"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/Categories" class="nav-link" id="categories">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Categories</span>
+        </a>
+        <a href="/Menu_Dishes" class="nav-link" id="menudishes">
+            <i class="fa-solid fa-utensils"></i>
+            <span>Menu Dishes</span>
+        </a>
+        <a href="/Orders" class="nav-link" id="orders">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span>Orders</span>
+        </a>
+        <a href="/QR_Code" class="nav-link" id="qrcode">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>QR Code</span>
+        </a>
+        <a href="/ImgUploader_add" class="nav-link" id="imguploader">
+            <i class="fa-solid fa-chair"></i>
+            <span>Tables</span>
+        </a>
+        <a href="/Reports" class="nav-link" id="reports">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Reports</span>
+        </a>
+        <a href="/Settings" class="nav-link" id="settings">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+        <a href="/Users" class="nav-link" id="users">
+            <i class="fa-solid fa-users"></i>
+            <span>Users</span>
+        </a>
+    </nav>
 
-            // Check if the user confirmed signout
-            if (confirmSignout) {
-                // Redirect to the sign-out route or perform your sign-out logic
-                window.location.href = '/signout'; // Replace with your sign-out route
-            }
-        });
+    <div class="sidebar-footer">
+        <div class="sidebar-promo-card">
+            <div class="promo-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <div class="promo-content">
+                <h4>Go Premium</h4>
+                <p>Unlock more features and grow your business.</p>
+                <button type="button" class="btn btn-primary btn-sm btn-block">Upgrade Now</button>
+            </div>
+        </div>
 
-    </script>
-</body>
+        <div class="sidebar-user">
+            <img src="/images/Admin_image.png" alt="Admin avatar" class="user-avatar">
+            <div class="user-info">
+                <span class="user-name">{{adminName}}</span>
+                <span class="user-role">Administrator</span>
+            </div>
+            <button id="signout-button" type="button" class="user-logout-btn" title="Sign Out">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </div>
+</aside>

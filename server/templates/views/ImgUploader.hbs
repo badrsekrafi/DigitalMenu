@@ -4,14 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Dine_Delight</title>
+    <title>Banners | Dine/Delight</title>
+    <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/ImgUploader.css">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@1&family=Inter:wght@400;500;700&family=Lora:wght@700&family=Poppins:wght@300&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
@@ -20,13 +17,12 @@
         <div class="bigBox">
             {{>Sidebar}}
             <!-- -------------- Start of main ---------------- -->
-            <main class="boxes">
+            <main class="fade-in">
                 <div class="upperbox">
-                    <div class="upperbox-text">
-                        <p>Image Uploader</p>
-                    </div>
+                    <div class="upperbox-text">Banners</div>
                     <div class="upperbox-btn">
-                        <a href="ImgUploader_add" style="color:#000;font-size:16px">Upload Image</a>
+                        <i class="fa-solid fa-upload"></i>
+                        <a href="ImgUploader_add" style="color:#fff;">Upload Image</a>
                     </div>
                 </div>
                 <div class="lowerbox">
@@ -77,6 +73,7 @@
 
         </div>
     </div>
+    <script src="/javascript/index.js"></script>
     <script>
 
         function DeleteData(id) {

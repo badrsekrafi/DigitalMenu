@@ -1,204 +1,134 @@
-*{
-    margin: 0;
-    padding: 0;
-    outline: 0;
-    appearance: none;
-    border: 0;
-    text-decoration: none;
-    list-style: none;
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+/* Modern SaaS ImgUploader (Banners) CSS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+    margin: 0; padding: 0; outline: 0; appearance: none; border: 0;
+    text-decoration: none; list-style: none; box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-:root{
-    --lato: 'Lato',sans-serif;
-    --poppins: 'poppins',sans-serif;
-
-    --light: #ffffff;
-    --color-background: linear-gradient(106.37deg, #ffe1bc 29.63%,#ffcfd1 51.55%, #f3c6f1 90.85%);
-    --grey: #eee;
-    --dark-grey: #AAAAAA;
-    --orange: #fca61f;
-    --yellow: linear-gradient(180deg, #F8D49A -146.42%, #FAD79D -46.42%);
-    --dark-orange:#FF4C01;
-    --light-green:#29A22E;
-    --gradient: #FF5B62;
-    --dark-pink: #FA2555;
-    --black: #242d49;
-    --purple: linear-gradient(180deg, #BB67FF 0%, #C484F3 100%);
-    --light-purple:#7380ec;
-    --color-success: #41f1b6;
-    --pink: #FF919D;
-    --boxShadow: 0px 19px 60px rgb(0 0 0 / 8%);
-    --smboxShadow: -79px 51px 60px rgba(0, 0, 0, 0.08);
-    --activeItem:#f799a354;
-    --glass: rgba(255, 255, 255, 0.54);
-    --color-light: rgba(132, 139, 200, 0.18);
+:root {
+    --primary: #F97316; --primary-dark: #EA580C; --primary-soft: #FFF7ED;
+    --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --muted: #64748B;
+    --line: #E2E8F0; --radius: 16px; --shadow: 0 4px 20px -2px rgba(15,23,42,.06);
+    --transition: 200ms cubic-bezier(.4,0,.2,1);
+    --danger: #EF4444; --danger-soft: #FEF2F2; --success: #22C55E;
 }
 
-body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-    padding-bottom:0px ;
+html, body { min-height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+
+.main { width: 100%; min-height: 100vh; background: var(--bg); display: flex; }
+.bigBox { display: flex; width: 100%; min-height: 100vh; }
+
+main {
+    flex: 1; min-width: 0; padding: 24px 32px 48px;
+    display: flex; flex-direction: column; gap: 20px;
 }
 
-.main{
-    background: var(--color-background);
-    height: 130vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+/* Upper header card */
+main .upperbox {
+    width: 100%; padding: 18px 24px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 
-.bigBox{
-    display: grid;
-    height: 95%;
-    width: 97%;
-    border-radius: 2rem;
-    background-color: var(--glass);
-    overflow: hidden;
-    grid-template-columns: 13.5rem auto;
+main .upperbox-text {
+    font-size: 20px; font-weight: 700; color: var(--text);
 }
-main{
-    display: flex;
-    flex-direction: column; /* Stack the elements vertically */
-    align-items: center; /* Align content in the center */
-    width: 100%; /* Occupy full width */
-    margin: 1.4rem;
-}
-main .upperbox{
-    width: 95%;
-    padding: 30px 30px;
-    background: #fff;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    margin-right: 52PX;
-}
+
 main .upperbox-btn {
-    margin-left: 10px;
-    background-color: #EA4C89;
-  border-radius: 8px;
-  border-style: none;
-  /* box-sizing: border-box; */
-  color: #FFFFFF;
-  cursor: pointer;
-  display: inline-block;
-  font-size: 14px;
-  font-weight: 500;
-  height: 40px;
-  line-height: 20px;
-  list-style: none;
-  margin: 0;
-  outline: none;
-  padding: 10px 16px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  transition: color 100ms;
-  vertical-align: baseline;
-  touch-action: manipulation;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 18px;
+    background: var(--primary); color: #fff;
+    border-radius: 10px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all var(--transition);
 }
-main .upperbox-btn:hover{
-    background-color: #b9064b;
+main .upperbox-btn:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(249,115,22,.25);
 }
 
-main .upperbox .upperbox-text{
-
-    gap: 1.8rem;
-    font-size: 27px;
-    font-weight: 600;
-    text-align: center;
+/* Table card */
+main .lowerbox {
+    width: 100%; background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px 24px;
 }
 
-main .lowerbox{
-    width: 95%;
-    padding: 12px 15px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    padding-bottom: 40px;
-    margin-right: 52px;
+main .lowerbox h4 {
+    font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px;
 }
 
-main .lowerbox h4{
-    padding: 8px;
-    font-size: 22px;
-    margin-bottom: 16px;
-}
+.lowerbox-table { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
 
-.lowerbox-table table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px; /* Add some top margin for spacing */
-}
+.lowerbox-table table { width: 100%; border-collapse: collapse; }
 
 .lowerbox-table th, .lowerbox-table td {
-    padding: 5px;
-    border-bottom: 1px solid #ccc;
-    text-align: left;
+    padding: 12px 16px; border-bottom: 1px solid #F1F5F9;
+    color: var(--text); font-size: 13px; text-align: left; vertical-align: middle;
 }
 
 .lowerbox-table th {
-    font-weight: bold;
-    background-color: #f9f9f9;
+    position: sticky; top: 0; background: #F8FAFC;
+    color: var(--muted); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .05em;
+    border-bottom: 1px solid var(--line);
 }
 
-.lowerbox-table th, .lowerbox-table td {
-    min-width: 100px;
+.lowerbox-table tbody tr { background: #fff; transition: background var(--transition); }
+.lowerbox-table tbody tr:hover { background: #F8FAFC; }
+
+.lowerbox-table tbody img {
+    max-width: 80px; max-height: 80px;
+    width: auto; height: auto;
+    border-radius: 8px; object-fit: cover;
+    border: 1px solid var(--line);
 }
 
-.lowerbox-table th, .lowerbox-table td {
-    font-size: 16px;
-    color: #444; /* Dark gray text color */
-    text-align: center;
+.lowerbox-table .edit_column a,
+.lowerbox-table .delete_column button {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 8px;
+    font-size: 14px; cursor: pointer; transition: all var(--transition);
 }
 
-.lowerbox-table tbody img{
-    max-width: 100px; /* Set your desired maximum width */
-    max-height: 100px; /* Set your desired maximum height */
-    width: auto; /* Allow the width to adjust while maintaining aspect ratio */
-    height: auto; /* Allow the height to adjust while maintaining aspect ratio */
-    padding: 5px;
+.lowerbox-table .edit_column a {
+    color: var(--muted); background: #F1F5F9;
+}
+.lowerbox-table .edit_column a:hover {
+    color: var(--primary); background: var(--primary-soft);
 }
 
-.lowerbox-table tbody .delete_column {
-    width: 40px; /* Adjust the width as needed */
-    text-align: center; /* Center the content horizontally */
-    padding: 5px; /* Add padding as needed */
+.lowerbox-table .delete_column button {
+    color: var(--danger); background: var(--danger-soft);
+}
+.lowerbox-table .delete_column button:hover {
+    background: #FCA5A5; color: #fff;
 }
 
-.lowerbox-table tbody tr:hover {
-    background-color: #f0f0f0; /* Hover color */
-}
-
+/* Toast popup */
 .popup {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    top: 20px;
-    right: 20px;
-    width: 300px;
-    background-color: #4caf50; /* Success color */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 5px;
+    display: none; position: fixed; z-index: 9999;
+    bottom: 24px; right: 24px;
+    background: #0F172A; color: #fff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0,0,0,.2);
 }
 
-.popup-content {
-    display: flex;
-    text-align: center;
+.popup_content { display: flex; align-items: center; gap: 8px; }
+.popup_content i { color: var(--success); font-size: 16px; }
+
+.fade-in { animation: fadeInUp .35s ease both; }
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
 }
-.popup_content i {
-    margin-right: 10px; /* Adjust spacing as needed */
-    font-size: 18px;
-}
-.popup-content p {
-    display: inline-block;
-    vertical-align: middle; /* Adjust as needed */
-    font-size: 26px;
+
+@media (max-width: 640px) {
+    main { padding: 16px; }
+    main .upperbox { flex-direction: column; align-items: flex-start; }
+    main .upperbox-btn { width: 100%; }
 }
