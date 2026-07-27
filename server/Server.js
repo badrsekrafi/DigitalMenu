@@ -1506,8 +1506,11 @@ async function buildUserMenuViewData(req) {
         console.error('Error getting menu session user:', usrErr);
     }
 
+    let restaurantSettings = {};
+    try { restaurantSettings = await getSettings(); } catch (e) { console.error('getSettings error in buildUserMenuViewData:', e); }
+
     return {
-        settings: await getSettings(),
+        restaurantSettings,
         categories,
         latestImage,
         MenuItems,
@@ -1608,8 +1611,8 @@ app.get("/Order_Details", async (req, res) => {
     try {
         const menuUser = getMenuSessionUser(req);
 
-        let settings = {};
-        try { settings = await getSettings(); } catch (e) { console.error('getSettings error:', e); }
+        let restaurantSettings = {};
+        try { restaurantSettings = await getSettings(); } catch (e) { console.error('getSettings error:', e); }
 
         let tables = [];
         try { tables = await getConfiguredFloorTables(); } catch (e) {
@@ -1618,7 +1621,7 @@ app.get("/Order_Details", async (req, res) => {
         }
 
         res.render("Order_Details", {
-            settings,
+            restaurantSettings,
             tables,
             checkoutUser: buildCheckoutUser(menuUser),
         });

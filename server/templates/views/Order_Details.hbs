@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - {{#if settings.restaurantName}}{{settings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</title>
+    <title>Checkout - {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/Order_Details.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script>
-        window.RESTAURANT_CURRENCY = "{{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}";
+        window.RESTAURANT_CURRENCY = "{{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}";
     </script>
 </head>
 
@@ -155,7 +155,7 @@
                             <p class="eyebrow">Your cart</p>
                             <h2>Order summary</h2>
                         </div>
-                        <span class="summary-badge">{{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}</span>
+                        <span class="summary-badge">{{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</span>
                     </div>
 
                     <div class="order-items-container">
@@ -163,7 +163,7 @@
                         <div class="cart-item">
                             <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
                             <span class="item-name">{{this.name}}</span>
-                            <span class="item-price">{{formatCurrency this.price}} {{#if @root.settings.currency}}{{@root.settings.currency}}{{else}}DNT{{/if}}</span>
+                            <span class="item-price">{{formatCurrency this.price}} {{#if @root.restaurantSettings.currency}}{{@root.restaurantSettings.currency}}{{else}}DNT{{/if}}</span>
                             <button type="button" class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
                         </div>
                         {{/each}}
@@ -171,7 +171,7 @@
 
                     <div class="summary-total">
                         <span>Total</span>
-                        <strong id="total-price-container">0.00 {{#if settings.currency}}{{settings.currency}}{{else}}DNT{{/if}}</strong>
+                        <strong id="total-price-container">0.00 {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</strong>
                     </div>
                 </div>
             </aside>
