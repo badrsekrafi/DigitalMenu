@@ -1550,7 +1550,7 @@ app.get("/UserMenu", async (req, res) => {
         res.render("UserMenu", await buildUserMenuViewData(req));
     } catch (error) {
         console.error('Error fetching menu items for UserMenu:', error);
-        res.status(500).send('Error fetching menu items for UserMenu.');
+        res.status(500).send(`Error in UserMenu: ${error.message}\n\nStack: ${error.stack}`);
     }
 });
 
