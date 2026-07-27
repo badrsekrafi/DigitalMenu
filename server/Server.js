@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 const hbs = require("hbs");
 const multer = require('multer');
-require("./database/connection");
+const { connectToDatabase } = require("./database/connection");
 
 const secretKey = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 if (!process.env.SESSION_SECRET) {
@@ -63,6 +63,15 @@ const partials_path = path.join(__dirname, "../server/templates/partials");
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+    } catch (err) {
+        console.error("DB connection middleware error:", err);
+    }
+    next();
+});
+
 app.use(express.static(static_path));
 app.use("/vendor/qrious", express.static(path.join(__dirname, "../node_modules/qrious/dist")));
 app.use("/vendor/chartjs", express.static(path.join(__dirname, "../node_modules/chart.js/dist")));
@@ -78,7 +87,8 @@ app.use(session({
 }));
 
 hbs.registerHelper('formatCurrency', function (value) {
-    return value.toFixed(2);
+    const num = Number(value);
+    return isNaN(num) ? '0.00' : num.toFixed(2);
 });
 
 hbs.registerHelper('inc', function (value) {
@@ -1401,12 +1411,30 @@ function clearMenuAuth(req, res) {
     res.clearCookie(MENU_AUTH_COOKIE, cookieOptions);
 }
 
+
 async function buildUserMenuViewData(req) {
-    const categories = await Category.find().lean();
-    const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
+    let rawCategories = [];
+    let rawMenuItems = [];
+
+    try {
+        rawCategories = await Category.find().lean();
+    } catch (catErr) {
+        console.error('Error finding categories:', catErr);
+    }
+
+    try {
+        rawMenuItems = await MenuItem.find({}, { image: 0 }).lean();
+    } catch (itemErr) {
+        console.error('Error finding menu items:', itemErr);
+    }
+
+    const categories = Array.isArray(rawCategories) ? rawCategories.filter(c => c && c.title) : [];
+    const MenuItems = Array.isArray(rawMenuItems) ? rawMenuItems.filter(item => item && item.title) : [];
 
     MenuItems.forEach(item => {
         item.imageUrl = `/menu-image/${item._id}`;
+        const numPrice = Number(item.price);
+        item.price = isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
     });
 
     const slugify = (value) => String(value || "other")
@@ -1453,11 +1481,29 @@ async function buildUserMenuViewData(req) {
 
     let latestImage = null;
     if (latestImageIdentifier) {
-        latestImage = await Image.findOne({ title: latestImageIdentifier });
-
-        if (latestImage) {
-            latestImage.base64Image = `data:${latestImage.image.contentType};base64,${latestImage.image.data.toString('base64')}`;
+        try {
+            latestImage = await Image.findOne({ title: latestImageIdentifier }).lean();
+            if (latestImage && latestImage.image && latestImage.image.data) {
+                latestImage.base64Image = `data:${latestImage.image.contentType};base64,${latestImage.image.data.toString('base64')}`;
+            }
+        } catch (imgErr) {
+            console.error('Error fetching latest image:', imgErr);
         }
+    }
+
+    let tables = [];
+    try {
+        tables = await getConfiguredFloorTables();
+    } catch (tblErr) {
+        console.error('Error fetching configured tables:', tblErr);
+        tables = getDefaultFloorTables();
+    }
+
+    let menuUser = null;
+    try {
+        menuUser = getMenuSessionUser(req);
+    } catch (usrErr) {
+        console.error('Error getting menu session user:', usrErr);
     }
 
     return {
@@ -1467,8 +1513,8 @@ async function buildUserMenuViewData(req) {
         MenuItems,
         categorySections,
         totalItems: MenuItems.length,
-        tables: await getConfiguredFloorTables(),
-        menuUser: getMenuSessionUser(req),
+        tables,
+        menuUser,
         googleReviewsUrl: GOOGLE_REVIEWS_URL,
     };
 }
@@ -1561,9 +1607,19 @@ app.get('/UserMenu/order-status', async (req, res) => {
 app.get("/Order_Details", async (req, res) => {
     try {
         const menuUser = getMenuSessionUser(req);
+
+        let settings = {};
+        try { settings = await getSettings(); } catch (e) { console.error('getSettings error:', e); }
+
+        let tables = [];
+        try { tables = await getConfiguredFloorTables(); } catch (e) {
+            console.error('getConfiguredFloorTables error:', e);
+            tables = getDefaultFloorTables();
+        }
+
         res.render("Order_Details", {
-            settings: await getSettings(),
-            tables: await getConfiguredFloorTables(),
+            settings,
+            tables,
             checkoutUser: buildCheckoutUser(menuUser),
         });
     } catch (error) {

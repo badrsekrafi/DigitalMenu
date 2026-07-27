@@ -13,16 +13,29 @@ if (dnsServers.length > 0) {
     dns.setServers(dnsServers);
 }
 
-const connectWithRetry = () => {
-    mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 }).then(() => {
+let isConnecting = false;
+
+async function connectToDatabase() {
+    if (mongoose.connection.readyState >= 1) {
+        return mongoose;
+    }
+
+    if (isConnecting) {
+        return;
+    }
+
+    isConnecting = true;
+    try {
+        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
         console.log("Connected to MongoDB");
-    }).catch((error) => {
-        console.log("MongoDB connection failed:", error.message);
-        console.log("Retrying MongoDB connection in 5 seconds...");
-        setTimeout(connectWithRetry, 5000);
-    });
-};
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+    } finally {
+        isConnecting = false;
+    }
+}
 
-connectWithRetry();
+connectToDatabase();
 
-module.exports = mongoose; // Export the mongoose object 
+module.exports = mongoose;
+module.exports.connectToDatabase = connectToDatabase;

@@ -3,11 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/UserMenu.css">
     <!-- font:Notosnas -->
@@ -109,7 +104,7 @@
                     <div class="dashboard-card" data-category="{{this.category}}" data-title="{{this.title}}">
                         <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
                         <div class="card-detail">
-                            <h4>{{this.title}}<span>{{this.price}} {{#if ../settings.currency}}{{../settings.currency}}{{else}}DNT{{/if}}</span></h4>
+                            <h4>{{this.title}}<span>{{this.price}} {{#if @root.settings.currency}}{{@root.settings.currency}}{{else}}DNT{{/if}}</span></h4>
                             <p>{{this.description}}</p>
                             <p class="card-time">{{this.category}}</p>
                         </div>

@@ -163,7 +163,7 @@
                         <div class="cart-item">
                             <img src="{{this.img}}" alt="{{this.name}}" class="cart-item-image">
                             <span class="item-name">{{this.name}}</span>
-                            <span class="item-price">{{formatCurrency this.price}} {{#if ../settings.currency}}{{../settings.currency}}{{else}}DNT{{/if}}</span>
+                            <span class="item-price">{{formatCurrency this.price}} {{#if @root.settings.currency}}{{@root.settings.currency}}{{else}}DNT{{/if}}</span>
                             <button type="button" class="remove-item-button" onclick="removeItem('{{this.name}}')">Remove</button>
                         </div>
                         {{/each}}
