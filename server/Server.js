@@ -759,6 +759,28 @@ app.get(["/Orders", "/orders"], async (req, res) => {
     }
 })
 
+async function recalculateOrderTotal(order) {
+    let total = 0;
+    for (const item of order.items) {
+        if (item.status === 'cancel') continue;
+        let price = Number(item.itemPrice) || 0;
+        if (price === 0 && item.itemName) {
+            try {
+                const dbItem = await MenuItem.findOne({ title: item.itemName }).select('price').lean();
+                if (dbItem && dbItem.price) {
+                    price = Number(dbItem.price) || 0;
+                    item.itemPrice = price;
+                }
+            } catch (e) {
+                console.error('Error looking up menu item price:', e);
+            }
+        }
+        total += price * (Number(item.itemQty) || 1);
+    }
+    order.totalPrice = total;
+    return total;
+}
+
 app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
     const { orderId } = req.params;
     const itemIndex = Number(req.params.itemIndex);
@@ -780,13 +802,8 @@ app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
 
         order.items[itemIndex].status = nextStatus;
 
-        // Recalculate totalPrice: sum only non-cancelled items
-        const newTotal = order.items.reduce((sum, item) => {
-            if (item.status === 'cancel') return sum;
-            return sum + (Number(item.itemPrice) || 0) * (Number(item.itemQty) || 1);
-        }, 0);
-        order.totalPrice = newTotal;
-
+        // Recalculate totalPrice: exclude cancelled items
+        const newTotal = await recalculateOrderTotal(order);
         await order.save();
 
         const statusMeta = getItemStatusMeta(nextStatus);
@@ -830,8 +847,15 @@ app.delete('/orders/:orderId/items/:itemIndex', async (req, res) => {
             return res.json({ success: true, orderDeleted: true });
         }
 
+        const newTotal = await recalculateOrderTotal(order);
         await order.save();
-        res.json({ success: true, orderDeleted: false, remainingItems: order.items.length });
+
+        res.json({
+            success: true,
+            orderDeleted: false,
+            remainingItems: order.items.length,
+            newTotalPrice: newTotal.toFixed(2),
+        });
     } catch (error) {
         console.error('Error removing order item:', error);
         res.status(500).json({ success: false, error: 'Error removing item.' });

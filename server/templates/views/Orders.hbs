@@ -185,6 +185,9 @@
                     // Whole order gone → remove the entire table row
                     trEl.remove();
                 } else {
+                    if (data.newTotalPrice !== undefined) {
+                        updateTotalCell(trEl, data.newTotalPrice);
+                    }
                     // Just remove this item row with animation
                     rowEl.style.transition = 'opacity 0.3s, max-height 0.3s';
                     rowEl.style.opacity = '0';
