@@ -289,3 +289,46 @@ main .lowerbox h4 {
 .detail-line strong {
     color: var(--ink);
 }
+
+/* ── Trash / Remove item button ────────────────────────── */
+.item-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 4px 0;
+}
+
+.item-remove-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: transparent;
+    border: 1px solid #FECACA;
+    border-radius: 6px;
+    color: #EF4444;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    padding: 0;
+    margin-left: auto;
+}
+
+.item-remove-btn:hover {
+    background: #FEF2F2;
+    border-color: #EF4444;
+    transform: scale(1.1);
+}
+
+.item-remove-btn:active {
+    transform: scale(0.95);
+}
+
+.item-remove-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}

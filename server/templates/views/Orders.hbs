@@ -79,6 +79,12 @@
                                                     <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
                                                     {{/each}}
                                                 </select>
+                                                <button type="button" class="item-remove-btn"
+                                                    data-order-id="{{orderId}}" data-item-index="{{itemIndex}}"
+                                                    data-item-name="{{this.itemName}}"
+                                                    title="Supprimer cet article" aria-label="Supprimer {{this.itemName}}">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
                                             </div>
                                         {{/each}}
                                         </div>
@@ -165,13 +171,63 @@
             }
         });
 
+        // ── Helper: permanently delete item from order ──────────────────
+        async function removeOrderItem(orderId, itemIndex, rowEl, trEl) {
+            try {
+                const response = await fetch(
+                    `/orders/${encodeURIComponent(orderId)}/items/${encodeURIComponent(itemIndex)}`,
+                    { method: 'DELETE', headers: { 'Accept': 'application/json' } }
+                );
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || 'Erreur serveur.');
+
+                if (data.orderDeleted) {
+                    // Whole order gone → remove the entire table row
+                    trEl.remove();
+                } else {
+                    // Just remove this item row with animation
+                    rowEl.style.transition = 'opacity 0.3s, max-height 0.3s';
+                    rowEl.style.opacity = '0';
+                    rowEl.style.maxHeight = '0';
+                    rowEl.style.overflow = 'hidden';
+                    setTimeout(() => rowEl.remove(), 320);
+
+                    // Re-index remaining item rows in this order so indices stay correct
+                    const list = trEl.querySelector('.item-status-list');
+                    if (list) {
+                        list.querySelectorAll('.item-status-row').forEach((r, newIdx) => {
+                            r.dataset.itemIndex = newIdx;
+                            r.querySelectorAll('[data-item-index]').forEach(el => el.dataset.itemIndex = newIdx);
+                        });
+                    }
+                }
+            } catch (err) {
+                alert(err.message || 'Impossible de supprimer l\'article.');
+            }
+        }
+
+        // ── Status select: intercept CANCEL → delete instead ─────────────
         document.querySelectorAll('.item-status-select').forEach((select) => {
             select.addEventListener('change', async () => {
                 const previousStatus = select.dataset.currentStatus;
                 const row = select.closest('.item-status-row');
+                const tr  = select.closest('tr');
                 const pill = row.querySelector('.item-status-pill');
-                select.disabled = true;
 
+                // CANCEL = remove the item permanently
+                if (select.value === 'cancel') {
+                    const itemName = row.querySelector('.item-status-name')?.textContent || 'cet article';
+                    if (!confirm(`Supprimer "${itemName}" de la commande ? Cette action est irréversible.`)) {
+                        select.value = previousStatus;
+                        return;
+                    }
+                    select.disabled = true;
+                    await removeOrderItem(select.dataset.orderId, select.dataset.itemIndex, row, tr);
+                    return;
+                }
+
+                // Other statuses → PATCH as before
+                select.disabled = true;
                 try {
                     const response = await fetch(`/orders/${encodeURIComponent(select.dataset.orderId)}/items/${encodeURIComponent(select.dataset.itemIndex)}/status`, {
                         method: 'PATCH',
@@ -179,9 +235,7 @@
                         body: JSON.stringify({ status: select.value }),
                     });
                     const data = await response.json();
-
                     if (!response.ok || !data.success) throw new Error(data.error || 'Erreur.');
-
                     select.dataset.currentStatus = data.item.status;
                     pill.className = `item-status-pill ${data.item.statusClass}`;
                     pill.textContent = data.item.statusLabel;
@@ -193,6 +247,19 @@
                 }
             });
         });
+
+        // ── Trash button: direct delete with confirmation ─────────────────
+        document.querySelectorAll('.item-remove-btn').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const row  = btn.closest('.item-status-row');
+                const tr   = btn.closest('tr');
+                const name = btn.dataset.itemName || 'cet article';
+                if (!confirm(`Supprimer "${name}" de la commande ? Cette action est irréversible.`)) return;
+                btn.disabled = true;
+                await removeOrderItem(btn.dataset.orderId, btn.dataset.itemIndex, row, tr);
+            });
+        });
     </script>
+
 </body>
 </html>

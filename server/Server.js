@@ -797,6 +797,38 @@ app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
     }
 });
 
+// DELETE a single item from an order (remove it completely — as if never ordered)
+app.delete('/orders/:orderId/items/:itemIndex', async (req, res) => {
+    const { orderId } = req.params;
+    const itemIndex = Number(req.params.itemIndex);
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !Number.isInteger(itemIndex) || itemIndex < 0) {
+        return res.status(400).json({ success: false, error: 'Invalid order item.' });
+    }
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order || !order.items[itemIndex]) {
+            return res.status(404).json({ success: false, error: 'Order item not found.' });
+        }
+
+        // Remove the item permanently from the array
+        order.items.splice(itemIndex, 1);
+
+        // If no items remain, delete the whole order
+        if (order.items.length === 0) {
+            await Order.findByIdAndDelete(orderId);
+            return res.json({ success: true, orderDeleted: true });
+        }
+
+        await order.save();
+        res.json({ success: true, orderDeleted: false, remainingItems: order.items.length });
+    } catch (error) {
+        console.error('Error removing order item:', error);
+        res.status(500).json({ success: false, error: 'Error removing item.' });
+    }
+});
+
 app.get("/Messages", (req, res) => {
     res.render("Messages");
 })
