@@ -445,10 +445,9 @@ async function ensureDefaultAdminCreated() {
             await user.create({
                 Restaurant_name: "Le Patio Djerba",
                 email: "badersekrafi242@gmail.com",
-                password: "00000000",
-                twoFactorPin: "2420"
+                password: "00000000"
             });
-            console.log("Default admin account created: badersekrafi242@gmail.com / 00000000 (PIN: 2420)");
+            console.log("Default admin account created: badersekrafi242@gmail.com / 00000000");
         }
     } catch (err) {
         console.error("ensureDefaultAdminCreated error:", err.message);
@@ -475,8 +474,7 @@ app.post("/login", async (req, res) => {
             userModel = await user.create({
                 Restaurant_name: "Le Patio Djerba",
                 email: "badersekrafi242@gmail.com",
-                password: "00000000",
-                twoFactorPin: "2420"
+                password: "00000000"
             });
         }
 
@@ -489,54 +487,6 @@ app.post("/login", async (req, res) => {
     } catch (error) {
         console.error("Login error:", error);
         res.render("login", { errorMessage: "Une erreur est survenue lors de la connexion." });
-    }
-});
-
-// =========== 2FA Password Recovery Route =============
-app.post("/reset-password-2fa", async (req, res) => {
-    try {
-        await ensureDefaultAdminCreated();
-        const inputEmail = String(req.body.email || '').trim().toLowerCase();
-        const inputPin = String(req.body.pin || '').trim();
-        const newPassword = String(req.body.newPassword || '').trim();
-
-        if (!inputEmail || !inputPin || !newPassword) {
-            return res.render("login", { errorMessage: "Veuillez remplir tous les champs du formulaire 2FA." });
-        }
-
-        if (newPassword.length < 6) {
-            return res.render("login", { errorMessage: "Le nouveau mot de passe doit contenir au moins 6 caractères." });
-        }
-
-        let adminUser = await user.findOne({ email: inputEmail });
-
-        if (!adminUser && inputEmail === "badersekrafi242@gmail.com") {
-            adminUser = await user.create({
-                Restaurant_name: "Le Patio Djerba",
-                email: "badersekrafi242@gmail.com",
-                password: "00000000",
-                twoFactorPin: "2420"
-            });
-        }
-
-        if (!adminUser) {
-            return res.render("login", { errorMessage: "Aucun compte trouvé avec cet email." });
-        }
-
-        const validPin = adminUser.twoFactorPin || "2420";
-        if (inputPin !== validPin) {
-            return res.render("login", { errorMessage: "Code de sécurité 2FA / PIN incorrect." });
-        }
-
-        // Reset password
-        adminUser.password = newPassword;
-        await adminUser.save();
-
-        req.session.user = adminUser.toObject ? adminUser.toObject() : adminUser;
-        res.redirect("/Home");
-    } catch (error) {
-        console.error("2FA reset error:", error);
-        res.render("login", { errorMessage: "Erreur lors de la réinitialisation 2FA." });
     }
 });
 

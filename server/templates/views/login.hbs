@@ -50,107 +50,11 @@
                         Se connecter &nbsp;<i class="fa fa-arrow-right"></i>
                     </button>
                 </div>
-                <div style="text-align:center;margin-top:14px;display:flex;flex-direction:column;gap:8px;">
-                    <a href="#" onclick="openResetModal(event)" style="color:#B8975A;font-size:12px;text-decoration:none;font-weight:600;">
-                        <i class="fa fa-key"></i> Mot de passe oublié ? (Récupération 2FA)
-                    </a>
-                    <span style="font-size:11px;color:#94A3B8;display:inline-flex;align-items:center;justify-content:center;gap:4px;">
-                        <i class="fa fa-shield"></i> Accès réservé uniquement à l'administrateur
-                    </span>
+                <div style="text-align:center;margin-top:14px;font-size:12px;color:#94A3B8;display:flex;align-items:center;justify-content:center;gap:6px;">
+                    <i class="fa fa-shield"></i> Accès réservé uniquement à l'administrateur
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Modal 2FA Reset Password -->
-    <div id="resetModal" class="reset-modal" hidden>
-        <div class="reset-backdrop" onclick="closeResetModal()"></div>
-        <div class="reset-panel">
-            <div class="reset-header">
-                <span class="form-badge" style="margin-bottom:0;"><i class="fa fa-shield"></i> Récupération 2FA</span>
-                <button type="button" onclick="closeResetModal()" class="reset-close">&times;</button>
-            </div>
-            <h3 style="font-family:'Playfair Display',serif;margin:14px 0 4px 0;color:#1A1209;font-size:20px;">Réinitialiser le mot de passe</h3>
-            <p style="font-size:12px;color:#9C8E78;margin-bottom:18px;">Saisissez votre e-mail admin, votre Code 2FA / PIN et votre nouveau mot de passe.</p>
-            
-            <form action="/reset-password-2fa" method="POST" style="width:100%">
-                <div class="input-field">
-                    <i class="fa fa-envelope-o"></i>
-                    <input type="email" placeholder="Adresse e-mail admin" name="email" value="badersekrafi242@gmail.com" required>
-                </div>
-                <div class="input-field">
-                    <i class="fa fa-key"></i>
-                    <input type="text" placeholder="Code 2FA / PIN (Ex: 2420)" name="pin" required>
-                </div>
-                <div class="input-field">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" placeholder="Nouveau mot de passe" name="newPassword" required minlength="6">
-                </div>
-                <div class="btn-field" style="margin-top:16px;margin-bottom:0;">
-                    <button type="submit">Valider et se connecter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <style>
-    .reset-modal {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-    .reset-modal[hidden] {
-        display: none !important;
-    }
-    .reset-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(4px);
-    }
-    .reset-panel {
-        position: relative;
-        z-index: 10;
-        background: #fff;
-        border-radius: 18px;
-        padding: 28px;
-        width: 100%;
-        max-width: 420px;
-        box-shadow: 0 24px 80px rgba(90, 68, 20, 0.25);
-        border: 1px solid #E8DFD0;
-    }
-    .reset-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .reset-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: #9C8E78;
-        cursor: pointer;
-        line-height: 1;
-    }
-    .reset-close:hover {
-        color: #1A1209;
-    }
-    </style>
-
-    <script>
-        function openResetModal(e) {
-            if (e) e.preventDefault();
-            const modal = document.getElementById('resetModal');
-            if (modal) modal.hidden = false;
-        }
-        function closeResetModal() {
-            const modal = document.getElementById('resetModal');
-            if (modal) modal.hidden = true;
-        }
-    </script>
 </body>
 </html>
