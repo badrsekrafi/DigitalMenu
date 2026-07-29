@@ -1730,12 +1730,16 @@ app.post('/Order_Details', async (req, res) => {
         const parsedTableNumber = Number(TableNumber);
         const customerComment = String(comment || '').trim();
 
-        if (!customerName) {
-            return res.status(400).send('Please enter your name.');
-        }
-
-        if (!customerPhone) {
-            return res.status(400).send('Please enter your phone number.');
+        if (normalizedServiceType === 'reservation') {
+            if (!customerName) {
+                return res.status(400).send('Please enter your name for reservation.');
+            }
+            if (!customerPhone) {
+                return res.status(400).send('Please enter your phone number for reservation.');
+            }
+            if (!reservationDate || !reservationTime) {
+                return res.status(400).send('Please choose the reservation date and time.');
+            }
         }
 
         if (!Number.isInteger(parsedSeatCount) || parsedSeatCount < 1) {
@@ -1746,18 +1750,18 @@ app.post('/Order_Details', async (req, res) => {
             return res.status(400).send('Please enter your table number for commande sur place.');
         }
 
-        if (normalizedServiceType === 'reservation' && (!reservationDate || !reservationTime)) {
-            return res.status(400).send('Please choose the reservation date and time.');
-        }
-
         if (customerComment.length > 800) {
             return res.status(400).send('Commentaire trop long. Maximum 800 caracteres.');
         }
 
+        const finalName = customerName || (normalizedServiceType === 'dine-in' ? (parsedTableNumber ? `Table ${parsedTableNumber}` : 'Client Sur Place') : 'Client');
+        const finalPhone = customerPhone || '-';
+        const finalEmail = customerEmail || '';
+
         const orderData = {
-            name: customerName,
-            PhoneNumber: customerPhone,
-            email: customerEmail,
+            name: finalName,
+            PhoneNumber: finalPhone,
+            email: finalEmail,
             serviceType: normalizedServiceType,
             seatCount: parsedSeatCount,
             TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,

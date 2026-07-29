@@ -69,12 +69,12 @@
                             <div class="input">
                                 <label for="name">Your Name</label>
                                 <input type="text" id="name" name="name" placeholder="Enter Your Name"
-                                    value="{{checkoutUser.name}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
+                                    value="{{checkoutUser.name}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
                             </div>
                             <div class="input">
                                 <label for="number">Your Phone Number</label>
                                 <input type="tel" id="number" name="PhoneNumber" placeholder="Enter Your Phone Number"
-                                    value="{{checkoutUser.phone}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}} required>
+                                    value="{{checkoutUser.phone}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
                             </div>
                         </div>
 
@@ -227,6 +227,8 @@
 
         function syncCheckoutFields() {
             const isReservation = getSelectedServiceType() === 'reservation';
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('number');
             const reservationFields = document.getElementById('reservationFields');
             const reservationDateInput = document.getElementById('reservationDate');
             const reservationTimeInput = document.getElementById('reservationTime');
@@ -236,6 +238,8 @@
             const lockedTableLabel = document.getElementById('lockedTableLabel');
             const tableContext = readCheckoutTableContext();
 
+            nameInput.required = isReservation;
+            phoneInput.required = isReservation;
             reservationFields.hidden = !isReservation;
             reservationDateInput.required = isReservation;
             reservationTimeInput.required = isReservation;
@@ -384,13 +388,25 @@
                     return;
                 }
 
-                if (selectedServiceType === 'reservation' && (!reservationDate || !reservationTime)) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Reservation date and time required',
-                        text: 'Please choose the exact date and time.',
-                    });
-                    return;
+                if (selectedServiceType === 'reservation') {
+                    const reqName = document.getElementById('name').value.trim();
+                    const reqPhone = document.getElementById('number').value.trim();
+                    if (!reqName || !reqPhone) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Nom et téléphone requis',
+                            text: 'Veuillez saisir votre nom et votre numéro de téléphone pour la réservation.',
+                        });
+                        return;
+                    }
+                    if (!reservationDate || !reservationTime) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Reservation date and time required',
+                            text: 'Please choose the exact date and time.',
+                        });
+                        return;
+                    }
                 }
 
                 const items = itemsData.map(item => ({
