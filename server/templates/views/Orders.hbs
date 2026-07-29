@@ -59,7 +59,14 @@
                                     <td data-label="ID"><code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;">{{orderIdDisplay}}</code></td>
                                     <td data-label="Date" style="color:#64748B;font-size:12px;white-space:nowrap;">{{createdAtDisplay}}</td>
                                     <td data-label="Nom"><strong style="font-size:13px;">{{name}}</strong></td>
-                                    <td data-label="Téléphone" style="color:#64748B;font-size:12px;">{{PhoneNumber}}</td>
+                                    <td data-label="Téléphone" style="color:#64748B;font-size:12px;">
+                                        {{PhoneNumber}}
+                                        {{#if whatsappLink}}
+                                        <a href="{{whatsappLink}}" target="_blank" rel="noopener noreferrer" title="Envoyer un WhatsApp au client" style="color:#25D366;font-size:15px;margin-left:6px;text-decoration:none;display:inline-block;vertical-align:middle;">
+                                            <i class="fa-brands fa-whatsapp"></i>
+                                        </a>
+                                        {{/if}}
+                                    </td>
                                     <td data-label="Email" style="color:#64748B;font-size:12px;">{{email}}</td>
                                     <td data-label="Type"><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
                                     <td data-label="Places" style="color:#64748B;">{{seatCount}}</td>

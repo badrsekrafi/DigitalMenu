@@ -28,6 +28,12 @@ const UserNew = require('./models/UserMenu_SignUp');
 const Order = require('./models/order');
 const TableConfig = require('./models/tableConfig');
 const Settings = require('./models/settings');
+const {
+    ADMIN_WHATSAPP_NUMBER,
+    formatWhatsAppNumber,
+    getWhatsAppClickLink,
+    sendWhatsAppMessage,
+} = require('./utils/whatsapp');
 
 async function getSettings() {
     try {
@@ -738,6 +744,9 @@ app.get(["/Orders", "/orders"], async (req, res) => {
             const createdAt = order.createdAt ? new Date(order.createdAt) : null;
             const orderId = String(order._id || '');
 
+            const whatsappMsg = `Bonjour ${order.name || 'Client'}, concernant votre commande Le Patio Djerba (ID: #${String(order._id || '').slice(-6).toUpperCase()})...`;
+            const whatsappLink = getWhatsAppClickLink(order.PhoneNumber, whatsappMsg);
+
             return {
                 ...order,
                 orderId,
@@ -754,6 +763,7 @@ app.get(["/Orders", "/orders"], async (req, res) => {
                 createdAtDisplay: createdAt && !Number.isNaN(createdAt.getTime())
                     ? createdAt.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
                     : '-',
+                whatsappLink,
             };
         });
 
@@ -813,6 +823,21 @@ app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
         await order.save();
 
         const statusMeta = getItemStatusMeta(nextStatus);
+
+        // --- WhatsApp customer status notification ---
+        if (order.PhoneNumber && order.PhoneNumber !== '-') {
+            try {
+                const itemObj = order.items[itemIndex];
+                const customerStatusMsg = `📢 *MISE À JOUR COMMANDE - Le Patio Djerba*\n` +
+                    `Article: *${itemObj ? itemObj.itemName : 'Votre article'}*\n` +
+                    `Nouveau statut: *${statusMeta.label}*\n` +
+                    `Total commande: ${newTotal.toFixed(2)} DNT`;
+
+                sendWhatsAppMessage(order.PhoneNumber, customerStatusMsg);
+            } catch (waErr) {
+                console.error('WhatsApp status update notification error:', waErr.message);
+            }
+        }
         res.json({
             success: true,
             newTotalPrice: newTotal.toFixed(2),
@@ -1932,6 +1957,40 @@ app.post('/Order_Details', async (req, res) => {
         const order = new Order(orderData);
 
         await order.save();
+
+        // --- WhatsApp Dispatches ---
+        try {
+            const orderItemsSummary = Array.isArray(order.items)
+                ? order.items.map(i => `• ${i.itemName} (${Number(i.itemPrice || 0).toFixed(2)} DNT)`).join('\n')
+                : '';
+
+            // 1. Notify Admin on WhatsApp (27648386)
+            const adminMsg = `🔔 *NOUVELLE COMMANDE - Le Patio Djerba* 🍔\n` +
+                `------------------------------------\n` +
+                `🆔 Commande: #${String(order._id).slice(-6).toUpperCase()}\n` +
+                `👤 Client: ${order.name}\n` +
+                `📞 Tél: ${order.PhoneNumber || '-'}\n` +
+                `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : 'Réservation'}\n` +
+                `🛒 Articles:\n${orderItemsSummary}\n` +
+                `------------------------------------\n` +
+                `💰 TOTAL: ${Number(order.totalPrice || 0).toFixed(2)} DNT`;
+
+            sendWhatsAppMessage(ADMIN_WHATSAPP_NUMBER, adminMsg);
+
+            // 2. Notify Customer on WhatsApp if phone number provided
+            if (order.PhoneNumber && order.PhoneNumber !== '-') {
+                const customerMsg = `✅ *COMMANDE CONFIRMÉE - Le Patio Djerba* ☕\n` +
+                    `Bonjour ${order.name},\n` +
+                    `Votre commande #${String(order._id).slice(-6).toUpperCase()} a bien été enregistrée !\n\n` +
+                    `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : 'Réservation'}\n` +
+                    `💰 Montant Total: ${Number(order.totalPrice || 0).toFixed(2)} DNT\n\n` +
+                    `Merci pour votre confiance ! 🙏`;
+
+                sendWhatsAppMessage(order.PhoneNumber, customerMsg);
+            }
+        } catch (waErr) {
+            console.error('WhatsApp notification dispatch error:', waErr.message);
+        }
 
         // Clear the cart after successful order submission
         // localStorage.removeItem("cart");
