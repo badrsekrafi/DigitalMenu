@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,26 +11,47 @@
 </head>
 <body>
     <div class="container">
+        <!-- Left decorative panel -->
         <div class="side">
-            <img src="/images/side.jpg" alt="error">
+            <img src="/images/side.jpg" alt="Le Patio Djerba">
+            <div class="side-tagline">
+                <h2>Le Patio Djerba</h2>
+                <p>Espace Administrateur</p>
+            </div>
         </div>
+
+        <!-- Right form panel -->
         <div class="form-box">
-            <h1 id="title">Sign In</h1>
-            <form action="/login" method="POST">
+            <span class="form-badge">
+                <i class="fa fa-lock"></i>
+                Accès sécurisé
+            </span>
+            <h1>Bienvenue</h1>
+            <p class="form-subtitle">Connectez-vous pour gérer votre restaurant</p>
+
+            {{#if errorMessage}}
+            <div class="error-message">
+                <i class="fa fa-exclamation-circle"></i>
+                {{errorMessage}}
+            </div>
+            {{/if}}
+
+            <form action="/login" method="POST" style="width:100%">
                 <div class="input-field">
                     <i class="fa fa-envelope-o"></i>
-                    <input type="email" placeholder="Email" name="email" required>
+                    <input type="email" placeholder="Adresse e-mail" name="email" required autocomplete="email">
                 </div>
                 <div class="input-field">
                     <i class="fa fa-lock"></i>
-                    <input type="password" placeholder="Password" name="password" required>
+                    <input type="password" placeholder="Mot de passe" name="password" required autocomplete="current-password">
                 </div>
-
                 <div class="btn-field">
-                    <button type="submit" id="signinBtn" value="signin">Sign in</button>
+                    <button type="submit" id="signinBtn">
+                        Se connecter &nbsp;<i class="fa fa-arrow-right"></i>
+                    </button>
                 </div>
                 <div>
-                    <span>Don't have an Account? <a href="/index">Sign Up</a></span>
+                    <span>Pas encore de compte ? <a href="/index">Créer un compte</a></span>
                 </div>
             </form>
         </div>

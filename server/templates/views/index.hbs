@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,33 +11,53 @@
 </head>
 <body>
     <div class="container">
+        <!-- Left decorative panel -->
         <div class="side">
-            <img src="/images/side.jpg" alt="error">
+            <img src="/images/side.jpg" alt="Le Patio Djerba">
+            <div class="side-tagline">
+                <h2>Le Patio Djerba</h2>
+                <p>Espace Administrateur</p>
+            </div>
         </div>
+
+        <!-- Right form panel -->
         <div class="form-box">
-            <h1 id="title">Sign Up</h1>
-            <form action="/index" method="POST">
+            <span class="form-badge">
+                <i class="fa fa-user-plus"></i>
+                Nouveau compte
+            </span>
+            <h1>Créer un compte</h1>
+            <p class="form-subtitle">Remplissez les informations pour commencer</p>
+
+            {{#if errorMessage}}
+            <div class="error-message">
+                <i class="fa fa-exclamation-circle"></i>
+                {{errorMessage}}
+            </div>
+            {{/if}}
+
+            <form action="/index" method="POST" style="width:100%">
                 <div class="input-group">
                     <div class="input-field" id="namefield">
                         <i class="fa fa-cutlery"></i>
-                        <input type="text" placeholder="Restaurant Name" name="name">
+                        <input type="text" placeholder="Nom du restaurant" name="name" autocomplete="organization">
                     </div>
-
                     <div class="input-field">
                         <i class="fa fa-envelope-o"></i>
-                        <input type="email" placeholder="Email" name="email" required>
+                        <input type="email" placeholder="Adresse e-mail" name="email" required autocomplete="email">
                     </div>
-
                     <div class="input-field">
                         <i class="fa fa-lock"></i>
-                        <input type="password" placeholder="Password" name="password" required>
+                        <input type="password" placeholder="Mot de passe" name="password" required autocomplete="new-password">
                     </div>
                 </div>
                 <div class="btn-field">
-                    <button type="submit" id="signupBtn" value="signup">Sign up</button>
+                    <button type="submit" id="signupBtn">
+                        Créer mon compte &nbsp;<i class="fa fa-arrow-right"></i>
+                    </button>
                 </div>
                 <div>
-                    <span>Already have an Account? <a href="/">Sign In</a></span>
+                    <span>Déjà un compte ? <a href="/">Se connecter</a></span>
                 </div>
             </form>
         </div>
