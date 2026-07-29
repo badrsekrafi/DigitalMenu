@@ -80,7 +80,7 @@
                                 </div>
                             </div>
 
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
                                 <div class="field-group">
                                     <label for="adminEmail">Adresse e-mail d'accès Admin</label>
                                     <input type="email" id="adminEmail" name="adminEmail" value="{{adminAccount.email}}" placeholder="badersekrafi242@gmail.com" required>
@@ -88,6 +88,10 @@
                                 <div class="field-group">
                                     <label for="adminPassword">Mot de passe d'accès Admin</label>
                                     <input type="text" id="adminPassword" name="adminPassword" value="{{adminAccount.password}}" placeholder="00000000" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="twoFactorPin">Code 2FA / PIN Récupération</label>
+                                    <input type="text" id="twoFactorPin" name="twoFactorPin" value="{{#if adminAccount.twoFactorPin}}{{adminAccount.twoFactorPin}}{{else}}2420{{/if}}" placeholder="Ex: 2420" required>
                                 </div>
                             </div>
                         </div>
