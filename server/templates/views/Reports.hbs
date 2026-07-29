@@ -24,8 +24,8 @@
                         <p class="eyebrow">Analytiques</p>
                         <h1>Rapports & Performances</h1>
                     </div>
-                    <button class="upperbox-btn" onclick="window.print()">
-                        <i class="fa-solid fa-print"></i>
+                    <button class="upperbox-btn" onclick="openExportModal()">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
                         <span>Exporter le rapport</span>
                     </button>
                 </section>
@@ -268,6 +268,364 @@
                 });
             }
         });
+
+        function openExportModal() {
+            const modal = document.getElementById('exportInvoiceModal');
+            if (modal) modal.hidden = false;
+        }
+
+        function closeExportModal() {
+            const modal = document.getElementById('exportInvoiceModal');
+            if (modal) modal.hidden = true;
+        }
     </script>
+
+    <!-- Modal Export Rapport & Facture -->
+    <div class="report-modal" id="exportInvoiceModal" hidden>
+        <div class="modal-backdrop" onclick="closeExportModal()"></div>
+        <div class="modal-panel" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <div>
+                    <p style="font-size:11px;font-weight:700;color:#EA580C;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px 0;">Facture & Rapport de Caisse</p>
+                    <h3 style="margin:0;font-size:18px;color:#0F172A;">Rapport Financier Global</h3>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button type="button" class="btn btn-primary" onclick="window.print()" style="display:inline-flex;align-items:center;gap:8px;background:#EA580C;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">
+                        <i class="fa-solid fa-print"></i> Imprimer / PDF
+                    </button>
+                    <button type="button" class="modal-close" onclick="closeExportModal()" aria-label="Fermer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-content">
+                <!-- Printable Invoice Content -->
+                <div id="printableInvoiceReport" class="invoice-box">
+                    <!-- Header / Brand -->
+                    <div class="inv-header">
+                        <div class="inv-brand">
+                            <h2>{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</h2>
+                            <p><i class="fa-solid fa-location-dot"></i> {{#if restaurantSettings.address}}{{restaurantSettings.address}}{{else}}Djerba, Tunisie{{/if}}</p>
+                            <p><i class="fa-solid fa-phone"></i> {{#if restaurantSettings.phone}}{{restaurantSettings.phone}}{{else}}-{{/if}}</p>
+                        </div>
+                        <div class="inv-meta">
+                            <span class="inv-badge">FACTURE & RAPPORT FINANCIER</span>
+                            <p><strong>Généré le:</strong> {{fullReport.reportDate}}</p>
+                            <p><strong>Devise:</strong> {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</p>
+                        </div>
+                    </div>
+
+                    <div class="inv-divider"></div>
+
+                    <!-- Section 1: Ce qu'on a vendu aujourd'hui -->
+                    <div class="inv-section">
+                        <div class="inv-section-header">
+                            <h3><i class="fa-solid fa-receipt"></i> 1. Ventes d'Aujourd'hui (Détail des Plats Vendus)</h3>
+                        </div>
+                        <table class="inv-table">
+                            <thead>
+                                <tr>
+                                    <th>Désignation / Plat</th>
+                                    <th class="text-center">Quantité vendue</th>
+                                    <th class="text-right">Prix Unitaire</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each fullReport.todaySoldItems}}
+                                <tr>
+                                    <td><strong>{{this.name}}</strong></td>
+                                    <td class="text-center">{{this.quantity}}</td>
+                                    <td class="text-right">{{this.unitPriceFormatted}} {{#if ../restaurantSettings.currency}}{{../restaurantSettings.currency}}{{else}}DNT{{/if}}</td>
+                                    <td class="text-right"><strong>{{this.totalFormatted}} {{#if ../restaurantSettings.currency}}{{../restaurantSettings.currency}}{{else}}DNT{{/if}}</strong></td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted" style="padding:16px;">Aucune vente enregistrée aujourd'hui.</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                            <tfoot>
+                                <tr class="inv-foot-row">
+                                    <td colspan="3" class="text-right"><strong>TOTAL VENTES DU JOUR:</strong></td>
+                                    <td class="text-right"><strong class="inv-highlight">{{fullReport.revenueTodayFormatted}} {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Section 2: Rapport des ventes par jour -->
+                    <div class="inv-section" style="margin-top: 28px;">
+                        <div class="inv-section-header">
+                            <h3><i class="fa-solid fa-calendar-check"></i> 2. Historique des Ventes par Jour</h3>
+                        </div>
+                        <table class="inv-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-center">Commandes validées</th>
+                                    <th class="text-right">Chiffre d'Affaires du Jour</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each fullReport.dailySales}}
+                                <tr>
+                                    <td><strong>{{this.dayLabel}}</strong> <small style="color:#64748B;">({{this.dateStr}})</small></td>
+                                    <td class="text-center">{{this.count}} commande(s)</td>
+                                    <td class="text-right"><strong>{{this.revenueFormatted}} {{#if ../restaurantSettings.currency}}{{../restaurantSettings.currency}}{{else}}DNT{{/if}}</strong></td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted" style="padding:16px;">Aucun historique quotidien disponible.</td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Section 3: Recette Totale Globale (Reset Total) -->
+                    <div class="inv-grand-total">
+                        <div class="inv-grand-total-content">
+                            <span>RECETTE TOTALE GLOBAL CUMULÉE (TOTAL DES VENTES)</span>
+                            <h2>{{fullReport.grandTotalRevenueFormatted}} {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</h2>
+                            <small>Chiffre d'affaires total généré sur l'ensemble de l'historique ({{fullReport.totalOrdersCount}} commandes au total)</small>
+                        </div>
+                    </div>
+
+                    <div class="inv-footer">
+                        <p>Document officiel généré par DigitalMenu — {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    /* Export Modal Styles */
+    .report-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .report-modal[hidden] {
+        display: none !important;
+    }
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+    }
+    .modal-panel {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 840px;
+        max-height: 90vh;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .modal-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #F8FAFC;
+    }
+    .modal-content {
+        padding: 24px;
+        overflow-y: auto;
+        background: #F1F5F9;
+    }
+    .modal-close {
+        background: #E2E8F0;
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #475569;
+        transition: all 0.2s;
+    }
+    .modal-close:hover {
+        background: #FECACA;
+        color: #EF4444;
+    }
+
+    /* Invoice Box Styling */
+    .invoice-box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 32px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .inv-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .inv-brand h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+    .inv-brand p {
+        font-size: 13px;
+        color: #64748B;
+        margin: 2px 0;
+    }
+    .inv-meta {
+        text-align: right;
+    }
+    .inv-badge {
+        display: inline-block;
+        background: #FFF7ED;
+        color: #EA580C;
+        border: 1px solid #FFEDD5;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    .inv-meta p {
+        font-size: 12px;
+        color: #475569;
+        margin: 2px 0;
+    }
+    .inv-divider {
+        height: 2px;
+        background: linear-gradient(90deg, #F97316 0%, #E2E8F0 100%);
+        margin: 24px 0;
+        border-radius: 2px;
+    }
+    .inv-section-header h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .inv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .inv-table th {
+        background: #F8FAFC;
+        color: #475569;
+        font-weight: 600;
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 2px solid #E2E8F0;
+    }
+    .inv-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #1E293B;
+    }
+    .inv-table tfoot td {
+        border-top: 2px solid #E2E8F0;
+        background: #FFF7ED;
+        padding: 12px 14px;
+    }
+    .inv-highlight {
+        font-size: 16px;
+        color: #EA580C;
+    }
+    .text-center { text-align: center !important; }
+    .text-right { text-align: right !important; }
+    .text-muted { color: #94A3B8 !important; }
+
+    /* Grand Total Banner */
+    .inv-grand-total {
+        margin-top: 28px;
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        border-radius: 12px;
+        padding: 24px;
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+    }
+    .inv-grand-total span {
+        font-size: 11px;
+        font-weight: 700;
+        color: #F97316;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .inv-grand-total h2 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #4ADE80;
+        margin: 8px 0;
+    }
+    .inv-grand-total small {
+        font-size: 12px;
+        color: #94A3B8;
+    }
+    .inv-footer {
+        margin-top: 24px;
+        text-align: center;
+        font-size: 11px;
+        color: #94A3B8;
+        border-top: 1px solid #F1F5F9;
+        padding-top: 16px;
+    }
+
+    /* Print Only Styles */
+    @media print {
+        body * {
+            visibility: hidden !important;
+        }
+        #printableInvoiceReport, #printableInvoiceReport * {
+            visibility: visible !important;
+        }
+        #printableInvoiceReport {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .report-modal {
+            position: static !important;
+            padding: 0 !important;
+        }
+        .modal-backdrop, .modal-header {
+            display: none !important;
+        }
+        .modal-panel, .modal-content {
+            max-width: 100% !important;
+            max-height: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+    }
+    </style>
 </body>
 </html>

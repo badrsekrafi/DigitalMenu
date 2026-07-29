@@ -876,12 +876,117 @@ app.get(["/QR_Code", "/qr_code"], async (req, res) => {
     }
 })
 
+async function computeFullReportsData() {
+    try {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const [allOrders, allMenuItems] = await Promise.all([
+            Order.find({}).sort({ createdAt: -1 }).lean(),
+            MenuItem.find().select('title price category').lean(),
+        ]);
+
+        const menuPriceMap = new Map();
+        (allMenuItems || []).forEach(item => {
+            if (item && item.title) {
+                menuPriceMap.set(String(item.title).trim().toLowerCase(), Number(item.price) || 0);
+            }
+        });
+
+        let revenueToday = 0;
+        let ordersTodayCount = 0;
+        let grandTotalRevenue = 0;
+
+        const todayItemsMap = new Map();
+        const dailyMap = new Map();
+
+        (allOrders || []).forEach(order => {
+            const createdAtStr = order.createdAt ? new Date(order.createdAt) : new Date();
+            const dateKey = createdAtStr.toISOString().split('T')[0];
+            const dayLabel = createdAtStr.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+            const orderTotal = Number(order.totalPrice) || 0;
+            grandTotalRevenue += orderTotal;
+
+            if (!dailyMap.has(dateKey)) {
+                dailyMap.set(dateKey, { dateStr: dateKey, dayLabel, count: 0, revenue: 0 });
+            }
+            const dayEntry = dailyMap.get(dateKey);
+            dayEntry.count += 1;
+            dayEntry.revenue += orderTotal;
+
+            if (createdAtStr >= startOfToday) {
+                revenueToday += orderTotal;
+                ordersTodayCount += 1;
+
+                (order.items || []).forEach(item => {
+                    if (!item || !item.itemName || item.status === 'cancel') return;
+                    const name = String(item.itemName).trim();
+                    const key = name.toLowerCase();
+                    let price = Number(item.itemPrice) || 0;
+                    if (price === 0 && menuPriceMap.has(key)) {
+                        price = menuPriceMap.get(key);
+                    }
+                    const qty = Number(item.itemQty) || 1;
+
+                    if (!todayItemsMap.has(name)) {
+                        todayItemsMap.set(name, { name, quantity: 0, unitPrice: price, total: 0 });
+                    }
+                    const entry = todayItemsMap.get(name);
+                    entry.quantity += qty;
+                    if (price > 0 && entry.unitPrice === 0) entry.unitPrice = price;
+                    entry.total += price * qty;
+                });
+            }
+        });
+
+        const todaySoldItems = Array.from(todayItemsMap.values()).sort((a, b) => b.total - a.total);
+        const dailySales = Array.from(dailyMap.values())
+            .sort((a, b) => b.dateStr.localeCompare(a.dateStr))
+            .map(d => ({
+                ...d,
+                revenueFormatted: d.revenue.toFixed(2),
+            }));
+
+        return {
+            revenueTodayFormatted: revenueToday.toFixed(2),
+            ordersTodayCount,
+            grandTotalRevenueFormatted: grandTotalRevenue.toFixed(2),
+            totalOrdersCount: (allOrders || []).length,
+            todaySoldItems: todaySoldItems.map(i => ({
+                ...i,
+                unitPriceFormatted: i.unitPrice.toFixed(2),
+                totalFormatted: i.total.toFixed(2),
+            })),
+            dailySales,
+            reportDate: now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        };
+    } catch (err) {
+        console.error('computeFullReportsData error:', err);
+        return {
+            revenueTodayFormatted: '0.00',
+            ordersTodayCount: 0,
+            grandTotalRevenueFormatted: '0.00',
+            totalOrdersCount: 0,
+            todaySoldItems: [],
+            dailySales: [],
+            reportDate: new Date().toLocaleString(),
+        };
+    }
+}
+
 // =========== Reports Page =============
 app.get(["/Reports", "/reports"], async (req, res) => {
     try {
-        const analytics = await computeDashboardAnalytics();
+        const [analytics, fullReport, restaurantSettings] = await Promise.all([
+            computeDashboardAnalytics(),
+            computeFullReportsData(),
+            Settings.findOne().lean().then(s => s || {}),
+        ]);
         res.render("Reports", {
             analytics,
+            fullReport,
+            restaurantSettings,
             adminName: getAdminDisplayName(req),
         });
     } catch (error) {
