@@ -68,7 +68,31 @@
                             </div>
                         </div>
 
-                        <div class="form-actions" style="margin-top: 12px;">
+                        <!-- Admin Account Credentials Section -->
+                        <div style="margin-top:28px;padding-top:24px;border-top:1px solid #E2E8F0;">
+                            <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                                <div style="width:36px;height:36px;background:var(--primary-soft);border-radius:8px;display:grid;place-items:center;color:var(--primary);">
+                                    <i class="fa-solid fa-user-lock"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size:15px;font-weight:700;color:#0F172A;margin:0;">Identifiants de connexion Administrateur</h3>
+                                    <p style="font-size:12px;color:#64748B;margin:0;">Modifier l'adresse e-mail et le mot de passe d'accès au site admin</p>
+                                </div>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                                <div class="field-group">
+                                    <label for="adminEmail">Adresse e-mail d'accès Admin</label>
+                                    <input type="email" id="adminEmail" name="adminEmail" value="{{adminAccount.email}}" placeholder="badersekrafi242@gmail.com" required>
+                                </div>
+                                <div class="field-group">
+                                    <label for="adminPassword">Mot de passe d'accès Admin</label>
+                                    <input type="text" id="adminPassword" name="adminPassword" value="{{adminAccount.password}}" placeholder="00000000" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 20px;">
                             <button type="submit" class="btn-submit">
                                 <i class="fa-solid fa-floppy-disk" style="margin-right:6px;"></i>
                                 Enregistrer les modifications

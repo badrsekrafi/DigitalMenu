@@ -438,59 +438,65 @@ app.get("/health", (req, res) => {
     res.status(200).send("ok");
 });
 
+async function ensureDefaultAdminCreated() {
+    try {
+        const count = await user.countDocuments();
+        if (count === 0) {
+            await user.create({
+                Restaurant_name: "Le Patio Djerba",
+                email: "badersekrafi242@gmail.com",
+                password: "00000000"
+            });
+            console.log("Default admin account created: badersekrafi242@gmail.com / 00000000");
+        }
+    } catch (err) {
+        console.error("ensureDefaultAdminCreated error:", err.message);
+    }
+}
+
 app.get("/", (req, res) => {
     res.render("login");
 });
 
 app.get("/login", (req, res) => {
     res.render("login");
-})
+});
+
 app.post("/login", async (req, res) => {
     try {
-        // const check = await user.findOne({ email: req.body.email })
-        // if (check.password === req.body.password) {
-        //     res.status(201).render("Home");
-        // } else {
-        //     res.send("Invalid login Details");
-        // }
-        const {email,password} = req.body;
-        const userModel = await user.findOne({email});
-        if (!userModel || userModel.password !== password) {
-            return res.send("Invalid login details");
+        await ensureDefaultAdminCreated();
+        const inputEmail = String(req.body.email || '').trim().toLowerCase();
+        const inputPassword = String(req.body.password || '').trim();
+
+        let userModel = await user.findOne({ email: inputEmail });
+
+        if (!userModel && inputEmail === "badersekrafi242@gmail.com" && inputPassword === "00000000") {
+            userModel = await user.create({
+                Restaurant_name: "Le Patio Djerba",
+                email: "badersekrafi242@gmail.com",
+                password: "00000000"
+            });
         }
-        req.session.user = userModel;
+
+        if (!userModel || userModel.password !== inputPassword) {
+            return res.render("login", { errorMessage: "Email ou mot de passe incorrect." });
+        }
+
+        req.session.user = userModel.toObject ? userModel.toObject() : userModel;
         res.redirect("/Home");
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal server error");
+        console.error("Login error:", error);
+        res.render("login", { errorMessage: "Une erreur est survenue lors de la connexion." });
     }
-})
+});
 
-// ============== Admin Registration Page ===============
+// ============== Admin Registration Page (Disabled) ===============
 app.get("/index", (req, res) => {
-    res.render("index");
-})
+    res.redirect("/login");
+});
 
-app.post("/index", async (req, res) => {
-
-    const data = {
-        Restaurant_name: req.body.name,
-        email: req.body.email,
-        password: req.body.password
-    }
-    await user.insertMany([data])
-    res.render("login")
-
-    // try {
-    //     const { name, email, password } = req.body;
-    //     const newUser = new user({ Restaurant_name: name, email, password });
-    //     await newUser.save();
-    //     res.render("login");
-    // } catch (error) {
-    //     console.error(error);
-    //     res.status(500).send("Internal Server Error");
-    // }
-
+app.post("/index", (req, res) => {
+    res.redirect("/login");
 });
 
 // =========== Home Page =============
@@ -998,9 +1004,16 @@ app.get(["/Reports", "/reports"], async (req, res) => {
 // =========== Settings Page =============
 app.get(["/Settings", "/settings"], async (req, res) => {
     try {
+        await ensureDefaultAdminCreated();
         const settingsData = (await Settings.findOne().lean()) || {};
+        const adminAccount = (await user.findOne().lean()) || {
+            email: "badersekrafi242@gmail.com",
+            password: "00000000"
+        };
+
         res.render("Settings", {
             settingsData,
+            adminAccount,
             adminName: getAdminDisplayName(req),
             saved: req.query.saved === '1',
         });
@@ -1012,7 +1025,8 @@ app.get(["/Settings", "/settings"], async (req, res) => {
 
 app.post("/Settings", async (req, res) => {
     try {
-        const { restaurantName, address, phone, openingHours, currency } = req.body;
+        const { restaurantName, address, phone, openingHours, currency, adminEmail, adminPassword } = req.body;
+        
         await Settings.findOneAndUpdate(
             {},
             {
@@ -1024,6 +1038,27 @@ app.post("/Settings", async (req, res) => {
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
+        if (adminEmail && adminPassword) {
+            const cleanEmail = String(adminEmail).trim().toLowerCase();
+            const cleanPassword = String(adminPassword).trim();
+            let adminDoc = await user.findOne();
+            if (adminDoc) {
+                adminDoc.email = cleanEmail;
+                adminDoc.password = cleanPassword;
+                if (restaurantName) adminDoc.Restaurant_name = String(restaurantName).trim();
+                await adminDoc.save();
+                req.session.user = adminDoc.toObject ? adminDoc.toObject() : adminDoc;
+            } else {
+                const newUser = await user.create({
+                    Restaurant_name: String(restaurantName || "Le Patio Djerba").trim(),
+                    email: cleanEmail,
+                    password: cleanPassword
+                });
+                req.session.user = newUser.toObject ? newUser.toObject() : newUser;
+            }
+        }
+
         res.redirect("/Settings?saved=1");
     } catch (error) {
         console.error('Error saving settings:', error);
