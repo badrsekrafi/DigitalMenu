@@ -46,6 +46,15 @@ const orderSchema = new mongoose.Schema({
             type: String,
             required: true,
         },
+        itemPrice: {
+            type: Number,
+            default: 0,
+        },
+        itemQty: {
+            type: Number,
+            default: 1,
+            min: 1,
+        },
         status: {
             type: String,
             enum: ['pending', 'en_cours', 'pret', 'cancel'],

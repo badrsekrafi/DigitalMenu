@@ -89,7 +89,7 @@
                                         {{/each}}
                                         </div>
                                     </td>
-                                    <td data-label="Montant"><strong style="color:#16A34A;">{{totalPriceDisplay}} DNT</strong></td>
+                                    <td data-label="Montant"><strong class="order-total-cell" data-order-id="{{_id}}" style="color:#16A34A;">{{totalPriceDisplay}} DNT</strong></td>
                                     <td data-label="Statut"><span class="order-status">{{statusLabel}}</span></td>
                                     <td data-label="Détails">
                                         <button type="button" class="details-button">Voir tout</button>
@@ -206,39 +206,49 @@
             }
         }
 
-        // ── Status select: intercept CANCEL → delete instead ─────────────
+        // ── Helper: update the total price cell for an order row ──────────
+        function updateTotalCell(tr, newTotal) {
+            const cell = tr.querySelector('.order-total-cell');
+            if (cell) cell.textContent = `${parseFloat(newTotal).toFixed(2)} DNT`;
+        }
+
+        // ── Status select ─────────────────────────────────────────────────
         document.querySelectorAll('.item-status-select').forEach((select) => {
             select.addEventListener('change', async () => {
                 const previousStatus = select.dataset.currentStatus;
-                const row = select.closest('.item-status-row');
-                const tr  = select.closest('tr');
+                const row  = select.closest('.item-status-row');
+                const tr   = select.closest('tr');
                 const pill = row.querySelector('.item-status-pill');
-
-                // CANCEL = remove the item permanently
-                if (select.value === 'cancel') {
-                    const itemName = row.querySelector('.item-status-name')?.textContent || 'cet article';
-                    if (!confirm(`Supprimer "${itemName}" de la commande ? Cette action est irréversible.`)) {
-                        select.value = previousStatus;
-                        return;
-                    }
-                    select.disabled = true;
-                    await removeOrderItem(select.dataset.orderId, select.dataset.itemIndex, row, tr);
-                    return;
-                }
-
-                // Other statuses → PATCH as before
                 select.disabled = true;
+
                 try {
-                    const response = await fetch(`/orders/${encodeURIComponent(select.dataset.orderId)}/items/${encodeURIComponent(select.dataset.itemIndex)}/status`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify({ status: select.value }),
-                    });
+                    const response = await fetch(
+                        `/orders/${encodeURIComponent(select.dataset.orderId)}/items/${encodeURIComponent(select.dataset.itemIndex)}/status`,
+                        {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify({ status: select.value }),
+                        }
+                    );
                     const data = await response.json();
                     if (!response.ok || !data.success) throw new Error(data.error || 'Erreur.');
+
                     select.dataset.currentStatus = data.item.status;
                     pill.className = `item-status-pill ${data.item.statusClass}`;
                     pill.textContent = data.item.statusLabel;
+
+                    // Update total price in the row live
+                    if (data.newTotalPrice !== undefined) {
+                        updateTotalCell(tr, data.newTotalPrice);
+                    }
+
+                    // If cancelled: visually strike-through item name
+                    const nameEl = row.querySelector('.item-status-name');
+                    if (nameEl) {
+                        nameEl.style.textDecoration = data.item.status === 'cancel' ? 'line-through' : '';
+                        nameEl.style.opacity = data.item.status === 'cancel' ? '0.45' : '';
+                    }
+
                 } catch (error) {
                     select.value = previousStatus;
                     alert(error.message || 'Impossible de mettre à jour le statut.');
@@ -248,13 +258,13 @@
             });
         });
 
-        // ── Trash button: direct delete with confirmation ─────────────────
+        // ── Trash button: permanent delete ────────────────────────────────
         document.querySelectorAll('.item-remove-btn').forEach((btn) => {
             btn.addEventListener('click', async () => {
                 const row  = btn.closest('.item-status-row');
                 const tr   = btn.closest('tr');
                 const name = btn.dataset.itemName || 'cet article';
-                if (!confirm(`Supprimer "${name}" de la commande ? Cette action est irréversible.`)) return;
+                if (!confirm(`Supprimer définitivement "${name}" de la commande ?`)) return;
                 btn.disabled = true;
                 await removeOrderItem(btn.dataset.orderId, btn.dataset.itemIndex, row, tr);
             });

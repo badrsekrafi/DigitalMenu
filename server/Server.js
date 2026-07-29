@@ -779,11 +779,20 @@ app.patch('/orders/:orderId/items/:itemIndex/status', async (req, res) => {
         }
 
         order.items[itemIndex].status = nextStatus;
+
+        // Recalculate totalPrice: sum only non-cancelled items
+        const newTotal = order.items.reduce((sum, item) => {
+            if (item.status === 'cancel') return sum;
+            return sum + (Number(item.itemPrice) || 0) * (Number(item.itemQty) || 1);
+        }, 0);
+        order.totalPrice = newTotal;
+
         await order.save();
 
         const statusMeta = getItemStatusMeta(nextStatus);
         res.json({
             success: true,
+            newTotalPrice: newTotal.toFixed(2),
             item: {
                 itemIndex,
                 status: statusMeta.value,
@@ -1731,6 +1740,8 @@ app.post('/Order_Details', async (req, res) => {
             comment: customerComment,
             items: Array.isArray(items) ? items.map((item) => ({
                 itemName: item.itemName,
+                itemPrice: Number(item.itemPrice) || 0,
+                itemQty: Number(item.itemQty) || 1,
                 status: 'pending',
             })) : [],
             totalPrice: Number(totalPrice || 0),
