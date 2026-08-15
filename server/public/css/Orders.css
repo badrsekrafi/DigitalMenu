@@ -241,10 +241,10 @@ main .lowerbox h4 {
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
-.status-border-pending { border-left: 4px solid #F59E0B; background: #FFFDF5; }
-.status-border-en_cours { border-left: 4px solid #3B82F6; background: #F0F7FF; }
-.status-border-pret { border-left: 4px solid #10B981; background: #F0FDF4; }
-.status-border-cancel { border-left: 4px solid #EF4444; background: #FEF2F2; }
+.status-border-pending { border-left: 4px solid #F59E0B; background: #FFFFFF !important; }
+.status-border-en_cours { border-left: 4px solid #2563EB; background: #FFFFFF !important; }
+.status-border-pret { border-left: 4px solid #10B981; background: #FFFFFF !important; }
+.status-border-cancel { border-left: 4px solid #EF4444; background: #FFFFFF !important; }
 
 .item-card-top {
     display: flex;
@@ -261,14 +261,14 @@ main .lowerbox h4 {
     display: inline-block;
 }
 .dot-pending { background: #F59E0B; box-shadow: 0 0 5px rgba(245, 158, 11, 0.5); }
-.dot-en_cours { background: #3B82F6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+.dot-en_cours { background: #2563EB; box-shadow: 0 0 5px rgba(37, 99, 235, 0.5); }
 .dot-pret { background: #10B981; box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
 .dot-cancel { background: #EF4444; box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
 
 .item-card-title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    color: #0F172A;
+    color: #B8975A !important; /* Gold / Doré */
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
