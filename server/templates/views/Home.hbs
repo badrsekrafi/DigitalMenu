@@ -41,10 +41,42 @@
                     </div>
 
                     <div class="header-actions">
-                        <button class="btn-icon notification-btn" aria-label="Notifications" title="Notifications">
-                            <i class="fa-regular fa-bell"></i>
-                            <span class="notification-badge">3</span>
-                        </button>
+                        <div class="notification-wrapper">
+                            <button class="btn-icon notification-btn" id="notifBtn" aria-label="Notifications" title="Notifications">
+                                <i class="fa-regular fa-bell"></i>
+                                <span class="notification-badge" id="notifBadge">{{orders.length}}</span>
+                            </button>
+
+                            <div class="notification-dropdown" id="notifDropdown" hidden>
+                                <div class="notif-header">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <i class="fa-solid fa-bell" style="color:#F97316;"></i>
+                                        <strong style="font-size:14px;color:#0F172A;">Notifications en direct</strong>
+                                    </div>
+                                    <span class="notif-count-pill" id="notifCountPill">{{orders.length}} nouvelles</span>
+                                </div>
+                                <div class="notif-list" id="notifList">
+                                    {{#each orders}}
+                                    <a href="/Orders" class="notif-item" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F5F9;text-decoration:none;">
+                                        <div style="width:36px;height:36px;border-radius:10px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:14px;flex-shrink:0;">
+                                            <i class="fa-solid fa-bag-shopping"></i>
+                                        </div>
+                                        <div style="flex:1;font-size:12px;">
+                                            <div style="color:#0F172A;font-weight:600;">Commande <strong>#{{#if this._id}}{{this._id}}{{/if}}</strong></div>
+                                            <div style="color:#64748B;font-size:11px;margin-top:2px;">
+                                                <span>{{#if this.name}}{{this.name}}{{else}}Client{{/if}}</span> • <strong style="color:#16A34A;">{{this.totalPrice}} DNT</strong>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {{else}}
+                                    <div style="padding:20px;text-align:center;color:#64748B;font-size:13px;">Aucune notification récente</div>
+                                    {{/each}}
+                                </div>
+                                <div class="notif-footer">
+                                    <a href="/Orders" class="notif-footer-link">Voir toutes les commandes ➔</a>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="header-user-profile" title="Profil Admin">
                             <img src="/images/Admin_image.png" alt="Avatar Admin" class="header-user-avatar">
@@ -415,6 +447,57 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 2500);
+        }
+
+        // ── 🔔 Notification Dropdown Logic ──────────────────────────────
+        const notifBtn = document.getElementById('notifBtn');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        if (notifBtn && notifDropdown) {
+            notifBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const isHidden = notifDropdown.hidden;
+                notifDropdown.hidden = !isHidden;
+
+                if (isHidden) {
+                    try {
+                        const res = await fetch('/api/notifications');
+                        const data = await res.json();
+                        if (data.success && data.notifications) {
+                            const listEl = document.getElementById('notifList');
+                            const badgeEl = document.getElementById('notifBadge');
+                            const countPill = document.getElementById('notifCountPill');
+
+                            if (badgeEl) badgeEl.textContent = data.count;
+                            if (countPill) countPill.textContent = `${data.count} récentes`;
+
+                            if (data.notifications.length > 0) {
+                                listEl.innerHTML = data.notifications.map(n => `
+                                    <a href="/Orders" class="notif-item" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F5F9;text-decoration:none;">
+                                        <div style="width:36px;height:36px;border-radius:10px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:14px;flex-shrink:0;">
+                                            <i class="fa-solid fa-bag-shopping"></i>
+                                        </div>
+                                        <div style="flex:1;font-size:12px;">
+                                            <div style="color:#0F172A;font-weight:600;">Commande <strong>#${n.orderIdDisplay}</strong></div>
+                                            <div style="color:#64748B;font-size:11px;margin-top:2px;">
+                                                <span>${n.name} (${n.serviceType})</span> • <strong style="color:#16A34A;">${n.totalPrice} DNT</strong> <span style="margin-left:4px;color:#94A3B8;">${n.time}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `).join('');
+                            } else {
+                                listEl.innerHTML = `<div style="padding:20px;text-align:center;color:#64748B;font-size:13px;">Aucune notification récente</div>`;
+                            }
+                        }
+                    } catch(err) {}
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                    notifDropdown.hidden = true;
+                }
+            });
         }
 
         window.addEventListener('load', () => {

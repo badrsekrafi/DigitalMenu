@@ -528,8 +528,30 @@ app.get(["/Home", "/home"], async (req, res) => {
     } catch (error) {
         res.status(500).send("Error in Fetching");
     }
-})
+});
 
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const recentOrders = await Order.find()
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
+
+        const notifications = recentOrders.map(o => ({
+            id: String(o._id),
+            orderIdDisplay: String(o._id || '').slice(-6).toUpperCase() || '-',
+            name: o.name || (o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : 'Client Sur Place'),
+            serviceType: o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : 'Réservation',
+            totalPrice: Number(o.totalPrice || 0).toFixed(2),
+            time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '',
+            status: o.status || 'Active'
+        }));
+
+        res.json({ success: true, count: notifications.length, notifications });
+    } catch (e) {
+        res.status(500).json({ success: false, count: 0, notifications: [] });
+    }
+});
 
 app.get('/getCategoryCount', async (req, res) => {
     try {
