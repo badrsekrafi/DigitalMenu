@@ -40,13 +40,13 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Commande</th>
-                                    <th>Client & Contact</th>
-                                    <th>Service / Table</th>
-                                    <th>Commentaire</th>
-                                    <th>Articles & Statuts</th>
-                                    <th>Montant</th>
-                                    <th>Actions</th>
+                                    <th style="width:13%;">Commande</th>
+                                    <th style="width:17%;">Client & Contact</th>
+                                    <th style="width:14%;">Service / Table</th>
+                                    <th style="width:7%;">Note</th>
+                                    <th style="width:28%;">Articles & Statuts</th>
+                                    <th style="width:9%;">Montant</th>
+                                    <th style="width:12%;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -76,7 +76,7 @@
                                         </div>
                                         {{#if reservationLabel}}<div style="font-size:10px;color:#EA580C;margin-top:2px;">{{reservationLabel}}</div>{{/if}}
                                     </td>
-                                    <td data-label="Commentaire" class="comment-cell" style="max-width:140px;font-size:11px;color:#64748B;">{{commentDisplay}}</td>
+                                    <td data-label="Commentaire" class="comment-cell" style="font-size:11px;color:#64748B;">{{commentDisplay}}</td>
                                     <td data-label="Articles" class="items-cell">
                                         <div class="item-status-list">
                                         {{#each items}}
@@ -100,12 +100,12 @@
                                         {{/each}}
                                         </div>
                                     </td>
-                                    <td data-label="Montant"><strong class="order-total-cell" data-order-id="{{_id}}" style="color:#16A34A;font-size:14px;white-space:nowrap;">{{totalPriceDisplay}} DNT</strong></td>
+                                    <td data-label="Montant"><strong class="order-total-cell" data-order-id="{{_id}}" style="color:#16A34A;font-size:13px;white-space:nowrap;">{{totalPriceDisplay}} DNT</strong></td>
                                     <td data-label="Actions" style="white-space:nowrap;">
-                                        <div style="display:flex;gap:4px;">
-                                            <button type="button" class="details-button" style="padding:0 10px;height:30px;font-size:11px;">Voir tout</button>
-                                            <button type="button" onclick="printReceiptFromRow(this)" class="details-button" style="background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;padding:0 8px;height:30px;font-size:11px;" title="Imprimer Ticket 80mm">
-                                                <i class="fa-solid fa-print"></i> Ticket
+                                        <div style="display:flex;gap:4px;align-items:center;">
+                                            <button type="button" class="details-button" style="padding:0 8px;height:28px;font-size:11px;">Détails</button>
+                                            <button type="button" onclick="printReceiptFromRow(this)" class="details-button" style="background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;padding:0 8px;height:28px;font-size:11px;" title="Imprimer Ticket 80mm">
+                                                <i class="fa-solid fa-print"></i>
                                             </button>
                                         </div>
                                     </td>
