@@ -80,22 +80,26 @@
                                     <td data-label="Articles" class="items-cell">
                                         <div class="item-status-list">
                                         {{#each items}}
-                                            <div class="item-status-row" data-order-id="{{orderId}}" data-item-index="{{itemIndex}}">
-                                                <span class="item-status-name">{{this.itemName}}</span>
-                                                <span class="item-status-pill {{statusClass}}">{{statusLabel}}</span>
-                                                <select class="item-status-select" data-order-id="{{orderId}}"
-                                                    data-item-index="{{itemIndex}}" data-current-status="{{status}}"
-                                                    aria-label="Statut pour {{this.itemName}}">
-                                                    {{#each statusOptions}}
-                                                    <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
-                                                    {{/each}}
-                                                </select>
-                                                <button type="button" class="item-remove-btn"
-                                                    data-order-id="{{orderId}}" data-item-index="{{itemIndex}}"
-                                                    data-item-name="{{this.itemName}}"
-                                                    title="Supprimer cet article" aria-label="Supprimer {{this.itemName}}">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
+                                            <div class="item-status-card status-border-{{status}}" data-order-id="{{orderId}}" data-item-index="{{itemIndex}}">
+                                                <div class="item-card-top">
+                                                    <span class="item-dot dot-{{status}}"></span>
+                                                    <strong class="item-card-title">{{this.itemName}}</strong>
+                                                    <button type="button" class="item-remove-btn"
+                                                        data-order-id="{{orderId}}" data-item-index="{{itemIndex}}"
+                                                        data-item-name="{{this.itemName}}"
+                                                        title="Supprimer cet article" aria-label="Supprimer {{this.itemName}}">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="item-card-bottom">
+                                                    <select class="item-status-select select-{{status}}" data-order-id="{{orderId}}"
+                                                        data-item-index="{{itemIndex}}" data-current-status="{{status}}"
+                                                        aria-label="Statut pour {{this.itemName}}">
+                                                        {{#each statusOptions}}
+                                                        <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                                                        {{/each}}
+                                                    </select>
+                                                </div>
                                             </div>
                                         {{/each}}
                                         </div>
@@ -362,8 +366,8 @@
             const tableNum = tr.querySelector('td[data-label="Service"] div')?.textContent || '-';
             const total = tr.querySelector('.order-total-cell')?.textContent || '0.00 DNT';
 
-            const itemRows = Array.from(tr.querySelectorAll('.item-status-row')).map(row => {
-                const name = row.querySelector('.item-status-name')?.textContent || '';
+            const itemRows = Array.from(tr.querySelectorAll('.item-status-card')).map(row => {
+                const name = row.querySelector('.item-card-title')?.textContent || '';
                 return `<tr>
                     <td style="padding:4px 0;text-align:left;">${name}</td>
                     <td style="padding:4px 0;text-align:right;">1</td>

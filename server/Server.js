@@ -136,10 +136,10 @@ function formatReservationLabel(order) {
 }
 
 const ITEM_STATUS_OPTIONS = [
-    { value: 'pending', label: 'PENDING', className: 'status-pending' },
-    { value: 'en_cours', label: 'EN COURS DE TRAITER', className: 'status-en-cours' },
-    { value: 'pret', label: 'PRET', className: 'status-pret' },
-    { value: 'cancel', label: 'CANCEL', className: 'status-cancel' },
+    { value: 'pending', label: '🟡 En attente', className: 'status-pending' },
+    { value: 'en_cours', label: '🔵 En cours', className: 'status-en-cours' },
+    { value: 'pret', label: '🟢 Prêt', className: 'status-pret' },
+    { value: 'cancel', label: '🔴 Annulée', className: 'status-cancel' },
 ];
 
 function normalizeItemStatus(status) {
@@ -503,6 +503,10 @@ app.get("/index", (req, res) => {
 
 app.post("/index", (req, res) => {
     res.redirect("/login");
+});
+
+app.get(["/marketing", "/Marketing"], (req, res) => {
+    res.sendFile(path.join(__dirname, "../server/public/marketing.html"));
 });
 
 // =========== Home Page =============
