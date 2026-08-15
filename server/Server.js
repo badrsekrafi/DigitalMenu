@@ -553,6 +553,61 @@ app.get('/api/notifications', async (req, res) => {
     }
 });
 
+app.get('/api/search', async (req, res) => {
+    try {
+        const query = String(req.query.q || '').trim();
+        if (!query || query.length < 1) {
+            return res.json({ success: true, dishes: [], orders: [], categories: [] });
+        }
+
+        const regex = new RegExp(query, 'i');
+
+        const [dishes, ordersList, categoriesList] = await Promise.all([
+            MenuItem.find({ $or: [{ title: regex }, { category: regex }, { description: regex }] }).limit(5).lean(),
+            Order.find({
+                $or: [
+                    { name: regex },
+                    { PhoneNumber: regex },
+                    { TableNumber: regex },
+                    { comment: regex }
+                ]
+            }).sort({ createdAt: -1 }).limit(5).lean(),
+            Category.find({ Category_Name: regex }).limit(5).lean()
+        ]);
+
+        const formattedDishes = dishes.map(d => ({
+            id: String(d._id),
+            title: d.title,
+            category: d.category || 'Sans catégorie',
+            price: Number(d.price || 0).toFixed(2),
+            imageUrl: d.imageUrl || '/images/Admin_image.png'
+        }));
+
+        const formattedOrders = ordersList.map(o => ({
+            id: String(o._id),
+            orderIdDisplay: String(o._id || '').slice(-6).toUpperCase(),
+            name: o.name || (o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : 'Client Sur Place'),
+            table: o.TableNumber || '-',
+            totalPrice: Number(o.totalPrice || 0).toFixed(2),
+            date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : ''
+        }));
+
+        const formattedCategories = categoriesList.map(c => ({
+            id: String(c._id),
+            name: c.Category_Name
+        }));
+
+        res.json({
+            success: true,
+            dishes: formattedDishes,
+            orders: formattedOrders,
+            categories: formattedCategories
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, dishes: [], orders: [], categories: [] });
+    }
+});
+
 app.get('/getCategoryCount', async (req, res) => {
     try {
         const categoryCount = await Category.countDocuments();
