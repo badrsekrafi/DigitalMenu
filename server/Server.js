@@ -505,7 +505,7 @@ app.post("/index", (req, res) => {
     res.redirect("/login");
 });
 
-app.get(["/marketing", "/Marketing"], (req, res) => {
+app.get(["/marketing", "/Marketing", "/marketing.html"], (req, res) => {
     res.sendFile(path.join(__dirname, "../server/public/marketing.html"));
 });
 
