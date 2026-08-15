@@ -79,14 +79,13 @@ main .lowerbox h4 {
 
 .lowerbox-table {
     width: 100%;
-    overflow-x: auto;
     border: 1px solid #E2E8F0;
     border-radius: 12px;
+    background: #FFFFFF;
 }
 
 .lowerbox-table table {
     width: 100%;
-    min-width: 1500px;
     border-collapse: collapse;
 }
 
@@ -118,6 +117,102 @@ main .lowerbox h4 {
 
 .lowerbox-table tbody tr:hover {
     background: #F8FAFC;
+}
+
+/* ── 📱 Fully Responsive Mobile & Tablet Card Layout ────────────────── */
+@media (max-width: 1024px) {
+    main {
+        padding: 16px 12px !important;
+    }
+
+    main .lowerbox {
+        padding: 16px 12px !important;
+        border-radius: 12px !important;
+    }
+
+    .lowerbox-table {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .lowerbox-table table,
+    .lowerbox-table thead,
+    .lowerbox-table tbody,
+    .lowerbox-table th,
+    .lowerbox-table td,
+    .lowerbox-table tr {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .lowerbox-table thead {
+        display: none !important;
+    }
+
+    .lowerbox-table tbody tr {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 16px !important;
+        margin-bottom: 16px !important;
+        padding: 16px !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    .lowerbox-table td {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 0 !important;
+        border-bottom: 1px solid #F1F5F9 !important;
+        text-align: right !important;
+        font-size: 13px !important;
+    }
+
+    .lowerbox-table td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    .lowerbox-table td::before {
+        content: attr(data-label);
+        font-weight: 600 !important;
+        color: #64748B !important;
+        font-size: 12px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.03em !important;
+        margin-right: 12px !important;
+        text-align: left !important;
+        flex-shrink: 0 !important;
+    }
+
+    .lowerbox-table td.items-cell {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        text-align: left !important;
+        gap: 6px !important;
+    }
+
+    .lowerbox-table td.items-cell::before {
+        margin-bottom: 6px !important;
+    }
+
+    .item-status-row {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .upperbox {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .upperbox-actions {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
 }
 
 .comment-cell {
