@@ -444,31 +444,12 @@
                             localStorage.setItem('kaffaLastOrderId', responseData.orderId);
                         }
 
-                        const adminWaNumber = "21627648386";
-                        const itemsText = items.map(i => `• ${i.itemName} (${Number(i.itemPrice || 0).toFixed(2)} DNT)`).join('\n');
-                        const waMessage = `🔔 *NOUVELLE COMMANDE - Le Patio Djerba* 🍔\n` +
-                            `------------------------------------\n` +
-                            `👤 Client: ${formData.name || (selectedServiceType === 'dine-in' ? `Table ${tableNumber}` : 'Client Sur Place')}\n` +
-                            `📞 Tél: ${formData.PhoneNumber || '-'}\n` +
-                            `📍 Service: ${selectedServiceType === 'dine-in' ? `Table ${tableNumber}` : 'Réservation'}\n` +
-                            `🛒 Articles:\n${itemsText}\n` +
-                            `------------------------------------\n` +
-                            `💰 TOTAL: ${Number(currentCart.total || 0).toFixed(2)} DNT`;
-
-                        const waUrl = `https://wa.me/${adminWaNumber}?text=${encodeURIComponent(waMessage)}`;
-
-                        // Attempt to open WhatsApp directly
-                        try { window.open(waUrl, '_blank'); } catch(e) {}
-
                         Swal.fire({
                             icon: 'success',
-                            title: selectedServiceType === 'reservation' ? 'Réservation envoyée !' : 'Commande confirmée !',
-                            html: `<p style="font-size:14px;color:#475569;margin-bottom:16px;">Votre commande a été enregistrée avec succès.</p>` +
-                                  `<a href="${waUrl}" target="_blank" rel="noopener" style="background-color:#25D366;color:#fff;text-decoration:none;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:10px;margin-bottom:14px;box-shadow:0 4px 12px rgba(37,211,102,0.3);">` +
-                                  `<i class="fa-brands fa-whatsapp" style="font-size:18px;"></i> Envoyer la commande sur WhatsApp (27648386)` +
-                                  `</a>`,
+                            title: selectedServiceType === 'reservation' ? 'Réservation envoyée !' : 'Commande transmise !',
+                            text: 'Votre commande a été envoyée directement en cuisine avec succès.',
                             showConfirmButton: true,
-                            confirmButtonText: 'Retour au Menu',
+                            confirmButtonText: 'Suivre ma commande',
                             confirmButtonColor: '#B8975A'
                         }).then(() => {
                             localStorage.removeItem("cart");
