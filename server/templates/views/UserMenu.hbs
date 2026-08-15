@@ -420,31 +420,42 @@
             function playStatusChangeChime() {
                 try {
                     const ctx = getClientAudioContext();
-                    if (!ctx) return;
-                    const now = ctx.currentTime;
+                    if (ctx) {
+                        const now = ctx.currentTime;
 
-                    const osc1 = ctx.createOscillator();
-                    const osc2 = ctx.createOscillator();
-                    const gain = ctx.createGain();
+                        const osc1 = ctx.createOscillator();
+                        const osc2 = ctx.createOscillator();
+                        const osc3 = ctx.createOscillator();
+                        const gain = ctx.createGain();
 
-                    osc1.type = 'sine';
-                    osc2.type = 'sine';
-                    osc1.frequency.setValueAtTime(523.25, now);
-                    osc1.frequency.setValueAtTime(659.25, now + 0.15);
-                    osc2.frequency.setValueAtTime(783.99, now + 0.30);
+                        osc1.type = 'sine';
+                        osc2.type = 'sine';
+                        osc3.type = 'sine';
 
-                    gain.gain.setValueAtTime(0.4, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                        osc1.frequency.setValueAtTime(523.25, now);        // C5
+                        osc2.frequency.setValueAtTime(659.25, now + 0.15);  // E5
+                        osc3.frequency.setValueAtTime(783.99, now + 0.30);  // G5
 
-                    osc1.connect(gain);
-                    osc2.connect(gain);
-                    gain.connect(ctx.destination);
+                        gain.gain.setValueAtTime(0.7, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
 
-                    osc1.start(now);
-                    osc1.stop(now + 0.30);
-                    osc2.start(now + 0.30);
-                    osc2.stop(now + 0.80);
+                        osc1.connect(gain);
+                        osc2.connect(gain);
+                        osc3.connect(gain);
+                        gain.connect(ctx.destination);
+
+                        osc1.start(now);
+                        osc1.stop(now + 0.20);
+                        osc2.start(now + 0.15);
+                        osc2.stop(now + 0.35);
+                        osc3.start(now + 0.30);
+                        osc3.stop(now + 0.80);
+                    }
                 } catch(e) {}
+
+                if ("vibrate" in navigator) {
+                    try { navigator.vibrate([200, 100, 200]); } catch(e) {}
+                }
             }
 
             const STATUS_LABELS_MAP = {
@@ -452,6 +463,13 @@
                 en_cours: '🔵 En cours de préparation',
                 pret: '🟢 Prêt ! Venez récupérer',
                 cancel: '🔴 Annulée'
+            };
+
+            const STATUS_BADGE_STYLES = {
+                pending: 'background:#FFFBEB;color:#B45309;border:1px solid #FCD34D;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
+                en_cours: 'background:#EFF6FF;color:#1E40AF;border:1px solid #93C5FD;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
+                pret: 'background:#ECFDF5;color:#065F46;border:1px solid #6EE7B7;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
+                cancel: 'background:#FEF2F2;color:#991B1B;border:1px solid #FCA5A5;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;'
             };
 
             const clientItemStatuses = new Map();
@@ -509,7 +527,7 @@
                             <span style="font-size:10px;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:#64748B;font-weight:700;">#${escapeHtml(item.orderIdDisplay)}</span>
                             <strong style="font-size:13px;color:#0F172A;margin-left:4px;">${escapeHtml(item.itemName)}</strong>
                         </div>
-                        <em class="${escapeHtml(item.statusClass)}" style="font-style:normal;font-weight:600;font-size:12px;">
+                        <em style="${STATUS_BADGE_STYLES[item.status] || STATUS_BADGE_STYLES.pending}">
                             ${escapeHtml(STATUS_LABELS_MAP[item.status] || item.statusLabel)}
                         </em>
                     </div>
