@@ -397,15 +397,30 @@
                     .replace(/'/g, '&#039;');
             }
 
+            let clientAudioCtx = null;
+            function getClientAudioContext() {
+                if (!clientAudioCtx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) clientAudioCtx = new AudioCtx();
+                }
+                if (clientAudioCtx && clientAudioCtx.state === 'suspended') {
+                    try { clientAudioCtx.resume(); } catch(e) {}
+                }
+                return clientAudioCtx;
+            }
+
+            ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+                window.addEventListener(evt, () => { getClientAudioContext(); }, { passive: true });
+            });
+
             if ("Notification" in window && Notification.permission === "default") {
                 try { Notification.requestPermission(); } catch(e) {}
             }
 
             function playStatusChangeChime() {
                 try {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioCtx) return;
-                    const ctx = new AudioCtx();
+                    const ctx = getClientAudioContext();
+                    if (!ctx) return;
                     const now = ctx.currentTime;
 
                     const osc1 = ctx.createOscillator();
@@ -413,21 +428,22 @@
                     const gain = ctx.createGain();
 
                     osc1.type = 'sine';
-                    osc2.type = 'triangle';
+                    osc2.type = 'sine';
                     osc1.frequency.setValueAtTime(523.25, now);
-                    osc2.frequency.setValueAtTime(659.25, now + 0.12);
+                    osc1.frequency.setValueAtTime(659.25, now + 0.15);
+                    osc2.frequency.setValueAtTime(783.99, now + 0.30);
 
                     gain.gain.setValueAtTime(0.4, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
 
                     osc1.connect(gain);
                     osc2.connect(gain);
                     gain.connect(ctx.destination);
 
                     osc1.start(now);
-                    osc1.stop(now + 0.12);
-                    osc2.start(now + 0.12);
-                    osc2.stop(now + 0.6);
+                    osc1.stop(now + 0.30);
+                    osc2.start(now + 0.30);
+                    osc2.stop(now + 0.80);
                 } catch(e) {}
             }
 
@@ -446,7 +462,7 @@
                     const prevStatus = clientItemStatuses.get(key);
                     const currentStatus = item.status;
 
-                    if (prevStatus && prevStatus !== currentStatus) {
+                    if (prevStatus !== undefined && prevStatus !== currentStatus) {
                         playStatusChangeChime();
 
                         const statusText = STATUS_LABELS_MAP[currentStatus] || currentStatus;
