@@ -51,6 +51,7 @@
                                     <th>Taille</th>
                                     <th>Catégorie</th>
                                     <th>Image</th>
+                                    <th>Disponibilité</th>
                                     <th style="text-align: center;">Modifier</th>
                                     <th style="text-align: center;">Supprimer</th>
                                 </tr>
@@ -75,6 +76,11 @@
                                     </td>
                                     <td class="image-cell" data-label="Image">
                                         <img src="{{this.imageUrl}}" alt="{{this.title}}" loading="lazy" onerror="this.src='/images/Admin_image.png'">
+                                    </td>
+                                    <td data-label="Disponibilité" style="text-align: center;">
+                                        <button type="button" onclick="toggleItemStock('{{this._id}}', this)" style="padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;{{#if this.isAvailable}}background:#DCFCE7;color:#15803D;{{else}}background:#FEE2E2;color:#B91C1C;{{/if}}">
+                                            {{#if this.isAvailable}}En Stock{{else}}Épuisé{{/if}}
+                                        </button>
                                     </td>
                                     <td class="edit_column action-cell" data-label="Modifier" style="text-align: center;">
                                         <a class="icon-action edit-action" href="/Menu_Dishes_add?id={{this._id}}" aria-label="Modifier {{this.title}}">
@@ -147,6 +153,29 @@
                 }
             } catch (error) {
                 alert('Impossible de supprimer le plat.');
+            }
+        }
+
+        async function toggleItemStock(id, btn) {
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/api/menu-items/${id}/toggle-stock`, { method: 'PATCH' });
+                const data = await res.json();
+                if (data.success) {
+                    if (data.isAvailable) {
+                        btn.textContent = 'En Stock';
+                        btn.style.background = '#DCFCE7';
+                        btn.style.color = '#15803D';
+                    } else {
+                        btn.textContent = 'Épuisé';
+                        btn.style.background = '#FEE2E2';
+                        btn.style.color = '#B91C1C';
+                    }
+                }
+            } catch(e) {
+                alert('Erreur lors du changement de stock.');
+            } finally {
+                btn.disabled = false;
             }
         }
 

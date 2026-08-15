@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de QR Codes de Tables — Le Patio Djerba</title>
+    <link rel="stylesheet" href="/css/Orders.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <style>
+        :root {
+            --bg-cream: #FDFAF5;
+            --gold-primary: #B8975A;
+            --gold-dark: #8C6D32;
+            --text-main: #1A1209;
+        }
+
+        body {
+            background-color: var(--bg-cream);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .qr-controls {
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .qr-controls h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-print-all {
+            background: linear-gradient(135deg, #B8975A 0%, #8C6D32 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .btn-print-all:hover {
+            transform: translateY(-2px);
+        }
+
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 28px;
+            padding: 32px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .qr-card {
+            background: #ffffff;
+            border: 2px solid #E8DFD0;
+            border-radius: 20px;
+            padding: 28px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(184, 151, 90, 0.08);
+            position: relative;
+            page-break-inside: avoid;
+        }
+
+        .qr-card-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .qr-card-sub {
+            font-size: 11px;
+            color: #9C8E78;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .table-badge {
+            display: inline-block;
+            background: #FAF6F0;
+            color: #B8975A;
+            border: 1px solid #E8DFD0;
+            font-weight: 800;
+            font-size: 16px;
+            padding: 6px 18px;
+            border-radius: 30px;
+            margin-bottom: 16px;
+        }
+
+        .qr-canvas-wrapper {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 16px;
+            display: inline-block;
+            border: 1px solid #F1EADF;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .qr-card-footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #64748B;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        @media print {
+            .qr-controls, nav, .sidebar {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+            }
+            .qr-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 20px !important;
+                padding: 0 !important;
+            }
+            .qr-card {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="qr-controls">
+        <h1><i class="fa-solid fa-qrcode" style="color:var(--gold-primary);"></i> QR Codes des Tables — Le Patio Djerba</h1>
+        <div class="control-group">
+            <label for="tableFilter" style="font-size:14px;font-weight:600;color:#475569;">Afficher :</label>
+            <select id="tableFilter" onchange="filterTables()" style="padding:8px 14px;border-radius:8px;border:1px solid #CBD5E1;font-size:14px;">
+                <option value="all">Toutes les tables (1 - 20)</option>
+                {{#each tables}}
+                <option value="{{this}}">Table {{this}}</option>
+                {{/each}}
+            </select>
+            <button onclick="window.print()" class="btn-print-all">
+                <i class="fa-solid fa-print"></i> Imprimer les QR Cards
+            </button>
+            <a href="/Orders" style="text-decoration:none;color:#64748B;font-weight:600;font-size:14px;margin-left:10px;">
+                <i class="fa-solid fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="qr-grid" id="qrGrid">
+        {{#each tables}}
+        <div class="qr-card" data-table="{{this}}">
+            <div class="qr-card-header">Le Patio Djerba</div>
+            <div class="qr-card-sub">Café & Restaurant</div>
+            <div class="table-badge">TABLE N° {{this}}</div>
+            <div class="qr-canvas-wrapper">
+                <canvas class="qr-canvas" data-url="https://lepatio-djerba.vercel.app/UserMenu?table={{this}}"></canvas>
+            </div>
+            <div class="qr-card-footer">
+                <i class="fa-solid fa-camera" style="color:var(--gold-primary);margin-right:4px;"></i>
+                Scannez le QR Code pour consulter le menu et commander sur place
+            </div>
+        </div>
+        {{/each}}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvases = document.querySelectorAll('.qr-canvas');
+            canvases.forEach(canvas => {
+                const url = canvas.getAttribute('data-url');
+                new QRious({
+                    element: canvas,
+                    value: url,
+                    size: 180,
+                    level: 'H',
+                    foreground: '#1A1209',
+                    background: '#FFFFFF'
+                });
+            });
+        });
+
+        function filterTables() {
+            const selected = document.getElementById('tableFilter').value;
+            const cards = document.querySelectorAll('.qr-card');
+            cards.forEach(card => {
+                if (selected === 'all' || card.getAttribute('data-table') === selected) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

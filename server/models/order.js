@@ -73,7 +73,17 @@ const orderSchema = new mongoose.Schema({
     closedAt: {
         type: Date,
     },
-
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+    },
+    feedback: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+        default: '',
+    },
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

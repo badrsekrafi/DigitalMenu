@@ -34,17 +34,24 @@
         <span class="fas fa-shopping-cart"></span>
         <span class="cart-count-badge" id="cartCountBadge" aria-live="polite">0</span>
     </label>
-    <button class="login-btn {{#if menuUser}}is-authenticated{{/if}}" id="loginButton">
-        {{#if menuUser}}
-        <a href="/UserMenu_logout" id="menuLogoutLink">{{menuUser.username}}</a>
-        {{else}}
-        <a href="/UserMenu_loginpage" id="menuLoginLink">Login</a>
-        {{/if}}
-    </button>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <select id="langSelect" onchange="changeLanguage(this.value)" style="padding:6px 12px;border-radius:20px;border:1px solid #E2E8F0;font-size:12px;font-weight:600;background:#FFF;cursor:pointer;color:#1E293B;">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="ar">🇹🇳 AR</option>
+            <option value="en">🇬🇧 EN</option>
+        </select>
+        <button class="login-btn {{#if menuUser}}is-authenticated{{/if}}" id="loginButton">
+            {{#if menuUser}}
+            <a href="/UserMenu_logout" id="menuLogoutLink">{{menuUser.username}}</a>
+            {{else}}
+            <a href="/UserMenu_loginpage" id="menuLoginLink">Login</a>
+            {{/if}}
+        </button>
+    </div>
     <h3 class="logo"><span class="logo-text">{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</span></h3>
     <div class="search-bar">
         <span class="fas fa-search"></span>
-        <input type="text" placeholder="Search">
+        <input type="text" id="searchInput" placeholder="Rechercher un plat..." oninput="handleSearchInput(this.value)">
     </div>
 
     <!-- main dashbaord -->
@@ -88,9 +95,12 @@
                 </div>
             </div>
             <div class="client-order-status-list" id="clientOrderStatusList"></div>
+            <div style="padding:10px;text-align:center;border-top:1px solid #E2E8F0;">
+                <button type="button" onclick="openRatingModal()" style="background:#B8975A;color:#FFF;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">
+                    ⭐ Évaluer votre expérience
+                </button>
+            </div>
         </div>
-
-
 
         <div class="dashboard-menu" aria-label="Menu categories">
             <a class="menu-item active" href="#all-products" data-category="all">All <span>{{totalItems}}</span></a>
@@ -117,8 +127,12 @@
                             <p>{{this.description}}</p>
                             <p class="card-time">{{this.category}}</p>
                         </div>
+                        {{#if this.isAvailable}}
                         <button class="add-to-cart-btn" data-name="{{this.title}}" data-price="{{this.price}}"
                             data-img="{{this.imageUrl}}">Add to Cart</button>
+                        {{else}}
+                        <button class="add-to-cart-btn" disabled style="background:#CBD5E1;color:#64748B;cursor:not-allowed;box-shadow:none;">Épuisé</button>
+                        {{/if}}
                     </div>
                     {{/each}}
                 </div>
@@ -460,7 +474,178 @@
 
             readyOrderToastClose.addEventListener('click', hideReadyToast);
         });
+
+        // ── 🌐 Multi-Language Translation System ──────────────────────────
+        const i18n = {
+            fr: {
+                searchPlaceholder: "Rechercher un plat, boisson...",
+                all: "Tout",
+                items: "plats",
+                addToCart: "Ajouter au panier",
+                outOfStock: "Épuisé",
+                orderStatus: "Suivi commande",
+                itemStatus: "Statut des articles",
+            },
+            ar: {
+                searchPlaceholder: "ابحث عن طبق، مشروب...",
+                all: "الكل",
+                items: "أطباق",
+                addToCart: "أضف إلى السلة",
+                outOfStock: "نفذت الكمية",
+                orderStatus: "متابعة الطلب",
+                itemStatus: "حالة الأطباق",
+            },
+            en: {
+                searchPlaceholder: "Search for a dish, drink...",
+                all: "All",
+                items: "dishes",
+                addToCart: "Add to Cart",
+                outOfStock: "Out of Stock",
+                orderStatus: "Order Tracker",
+                itemStatus: "Item Status",
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('kaffaLang', lang);
+            const t = i18n[lang] || i18n.fr;
+
+            // Update text direction for Arabic
+            document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+            // Update search placeholder
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.placeholder = t.searchPlaceholder;
+
+            // Update Add to Cart buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+                if (!btn.disabled) {
+                    btn.textContent = t.addToCart;
+                } else {
+                    btn.textContent = t.outOfStock;
+                }
+            });
+        }
+
+        // Restore language preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('kaffaLang') || 'fr';
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) langSelect.value = savedLang;
+            changeLanguage(savedLang);
+        });
+
+        // ── ⭐ Customer Rating Modal ──────────────────────────────────────
+        let currentSelectedRating = 5;
+
+        function openRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            if (modal) modal.hidden = false;
+        }
+
+        function closeRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            if (modal) modal.hidden = true;
+        }
+
+        function selectRating(stars) {
+            currentSelectedRating = stars;
+            document.querySelectorAll('#starRating i').forEach((star, idx) => {
+                if (idx < stars) {
+                    star.style.color = '#F59E0B';
+                } else {
+                    star.style.color = '#CBD5E1';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#starRating i').forEach((star, idx) => {
+                star.addEventListener('click', () => selectRating(idx + 1));
+            });
+        });
+
+        async function submitOrderRating() {
+            const lastOrderId = localStorage.getItem('kaffaLastOrderId');
+            const feedback = document.getElementById('ratingFeedback')?.value || '';
+
+            if (!lastOrderId) {
+                alert('Aucune commande récente à évaluer.');
+                closeRatingModal();
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/orders/${lastOrderId}/rating`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: currentSelectedRating, feedback })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Merci infiniment pour votre avis ! ⭐');
+                    closeRatingModal();
+                } else {
+                    alert(data.error || 'Erreur lors de l\'envoi.');
+                }
+            } catch(e) {
+                alert('Impossible d\'envoyer l\'avis.');
+            }
+        }
     </script>
+
+    <!-- Modal Rating -->
+    <div id="ratingModal" class="rating-modal" hidden>
+        <div class="rating-backdrop" onclick="closeRatingModal()"></div>
+        <div class="rating-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3 style="font-size:18px;margin:0;color:#1E293B;">⭐ Votre avis compte</h3>
+                <button type="button" onclick="closeRatingModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748B;">&times;</button>
+            </div>
+            <p style="font-size:13px;color:#64748B;margin-bottom:16px;">Donnez-nous une note pour votre repas chez Le Patio Djerba :</p>
+            <div id="starRating" style="display:flex;justify-content:center;gap:12px;font-size:28px;margin-bottom:16px;cursor:pointer;">
+                <i class="fas fa-star" style="color:#F59E0B;"></i>
+                <i class="fas fa-star" style="color:#F59E0B;"></i>
+                <i class="fas fa-star" style="color:#F59E0B;"></i>
+                <i class="fas fa-star" style="color:#F59E0B;"></i>
+                <i class="fas fa-star" style="color:#F59E0B;"></i>
+            </div>
+            <textarea id="ratingFeedback" placeholder="Un commentaire ou une suggestion ? (Optionnel)" rows="3" style="width:100%;border-radius:10px;border:1px solid #CBD5E1;padding:10px;font-family:inherit;font-size:13px;box-sizing:border-box;margin-bottom:16px;"></textarea>
+            <button type="button" onclick="submitOrderRating()" style="background:#B8975A;color:#FFF;border:none;padding:12px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;width:100%;">Envoyer mon avis</button>
+        </div>
+    </div>
+
+    <style>
+        .rating-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .rating-modal[hidden] {
+            display: none !important;
+        }
+        .rating-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(4px);
+        }
+        .rating-panel {
+            position: relative;
+            z-index: 10;
+            background: #FFF;
+            border-radius: 18px;
+            padding: 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+    </style>
+
     <script src="/javascript/MenuFitering.js"></script>
     <script src="/javascript/UserMenu_Cart.js"></script>
 </body>

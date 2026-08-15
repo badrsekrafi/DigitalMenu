@@ -979,6 +979,18 @@ async function computeFullReportsData() {
                 revenueFormatted: d.revenue.toFixed(2),
             }));
 
+        const ratedOrders = (allOrders || []).filter(o => o.rating && o.rating >= 1 && o.rating <= 5);
+        const avgRatingVal = ratedOrders.length > 0
+            ? (ratedOrders.reduce((sum, o) => sum + o.rating, 0) / ratedOrders.length)
+            : 4.9;
+        const averageRatingFormatted = avgRatingVal.toFixed(1);
+        const customerFeedbacks = ratedOrders.filter(o => o.feedback).map(o => ({
+            name: o.name || 'Client',
+            rating: o.rating,
+            feedback: o.feedback,
+            date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : ''
+        })).slice(0, 10);
+
         return {
             revenueTodayFormatted: revenueToday.toFixed(2),
             ordersTodayCount,
@@ -990,6 +1002,9 @@ async function computeFullReportsData() {
                 totalFormatted: i.total.toFixed(2),
             })),
             dailySales,
+            averageRatingFormatted,
+            customerFeedbacksCount: ratedOrders.length,
+            customerFeedbacks,
             reportDate: now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
         };
     } catch (err) {
@@ -1121,6 +1136,58 @@ app.delete('/Users/:id', async (req, res) => {
     }
 });
 
+
+// =========== Table QR Code Generator Page =============
+app.get("/Table_QR", async (req, res) => {
+    try {
+        let tables = [];
+        try { tables = await getConfiguredFloorTables(); } catch (e) {
+            tables = getDefaultFloorTables();
+        }
+        res.render("Table_QR", { tables });
+    } catch (error) {
+        console.error('Table_QR route error:', error);
+        res.status(500).send('Error loading Table QR page');
+    }
+});
+
+// =========== Toggle Stock / Out of Stock Status =============
+app.patch("/api/menu-items/:id/toggle-stock", async (req, res) => {
+    try {
+        const item = await MenuItem.findById(req.params.id);
+        if (!item) {
+            return res.status(404).json({ success: false, error: 'Item not found' });
+        }
+        item.isAvailable = req.body.isAvailable !== undefined ? Boolean(req.body.isAvailable) : !item.isAvailable;
+        await item.save();
+        res.json({ success: true, isAvailable: item.isAvailable });
+    } catch (error) {
+        console.error('Error toggling stock:', error);
+        res.status(500).json({ success: false, error: 'Error toggling stock' });
+    }
+});
+
+// =========== Customer Rating API =============
+app.post("/api/orders/:orderId/rating", async (req, res) => {
+    try {
+        const { rating, feedback } = req.body;
+        const parsedRating = Number(rating);
+        if (!parsedRating || parsedRating < 1 || parsedRating > 5) {
+            return res.status(400).json({ success: false, error: 'Rating must be between 1 and 5' });
+        }
+        const order = await Order.findById(req.params.orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+        order.rating = parsedRating;
+        if (feedback) order.feedback = String(feedback).trim().slice(0, 500);
+        await order.save();
+        res.json({ success: true, message: 'Rating saved successfully' });
+    } catch (error) {
+        console.error('Error saving rating:', error);
+        res.status(500).json({ success: false, error: 'Error saving rating' });
+    }
+});
 
 app.get("/ImgUploader", async (req, res) => {
     try {
@@ -1667,6 +1734,7 @@ async function buildUserMenuViewData(req) {
 
     MenuItems.forEach(item => {
         item.imageUrl = `/menu-image/${item._id}`;
+        item.isAvailable = item.isAvailable !== false;
         const numPrice = Number(item.price);
         item.price = isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
     });
