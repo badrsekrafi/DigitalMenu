@@ -556,11 +556,12 @@ app.get('/api/notifications', async (req, res) => {
 app.get('/api/search', async (req, res) => {
     try {
         const query = String(req.query.q || '').trim();
-        if (!query || query.length < 1) {
+        if (!query || query.length < 2) {
             return res.json({ success: true, dishes: [], orders: [], categories: [] });
         }
 
-        const regex = new RegExp(query, 'i');
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+        const regex = new RegExp(escapedQuery, 'i');
 
         const [dishes, ordersList, categoriesList] = await Promise.all([
             MenuItem.find({ $or: [{ title: regex }, { category: regex }, { description: regex }] }).limit(5).lean(),

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin | Dine/Delight</title>
+    <title>Dashboard Admin | Le Patio</title>
     <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/homepage.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -324,7 +324,7 @@
 
                 <!-- Main Footer -->
                 <footer class="main-footer">
-                    <p>© 2026 Dine/Delight. Tous droits réservés.</p>
+                    <p>© 2026 Le Patio. Tous droits réservés.</p>
                     <p>Version 2.0.0</p>
                 </footer>
             </main>
@@ -424,7 +424,7 @@
                 shareBtn.addEventListener('click', () => {
                     if (navigator.share) {
                         navigator.share({
-                            title: 'Menu QR Code Dine/Delight',
+                            title: 'Menu QR Code Le Patio',
                             url: urlInput ? urlInput.value : qrUrl
                         }).catch(() => {});
                     } else {
@@ -521,9 +521,20 @@
             if (globalSearchInput && searchDropdown) {
                 globalSearchInput.addEventListener('input', () => {
                     clearTimeout(searchDebounce);
-                    const query = globalSearchInput.value.trim();
+                    let query = globalSearchInput.value.trim();
 
-                    if (query.length < 1) {
+                    // Strip leading "/" from keyboard shortcut
+                    if (query === '/') {
+                        globalSearchInput.value = '';
+                        searchDropdown.hidden = true;
+                        return;
+                    }
+                    query = query.replace(/^\//, '').trim();
+                    if (query !== globalSearchInput.value.trim()) {
+                        globalSearchInput.value = query;
+                    }
+
+                    if (query.length < 2) {
                         searchDropdown.hidden = true;
                         return;
                     }
