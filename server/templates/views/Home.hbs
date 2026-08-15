@@ -450,141 +450,154 @@
             }, 2500);
         }
 
-        // ── 🔔 Notification Dropdown Logic ──────────────────────────────
-        const notifBtn = document.getElementById('notifBtn');
-        const notifDropdown = document.getElementById('notifDropdown');
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
-        if (notifBtn && notifDropdown) {
-            notifBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const isHidden = notifDropdown.hidden;
-                notifDropdown.hidden = !isHidden;
+        // ── 🔔 Notification & 🔍 Search Dropdown Logic ───────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const notifBtn = document.getElementById('notifBtn');
+            const notifDropdown = document.getElementById('notifDropdown');
 
-                if (isHidden) {
-                    try {
-                        const res = await fetch('/api/notifications');
-                        const data = await res.json();
-                        if (data.success && data.notifications) {
-                            const listEl = document.getElementById('notifList');
-                            const badgeEl = document.getElementById('notifBadge');
-                            const countPill = document.getElementById('notifCountPill');
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const isHidden = notifDropdown.hidden;
+                    notifDropdown.hidden = !isHidden;
 
-                            if (badgeEl) badgeEl.textContent = data.count;
-                            if (countPill) countPill.textContent = `${data.count} récentes`;
+                    if (isHidden) {
+                        try {
+                            const res = await fetch('/api/notifications');
+                            const data = await res.json();
+                            if (data.success && data.notifications) {
+                                const listEl = document.getElementById('notifList');
+                                const badgeEl = document.getElementById('notifBadge');
+                                const countPill = document.getElementById('notifCountPill');
 
-                            if (data.notifications.length > 0) {
-                                listEl.innerHTML = data.notifications.map(n => `
-                                    <a href="/Orders" class="notif-item" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F5F9;text-decoration:none;">
-                                        <div style="width:36px;height:36px;border-radius:10px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:14px;flex-shrink:0;">
+                                if (badgeEl) badgeEl.textContent = data.count;
+                                if (countPill) countPill.textContent = `${data.count} récentes`;
+
+                                if (data.notifications.length > 0) {
+                                    listEl.innerHTML = data.notifications.map(n => `
+                                        <a href="/Orders" class="notif-item" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #F1F5F9;text-decoration:none;">
+                                            <div style="width:36px;height:36px;border-radius:10px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:14px;flex-shrink:0;">
+                                                <i class="fa-solid fa-bag-shopping"></i>
+                                            </div>
+                                            <div style="flex:1;font-size:12px;">
+                                                <div style="color:#0F172A;font-weight:600;">Commande <strong>#${escapeHtml(n.orderIdDisplay)}</strong></div>
+                                                <div style="color:#64748B;font-size:11px;margin-top:2px;">
+                                                    <span>${escapeHtml(n.name)} (${escapeHtml(n.serviceType)})</span> • <strong style="color:#16A34A;">${escapeHtml(n.totalPrice)} DNT</strong> <span style="margin-left:4px;color:#94A3B8;">${escapeHtml(n.time)}</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    `).join('');
+                                } else {
+                                    listEl.innerHTML = `<div style="padding:20px;text-align:center;color:#64748B;font-size:13px;">Aucune notification récente</div>`;
+                                }
+                            }
+                        } catch(err) {
+                            console.error('Error fetching notifications:', err);
+                        }
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                        notifDropdown.hidden = true;
+                    }
+                });
+            }
+
+            // ── 🔍 Live Global Search Logic ──────────────────────────────────
+            const globalSearchInput = document.getElementById('globalSearch');
+            const searchDropdown = document.getElementById('searchResultsDropdown');
+
+            let searchDebounce = null;
+            if (globalSearchInput && searchDropdown) {
+                globalSearchInput.addEventListener('input', () => {
+                    clearTimeout(searchDebounce);
+                    const query = globalSearchInput.value.trim();
+
+                    if (query.length < 1) {
+                        searchDropdown.hidden = true;
+                        return;
+                    }
+
+                    searchDebounce = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                            const data = await res.json();
+
+                            if (!data.success || (!data.dishes.length && !data.orders.length && !data.categories.length)) {
+                                searchDropdown.innerHTML = `<div style="padding:16px;text-align:center;color:#64748B;font-size:12px;">Aucun résultat pour "${escapeHtml(query)}"</div>`;
+                                searchDropdown.hidden = false;
+                                return;
+                            }
+
+                            let html = '';
+
+                            if (data.orders.length > 0) {
+                                html += `<div class="search-group-title">🛒 Commandes (${data.orders.length})</div>`;
+                                html += data.orders.map(o => `
+                                    <a href="/Orders" class="search-result-item">
+                                        <div style="width:32px;height:32px;border-radius:8px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:12px;flex-shrink:0;">
                                             <i class="fa-solid fa-bag-shopping"></i>
                                         </div>
-                                        <div style="flex:1;font-size:12px;">
-                                            <div style="color:#0F172A;font-weight:600;">Commande <strong>#${n.orderIdDisplay}</strong></div>
-                                            <div style="color:#64748B;font-size:11px;margin-top:2px;">
-                                                <span>${n.name} (${n.serviceType})</span> • <strong style="color:#16A34A;">${n.totalPrice} DNT</strong> <span style="margin-left:4px;color:#94A3B8;">${n.time}</span>
-                                            </div>
+                                        <div style="flex:1;">
+                                            <div class="search-result-title">Commande <strong>#${escapeHtml(o.orderIdDisplay)}</strong> (${escapeHtml(o.name)})</div>
+                                            <div class="search-result-subtitle">${escapeHtml(o.date)} • <strong style="color:#16A34A;">${escapeHtml(o.totalPrice)} DNT</strong></div>
                                         </div>
                                     </a>
                                 `).join('');
-                            } else {
-                                listEl.innerHTML = `<div style="padding:20px;text-align:center;color:#64748B;font-size:13px;">Aucune notification récente</div>`;
                             }
+
+                            if (data.dishes.length > 0) {
+                                html += `<div class="search-group-title">🍔 Plats du Menu (${data.dishes.length})</div>`;
+                                html += data.dishes.map(d => `
+                                    <a href="/Menu_Dishes" class="search-result-item">
+                                        <img src="${escapeHtml(d.imageUrl)}" alt="${escapeHtml(d.title)}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" onerror="this.src='/images/Admin_image.png'">
+                                        <div style="flex:1;">
+                                            <div class="search-result-title">${escapeHtml(d.title)}</div>
+                                            <div class="search-result-subtitle">${escapeHtml(d.category)} • <strong style="color:#B8975A;">${escapeHtml(d.price)} DNT</strong></div>
+                                        </div>
+                                    </a>
+                                `).join('');
+                            }
+
+                            if (data.categories.length > 0) {
+                                html += `<div class="search-group-title">📁 Catégories (${data.categories.length})</div>`;
+                                html += data.categories.map(c => `
+                                    <a href="/Categories" class="search-result-item">
+                                        <div style="width:32px;height:32px;border-radius:8px;background:#F1F5F9;color:#475569;display:grid;place-items:center;font-size:12px;flex-shrink:0;">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </div>
+                                        <div style="flex:1;">
+                                            <div class="search-result-title">${escapeHtml(c.name)}</div>
+                                        </div>
+                                    </a>
+                                `).join('');
+                            }
+
+                            searchDropdown.innerHTML = html;
+                            searchDropdown.hidden = false;
+                        } catch(e) {
+                            console.error('Search error:', e);
                         }
-                    } catch(err) {}
-                }
-            });
+                    }, 200);
+                });
 
-        }
-
-        // ── 🔍 Live Global Search Logic ──────────────────────────────────
-        const globalSearchInput = document.getElementById('globalSearch');
-        const searchDropdown = document.getElementById('searchResultsDropdown');
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === '/' && document.activeElement !== globalSearchInput) {
-                e.preventDefault();
-                if (globalSearchInput) globalSearchInput.focus();
+                document.addEventListener('click', (e) => {
+                    if (!searchDropdown.contains(e.target) && !globalSearchInput.contains(e.target)) {
+                        searchDropdown.hidden = true;
+                    }
+                });
             }
         });
-
-        let searchDebounce = null;
-        if (globalSearchInput && searchDropdown) {
-            globalSearchInput.addEventListener('input', () => {
-                clearTimeout(searchDebounce);
-                const query = globalSearchInput.value.trim();
-
-                if (query.length < 1) {
-                    searchDropdown.hidden = true;
-                    return;
-                }
-
-                searchDebounce = setTimeout(async () => {
-                    try {
-                        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                        const data = await res.json();
-
-                        if (!data.success || (!data.dishes.length && !data.orders.length && !data.categories.length)) {
-                            searchDropdown.innerHTML = `<div style="padding:16px;text-align:center;color:#64748B;font-size:12px;">Aucun résultat pour "${escapeHtml(query)}"</div>`;
-                            searchDropdown.hidden = false;
-                            return;
-                        }
-
-                        let html = '';
-
-                        if (data.orders.length > 0) {
-                            html += `<div class="search-group-title">🛒 Commandes (${data.orders.length})</div>`;
-                            html += data.orders.map(o => `
-                                <a href="/Orders" class="search-result-item">
-                                    <div style="width:32px;height:32px;border-radius:8px;background:#FFF7ED;color:#EA580C;display:grid;place-items:center;font-size:12px;flex-shrink:0;">
-                                        <i class="fa-solid fa-bag-shopping"></i>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <div class="search-result-title">Commande <strong>#${o.orderIdDisplay}</strong> (${o.name})</div>
-                                        <div class="search-result-subtitle">${o.date} • <strong style="color:#16A34A;">${o.totalPrice} DNT</strong></div>
-                                    </div>
-                                </a>
-                            `).join('');
-                        }
-
-                        if (data.dishes.length > 0) {
-                            html += `<div class="search-group-title">🍔 Plats du Menu (${data.dishes.length})</div>`;
-                            html += data.dishes.map(d => `
-                                <a href="/Menu_Dishes" class="search-result-item">
-                                    <img src="${d.imageUrl}" alt="${d.title}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" onerror="this.src='/images/Admin_image.png'">
-                                    <div style="flex:1;">
-                                        <div class="search-result-title">${d.title}</div>
-                                        <div class="search-result-subtitle">${d.category} • <strong style="color:#B8975A;">${d.price} DNT</strong></div>
-                                    </div>
-                                </a>
-                            `).join('');
-                        }
-
-                        if (data.categories.length > 0) {
-                            html += `<div class="search-group-title">📁 Catégories (${data.categories.length})</div>`;
-                            html += data.categories.map(c => `
-                                <a href="/Categories" class="search-result-item">
-                                    <div style="width:32px;height:32px;border-radius:8px;background:#F1F5F9;color:#475569;display:grid;place-items:center;font-size:12px;flex-shrink:0;">
-                                        <i class="fa-solid fa-layer-group"></i>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <div class="search-result-title">${c.name}</div>
-                                    </div>
-                                </a>
-                            `).join('');
-                        }
-
-                        searchDropdown.innerHTML = html;
-                        searchDropdown.hidden = false;
-                    } catch(e) {}
-                }, 200);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!searchDropdown.contains(e.target) && !globalSearchInput.contains(e.target)) {
-                    searchDropdown.hidden = true;
-                }
-            });
-        }
 
         window.addEventListener('load', () => {
             initQRCode();
