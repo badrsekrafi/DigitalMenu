@@ -556,7 +556,7 @@ app.get('/api/notifications', async (req, res) => {
 app.get('/api/search', async (req, res) => {
     try {
         const query = String(req.query.q || '').trim();
-        if (!query || query.length < 2) {
+        if (!query || query.length < 1) {
             return res.json({ success: true, dishes: [], orders: [], categories: [] });
         }
 
@@ -564,21 +564,33 @@ app.get('/api/search', async (req, res) => {
         const regex = new RegExp(escapedQuery, 'i');
 
         const [dishes, ordersList, categoriesList] = await Promise.all([
-            MenuItem.find({ $or: [{ title: regex }, { category: regex }, { description: regex }] }).limit(5).lean(),
+            MenuItem.find({
+                $or: [
+                    { title: regex },
+                    { category: regex },
+                    { description: regex }
+                ]
+            }).limit(8).lean(),
             Order.find({
                 $or: [
                     { name: regex },
                     { PhoneNumber: regex },
                     { TableNumber: regex },
-                    { comment: regex }
+                    { comment: regex },
+                    { 'items.itemName': regex }
                 ]
-            }).sort({ createdAt: -1 }).limit(5).lean(),
-            Category.find({ Category_Name: regex }).limit(5).lean()
+            }).sort({ createdAt: -1 }).limit(8).lean(),
+            Category.find({
+                $or: [
+                    { title: regex },
+                    { description: regex }
+                ]
+            }).limit(8).lean()
         ]);
 
         const formattedDishes = dishes.map(d => ({
             id: String(d._id),
-            title: d.title,
+            title: d.title || 'Sans titre',
             category: d.category || 'Sans catégorie',
             price: Number(d.price || 0).toFixed(2),
             imageUrl: d.imageUrl || '/images/Admin_image.png'
@@ -595,7 +607,7 @@ app.get('/api/search', async (req, res) => {
 
         const formattedCategories = categoriesList.map(c => ({
             id: String(c._id),
-            name: c.Category_Name
+            name: c.title || c.Category_Name || 'Catégorie'
         }));
 
         res.json({
@@ -605,6 +617,7 @@ app.get('/api/search', async (req, res) => {
             categories: formattedCategories
         });
     } catch (e) {
+        console.error('Search API error:', e);
         res.status(500).json({ success: false, dishes: [], orders: [], categories: [] });
     }
 });
