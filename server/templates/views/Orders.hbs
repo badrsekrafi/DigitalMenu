@@ -40,42 +40,43 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Nom</th>
-                                    <th>Téléphone</th>
-                                    <th>Email</th>
-                                    <th>Type</th>
-                                    <th>Places</th>
-                                    <th>Table</th>
-                                    <th>Réservation</th>
+                                    <th>Commande</th>
+                                    <th>Client & Contact</th>
+                                    <th>Service / Table</th>
                                     <th>Commentaire</th>
-                                    <th>Articles</th>
+                                    <th>Articles & Statuts</th>
                                     <th>Montant</th>
-                                    <th>Statut</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {{#each orders}}
                                 <tr data-order-raw-id="{{orderId}}">
-                                    <td data-label="ID"><code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;">{{orderIdDisplay}}</code></td>
-                                    <td data-label="Date" style="color:#64748B;font-size:12px;white-space:nowrap;">{{createdAtDisplay}}</td>
-                                    <td data-label="Nom"><strong style="font-size:13px;">{{name}}</strong></td>
-                                    <td data-label="Téléphone" style="color:#64748B;font-size:12px;">
-                                        {{PhoneNumber}}
-                                        {{#if whatsappLink}}
-                                        <a href="{{whatsappLink}}" target="_blank" rel="noopener noreferrer" title="Envoyer un WhatsApp au client" style="color:#25D366;font-size:15px;margin-left:6px;text-decoration:none;display:inline-block;vertical-align:middle;">
-                                            <i class="fa-brands fa-whatsapp"></i>
-                                        </a>
-                                        {{/if}}
+                                    <td data-label="Commande">
+                                        <code style="font-size:11px;background:#F1F5F9;padding:2px 6px;border-radius:4px;font-weight:700;">{{orderIdDisplay}}</code>
+                                        <div style="color:#64748B;font-size:11px;margin-top:4px;white-space:nowrap;">{{createdAtDisplay}}</div>
                                     </td>
-                                    <td data-label="Email" style="color:#64748B;font-size:12px;">{{email}}</td>
-                                    <td data-label="Type"><span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span></td>
-                                    <td data-label="Places" style="color:#64748B;">{{seatCount}}</td>
-                                    <td data-label="Table" style="font-weight:600;">{{tableDisplay}}</td>
-                                    <td data-label="Réservation" style="color:#64748B;font-size:12px;">{{reservationLabel}}</td>
-                                    <td data-label="Commentaire" class="comment-cell">{{commentDisplay}}</td>
+                                    <td data-label="Client">
+                                        <strong style="font-size:13px;display:block;color:#0F172A;">{{name}}</strong>
+                                        <div style="color:#64748B;font-size:11px;display:flex;align-items:center;gap:4px;margin-top:2px;">
+                                            <span>{{PhoneNumber}}</span>
+                                            {{#if whatsappLink}}
+                                            <a href="{{whatsappLink}}" target="_blank" rel="noopener noreferrer" title="Envoyer un WhatsApp au client" style="color:#25D366;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;">
+                                                <i class="fa-brands fa-whatsapp"></i>
+                                            </a>
+                                            {{/if}}
+                                        </div>
+                                        {{#if email}}<div style="color:#94A3B8;font-size:10px;">{{email}}</div>{{/if}}
+                                    </td>
+                                    <td data-label="Service">
+                                        <span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span>
+                                        <div style="font-size:12px;font-weight:600;margin-top:3px;color:#1E293B;">
+                                            {{#if tableDisplay}}Table {{tableDisplay}}{{/if}}
+                                            <span style="font-weight:normal;color:#64748B;font-size:11px;">({{seatCount}} p.)</span>
+                                        </div>
+                                        {{#if reservationLabel}}<div style="font-size:10px;color:#EA580C;margin-top:2px;">{{reservationLabel}}</div>{{/if}}
+                                    </td>
+                                    <td data-label="Commentaire" class="comment-cell" style="max-width:140px;font-size:11px;color:#64748B;">{{commentDisplay}}</td>
                                     <td data-label="Articles" class="items-cell">
                                         <div class="item-status-list">
                                         {{#each items}}
@@ -99,13 +100,14 @@
                                         {{/each}}
                                         </div>
                                     </td>
-                                    <td data-label="Montant"><strong class="order-total-cell" data-order-id="{{_id}}" style="color:#16A34A;">{{totalPriceDisplay}} DNT</strong></td>
-                                    <td data-label="Statut"><span class="order-status">{{statusLabel}}</span></td>
+                                    <td data-label="Montant"><strong class="order-total-cell" data-order-id="{{_id}}" style="color:#16A34A;font-size:14px;white-space:nowrap;">{{totalPriceDisplay}} DNT</strong></td>
                                     <td data-label="Actions" style="white-space:nowrap;">
-                                        <button type="button" class="details-button">Voir tout</button>
-                                        <button type="button" onclick="printReceiptFromRow(this)" class="details-button" style="background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;margin-left:4px;" title="Imprimer le ticket de caisse 80mm">
-                                            <i class="fa-solid fa-print"></i> Ticket
-                                        </button>
+                                        <div style="display:flex;gap:4px;">
+                                            <button type="button" class="details-button" style="padding:0 10px;height:30px;font-size:11px;">Voir tout</button>
+                                            <button type="button" onclick="printReceiptFromRow(this)" class="details-button" style="background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;padding:0 8px;height:30px;font-size:11px;" title="Imprimer Ticket 80mm">
+                                                <i class="fa-solid fa-print"></i> Ticket
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 {{/each}}
@@ -352,12 +354,12 @@
             const tr = btn.closest('tr');
             if (!tr) return;
 
-            const orderId = tr.querySelector('td[data-label="ID"] code')?.textContent || '-';
-            const date = tr.querySelector('td[data-label="Date"]')?.textContent || '-';
-            const clientName = tr.querySelector('td[data-label="Nom"] strong')?.textContent || '-';
-            const phone = tr.querySelector('td[data-label="Téléphone"]')?.childNodes[0]?.textContent?.trim() || '-';
+            const orderId = tr.querySelector('code')?.textContent || '-';
+            const date = tr.querySelector('td[data-label="Commande"] div')?.textContent || '-';
+            const clientName = tr.querySelector('td[data-label="Client"] strong')?.textContent || '-';
+            const phone = tr.querySelector('td[data-label="Client"] span')?.textContent || '-';
             const serviceType = tr.querySelector('.order-type')?.textContent || '-';
-            const tableNum = tr.querySelector('td[data-label="Table"]')?.textContent || '-';
+            const tableNum = tr.querySelector('td[data-label="Service"] div')?.textContent || '-';
             const total = tr.querySelector('.order-total-cell')?.textContent || '0.00 DNT';
 
             const itemRows = Array.from(tr.querySelectorAll('.item-status-row')).map(row => {
