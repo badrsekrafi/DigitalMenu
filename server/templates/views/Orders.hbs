@@ -238,9 +238,8 @@
         document.querySelectorAll('.item-status-select').forEach((select) => {
             select.addEventListener('change', async () => {
                 const previousStatus = select.dataset.currentStatus;
-                const row  = select.closest('.item-status-row');
+                const card = select.closest('.item-status-card');
                 const tr   = select.closest('tr');
-                const pill = row.querySelector('.item-status-pill');
                 select.disabled = true;
 
                 try {
@@ -256,19 +255,22 @@
                     if (!response.ok || !data.success) throw new Error(data.error || 'Erreur.');
 
                     select.dataset.currentStatus = data.item.status;
-                    pill.className = `item-status-pill ${data.item.statusClass}`;
-                    pill.textContent = data.item.statusLabel;
+                    select.className = `item-status-select select-${data.item.status}`;
+
+                    if (card) {
+                        card.className = `item-status-card status-border-${data.item.status}`;
+                        const dot = card.querySelector('.item-dot');
+                        if (dot) dot.className = `item-dot dot-${data.item.status}`;
+                        const nameEl = card.querySelector('.item-card-title');
+                        if (nameEl) {
+                            nameEl.style.textDecoration = data.item.status === 'cancel' ? 'line-through' : '';
+                            nameEl.style.opacity = data.item.status === 'cancel' ? '0.45' : '';
+                        }
+                    }
 
                     // Update total price in the row live
                     if (data.newTotalPrice !== undefined) {
                         updateTotalCell(tr, data.newTotalPrice);
-                    }
-
-                    // If cancelled: visually strike-through item name
-                    const nameEl = row.querySelector('.item-status-name');
-                    if (nameEl) {
-                        nameEl.style.textDecoration = data.item.status === 'cancel' ? 'line-through' : '';
-                        nameEl.style.opacity = data.item.status === 'cancel' ? '0.45' : '';
                     }
 
                 } catch (error) {

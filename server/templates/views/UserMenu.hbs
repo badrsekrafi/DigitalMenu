@@ -397,9 +397,80 @@
                     .replace(/'/g, '&#039;');
             }
 
+            if ("Notification" in window && Notification.permission === "default") {
+                try { Notification.requestPermission(); } catch(e) {}
+            }
+
+            function playStatusChangeChime() {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    const ctx = new AudioCtx();
+                    const now = ctx.currentTime;
+
+                    const osc1 = ctx.createOscillator();
+                    const osc2 = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc1.type = 'sine';
+                    osc2.type = 'triangle';
+                    osc1.frequency.setValueAtTime(523.25, now);
+                    osc2.frequency.setValueAtTime(659.25, now + 0.12);
+
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc1.start(now);
+                    osc1.stop(now + 0.12);
+                    osc2.start(now + 0.12);
+                    osc2.stop(now + 0.6);
+                } catch(e) {}
+            }
+
+            const STATUS_LABELS_MAP = {
+                pending: '🟡 En attente',
+                en_cours: '🔵 En cours de préparation',
+                pret: '🟢 Prêt ! Venez récupérer',
+                cancel: '🔴 Annulée'
+            };
+
+            const clientItemStatuses = new Map();
+
+            function checkItemStatusChanges(allItems) {
+                allItems.forEach(item => {
+                    const key = `${item.orderId || ''}-${item.itemIndex}`;
+                    const prevStatus = clientItemStatuses.get(key);
+                    const currentStatus = item.status;
+
+                    if (prevStatus && prevStatus !== currentStatus) {
+                        playStatusChangeChime();
+
+                        const statusText = STATUS_LABELS_MAP[currentStatus] || currentStatus;
+                        const title = `🔔 Le Patio Djerba`;
+                        const body = `${item.itemName} ➔ ${statusText}`;
+
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            try {
+                                new Notification(title, {
+                                    body: body,
+                                    icon: "/images/logo.png",
+                                    vibrate: [200, 100, 200]
+                                });
+                            } catch(e) {}
+                        }
+                    }
+                    clientItemStatuses.set(key, currentStatus);
+                });
+            }
+
             function renderOrderStatus(data) {
                 const allItems = data.orders.flatMap((order) => order.items.map((item) => ({
                     ...item,
+                    orderId: order.orderId,
                     orderIdDisplay: order.orderIdDisplay,
                     serviceTypeLabel: order.serviceTypeLabel,
                     tableDisplay: order.tableDisplay,
@@ -412,25 +483,21 @@
                     return;
                 }
 
-                const orderStatusKeys = data.orders.map((order) => order.orderId).join('|');
-                if (orderStatusKeys !== lastOrderStatusKeys) {
-                    orderStatusDismissed = false;
-                    lastOrderStatusKeys = orderStatusKeys;
-                }
+                checkItemStatusChanges(allItems);
 
-                if (!orderStatusDismissed) {
-                    orderStatusPanel.hidden = false;
-                    orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
-                    orderStatusList.innerHTML = allItems.map((item) => `
-                        <div class="client-order-status-row">
-                            <div>
-                                <span>${escapeHtml(item.orderIdDisplay)}</span>
-                                <strong>${escapeHtml(item.itemName)}</strong>
-                            </div>
-                            <em class="${escapeHtml(item.statusClass)}">${escapeHtml(item.statusLabel)}</em>
+                orderStatusPanel.hidden = false;
+                orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
+                orderStatusList.innerHTML = allItems.map((item) => `
+                    <div class="client-order-status-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F9;">
+                        <div>
+                            <span style="font-size:10px;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:#64748B;font-weight:700;">#${escapeHtml(item.orderIdDisplay)}</span>
+                            <strong style="font-size:13px;color:#0F172A;margin-left:4px;">${escapeHtml(item.itemName)}</strong>
                         </div>
-                    `).join('');
-                }
+                        <em class="${escapeHtml(item.statusClass)}" style="font-style:normal;font-weight:600;font-size:12px;">
+                            ${escapeHtml(STATUS_LABELS_MAP[item.status] || item.statusLabel)}
+                        </em>
+                    </div>
+                `).join('');
 
                 const notifiedReadyItems = getNotifiedReadyItems();
                 const nextNotifiedReadyItems = [...notifiedReadyItems];
@@ -465,7 +532,7 @@
             }
 
             refreshOrderStatus();
-            setInterval(refreshOrderStatus, 15000);
+            setInterval(refreshOrderStatus, 3000);
 
             orderStatusClose.addEventListener('click', () => {
                 orderStatusDismissed = true;
@@ -534,19 +601,6 @@
             if (langSelect) langSelect.value = savedLang;
             changeLanguage(savedLang);
         });
-
-        // ── ⭐ Customer Rating Modal ──────────────────────────────────────
-        let currentSelectedRating = 5;
-
-        function openRatingModal() {
-            const modal = document.getElementById('ratingModal');
-            if (modal) modal.hidden = false;
-        }
-
-        function closeRatingModal() {
-            const modal = document.getElementById('ratingModal');
-            if (modal) modal.hidden = true;
-        }
 
         function selectRating(stars) {
             currentSelectedRating = stars;
