@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalMenu - Studio Marketing & Affiches Publicitaires</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --primary-gold: #f59e0b;
+            --primary-amber: #d97706;
+            --accent-emerald: #10b981;
+            --accent-indigo: #6366f1;
+            --accent-purple: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow-glow: 0 10px 30px -10px rgba(245, 158, 11, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Tajawal', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+            padding-bottom: 60px;
+        }
+
+        /* Header */
+        header.top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-card);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .brand-logo i {
+            font-size: 1.8rem;
+            color: var(--primary-gold);
+        }
+
+        .brand-logo h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo span {
+            color: var(--primary-gold);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            padding: 6px;
+            border-radius: 30px;
+            border: 1px solid var(--border-card);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary-gold), var(--primary-amber));
+            color: #0f172a;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-back-dash {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            transition: all 0.2s;
+        }
+
+        .btn-back-dash:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-banner h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .hero-banner p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Main Content Panels */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* VIDEO STUDIO SECTION */
+        .video-studio-grid {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Phone Frame */
+        .phone-container {
+            background: #000;
+            width: 380px;
+            height: 720px;
+            border-radius: 45px;
+            padding: 14px;
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.8), 0 0 0 12px #1e293b, 0 0 0 14px rgba(255,255,255,0.1);
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(180deg, #090d16 0%, #1e1b4b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 24px;
+            background: #1e293b;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notch-camera {
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        /* Video Scene Layer */
+        .scene-display {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .scene-bg-glow {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .scene-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        .scene-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--primary-gold);
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+            animation: pulseIcon 2s infinite alternate;
+        }
+
+        @keyframes pulseIcon {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .scene-headline {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            color: white;
+        }
+
+        .scene-subtext {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
+            font-weight: 500;
+            background: rgba(0,0,0,0.4);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .scene-badge {
+            display: inline-block;
+            background: var(--primary-gold);
+            color: #000;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        /* Overlay TikTok UI elements */
+        .tiktok-sidebar {
+            position: absolute;
+            right: 12px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            z-index: 40;
+            align-items: center;
+        }
+
+        .tiktok-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            font-size: 1.3rem;
+            gap: 4px;
+        }
+
+        .tiktok-btn span {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .video-bottom-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            right: 60px;
+            z-index: 40;
+            text-align: left;
+        }
+
+        .video-bottom-caption h4 {
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .video-bottom-caption p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Video Controls Panel */
+        .controls-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .controls-header h3 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scene-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .scene-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-gold), var(--accent-emerald));
+            transition: width 0.3s linear;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-gold), var(--primary-amber));
+            color: #0f172a;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid var(--border-card);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-secondary.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-emerald);
+            color: var(--accent-emerald);
+        }
+
+        /* Scenes Selector Timeline */
+        .scenes-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .scene-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-card);
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scene-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .scene-card.active {
+            border-color: var(--primary-gold);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .scene-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .scene-card.active .scene-num {
+            background: var(--primary-gold);
+            color: #0f172a;
+        }
+
+        .scene-info {
+            flex: 1;
+        }
+
+        .scene-info h4 {
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .scene-info p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* Voiceover Script Box */
+        .script-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px dashed var(--primary-gold);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .script-box h4 {
+            font-size: 0.9rem;
+            color: var(--primary-gold);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .script-text {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #f1f5f9;
+            direction: rtl;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 500;
+        }
+
+        /* POSTERS SECTION */
+        .posters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .poster-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .poster-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary-gold);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .poster-img-wrap {
+            width: 100%;
+            height: 380px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        .poster-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .poster-card:hover .poster-img-wrap img {
+            transform: scale(1.05);
+        }
+
+        .poster-body {
+            padding: 20px;
+        }
+
+        .poster-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .poster-body h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .poster-body p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+
+        .poster-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Canvas Customizer Studio */
+        .customizer-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+
+        #posterCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .custom-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .custom-form h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: var(--primary-gold);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-card);
+            padding: 12px 14px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+
+        /* MARKETING COPYWRITING SECTION */
+        .copy-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .copy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .copy-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .copy-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .copy-card-header h4 {
+            font-size: 1.1rem;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-content {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #e2e8f0;
+            white-space: pre-line;
+            direction: rtl;
+            background: rgba(0,0,0,0.3);
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .copy-card-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--accent-emerald);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="top-bar">
+        <a href="/Home" class="brand-logo">
+            <i class="fa-solid fa-bullhorn"></i>
+            <div>
+                <h1>Digital<span>Menu</span> Studio</h1>
+            </div>
+        </a>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('videoTab', this)">
+                <i class="fa-solid fa-video"></i> Video Reels (TikTok)
+            </button>
+            <button class="tab-btn" onclick="switchTab('postersTab', this)">
+                <i class="fa-solid fa-image"></i> Affiches Publicitaires
+            </button>
+            <button class="tab-btn" onclick="switchTab('copyTab', this)">
+                <i class="fa-solid fa-comment-dots"></i> Scripts & WhatsApp
+            </button>
+        </div>
+
+        <a href="/Home" class="btn-back-dash">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+    </header>
+
+    <div class="container">
+
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <h2>Pack Publicitaire & Marketing Client</h2>
+            <p>Découvrez vos vidéos promotionnelles TikTok/Reels avec voix off en Darija, vos affiches HD imprimables et vos messages de prospection WhatsApp prêt à l'envoi !</p>
+        </div>
+
+        <!-- TAB 1: VIDEO REELS STUDIO -->
+        <div id="videoTab" class="tab-content active">
+            <div class="video-studio-grid">
+                
+                <!-- Phone Mockup -->
+                <div class="phone-container">
+                    <div class="phone-notch">
+                        <div class="notch-camera"></div>
+                    </div>
+
+                    <div class="phone-screen" id="phoneScreen">
+                        <!-- Scene Display -->
+                        <div class="scene-display" id="sceneDisplay">
+                            <div class="scene-bg-glow" id="sceneGlow"></div>
+                            <div class="scene-content">
+                                <span class="scene-badge" id="sceneBadge">SCÈNE 1 / 5</span>
+                                <div class="scene-icon" id="sceneIcon">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <h3 class="scene-headline" id="sceneHeadline">تعبت من المنيو الورقي؟</h3>
+                                <p class="scene-subtext" id="sceneSubtext">الـ Clients يستناو بزاف؟ والأوراق يتقطعو ويتمسخو؟</p>
+                            </div>
+                        </div>
+
+                        <!-- TikTok Overlay UI -->
+                        <div class="tiktok-sidebar">
+                            <div class="tiktok-btn">
+                                <i class="fa-solid fa-heart" style="color: #ef4444;"></i>
+                                <span>24.5K</span>
+                            </div>
+                            <div class="tiktok-btn">
+                                <i class="fa-solid fa-comment-dots"></i>
+                                <span>1.2K</span>
+                            </div>
+                            <div class="tiktok-btn">
+                                <i class="fa-solid fa-share"></i>
+                                <span>Share</span>
+                            </div>
+                        </div>
+
+                        <div class="video-bottom-caption">
+                            <h4>@DigitalMenu_Tn</h4>
+                            <p>#DigitalMenu #Tunisie #Restaurant #QRMenu #RestoTech</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Controls & Timeline -->
+                <div class="controls-panel">
+                    <div class="controls-header">
+                        <h3><i class="fa-solid fa-clapperboard" style="color: var(--primary-gold);"></i> Simulateur Vidéo Reels (9:16)</h3>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Durée: 25s | Format: TikTok & Instagram</span>
+                    </div>
+
+                    <div class="scene-progress-bar">
+                        <div class="scene-progress-fill" id="progressFill"></div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="action-buttons">
+                        <button class="btn-action btn-primary" id="btnPlay" onclick="togglePlay()">
+                            <i class="fa-solid fa-play"></i> Lancer la Vidéo
+                        </button>
+                        <button class="btn-action btn-secondary" id="btnVoice" onclick="toggleVoiceover()">
+                            <i class="fa-solid fa-volume-high"></i> Voix Off (Darija)
+                        </button>
+                        <button class="btn-action btn-secondary" id="btnSound" onclick="toggleBeats()">
+                            <i class="fa-solid fa-music"></i> Audio Beats
+                        </button>
+                    </div>
+
+                    <!-- Timeline Scenes Selector -->
+                    <div class="scenes-timeline">
+                        <div class="scene-card active" onclick="selectScene(0)">
+                            <div class="scene-num">1</div>
+                            <div class="scene-info">
+                                <h4>Le Problème (Hook)</h4>
+                                <p>المنيو الورقي والمشاكل متاع الترتيب والانتظار</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+
+                        <div class="scene-card" onclick="selectScene(1)">
+                            <div class="scene-num">2</div>
+                            <div class="scene-info">
+                                <h4>La Solution QR Code</h4>
+                                <p>سكاني الـ QR بوهلة واحدة من التليفون</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+
+                        <div class="scene-card" onclick="selectScene(2)">
+                            <div class="scene-num">3</div>
+                            <div class="scene-info">
+                                <h4>Le Menu Interactif</h4>
+                                <p>صور أطباق تسخّف وأسعار واضحة</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+
+                        <div class="scene-card" onclick="selectScene(3)">
+                            <div class="scene-num">4</div>
+                            <div class="scene-info">
+                                <h4>Commande en Caisse & Cuisine</h4>
+                                <p>الطلب يوصل للكوجينة في نفس اللحظة</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+
+                        <div class="scene-card" onclick="selectScene(4)">
+                            <div class="scene-num">5</div>
+                            <div class="scene-info">
+                                <h4>Call To Action & Contact</h4>
+                                <p>كبّر مبيعاتك وطوّر مطعمك توا!</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+                    </div>
+
+                    <!-- Script box -->
+                    <div class="script-box">
+                        <h4><i class="fa-solid fa-microphone"></i> التعليق الصوتي المباشر (Voiceover Script):</h4>
+                        <div class="script-text" id="scriptText">
+                            تعبت من المنيو الورقي والـ Client يستنى كل دقيقة؟
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 2: POSTERS GALLERY & CUSTOMIZER -->
+        <div id="postersTab" class="tab-content">
+            
+            <div class="posters-grid">
+                <!-- Poster 1 -->
+                <div class="poster-card">
+                    <div class="poster-img-wrap">
+                        <img src="/images/marketing/b2b_poster.jpg" alt="Affiche B2B DigitalMenu">
+                    </div>
+                    <div class="poster-body">
+                        <span class="poster-badge">B2B Resto Owners</span>
+                        <h3>Affiche Prestige Resto & Café</h3>
+                        <p>Affiche haute définition idéale pour démarcher les propriétaires de restaurants, salons de thé et hôtels.</p>
+                        <div class="poster-actions">
+                            <a href="/images/marketing/b2b_poster.jpg" download="DigitalMenu_Affiche_Prestige.jpg" class="btn-action btn-primary" style="text-decoration: none;">
+                                <i class="fa-solid fa-download"></i> Télécharger HD
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Poster 2 -->
+                <div class="poster-card">
+                    <div class="poster-img-wrap">
+                        <img src="/images/marketing/table_poster.jpg" alt="Affiche Table QR Code">
+                    </div>
+                    <div class="poster-body">
+                        <span class="poster-badge">Sur Table & Comptoir</span>
+                        <h3>Affiche QR Code Table Tent</h3>
+                        <p>Format vertical conçu pour être placé sur les tables ou le comptoir pour inviter les clients à scanner.</p>
+                        <div class="poster-actions">
+                            <a href="/images/marketing/table_poster.jpg" download="DigitalMenu_Affiche_Table.jpg" class="btn-action btn-primary" style="text-decoration: none;">
+                                <i class="fa-solid fa-download"></i> Télécharger HD
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Poster 3 -->
+                <div class="poster-card">
+                    <div class="poster-img-wrap">
+                        <img src="/images/marketing/social_poster.jpg" alt="Banner Social Media">
+                    </div>
+                    <div class="poster-body">
+                        <span class="poster-badge">Instagram & WhatsApp Story</span>
+                        <h3>Bannière Réseaux Sociaux</h3>
+                        <p>Design carré 1:1 parfait pour vos publications Instagram, sponsorisations Facebook et statut WhatsApp.</p>
+                        <div class="poster-actions">
+                            <a href="/images/marketing/social_poster.jpg" download="DigitalMenu_Story_Banner.jpg" class="btn-action btn-primary" style="text-decoration: none;">
+                                <i class="fa-solid fa-download"></i> Télécharger HD
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customizer Studio -->
+            <div class="customizer-box">
+                <div class="canvas-area">
+                    <canvas id="posterCanvas" width="600" height="800"></canvas>
+                </div>
+
+                <div class="custom-form">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Personnaliseur d'Affiches</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Entrez le nom de votre établissement et générez votre affiche sur-mesure instantanément :</p>
+
+                    <div class="form-group">
+                        <label>Nom du Restaurant / Café :</label>
+                        <input type="text" id="custRestoName" value="Le Patio Djerba" oninput="drawCustomPoster()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Slogan ou Titre d'Accroche :</label>
+                        <input type="text" id="custSlogan" value="Scannez le QR Code & Commandez !" oninput="drawCustomPoster()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Numéro Téléphone / WhatsApp :</label>
+                        <input type="text" id="custPhone" value="+216 75 000 000" oninput="drawCustomPoster()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Style de Fond :</label>
+                        <select id="custStyle" onchange="drawCustomPoster()">
+                            <option value="dark">Dark Gold Luxury</option>
+                            <option value="emerald">Emerald Neon</option>
+                            <option value="purple">Modern Purple Synth</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-action btn-primary" onclick="downloadCanvasPoster()" style="margin-top: 15px;">
+                        <i class="fa-solid fa-file-export"></i> Télécharger Mon Affiche
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 3: MARKETING COPY & WHATSAPP SCRIPT -->
+        <div id="copyTab" class="tab-content">
+            <div class="copy-section">
+                <h3><i class="fa-solid fa-paper-plane" style="color: var(--primary-gold);"></i> Modèles de Messages Marketing & Prospection</h3>
+                <p style="color: var(--text-muted);">Copiez ces textes optimisés pour vos campagnes WhatsApp, posts Facebook et prospection directe auprès des clients.</p>
+
+                <div class="copy-grid">
+                    
+                    <!-- Message 1 -->
+                    <div class="copy-card">
+                        <div>
+                            <div class="copy-card-header">
+                                <h4><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp Resto Pitch (Darija)</h4>
+                                <span class="poster-badge">Prospection B2B</span>
+                            </div>
+                            <div class="copy-content" id="msg1">
+عصابة السلام! 🍽️
+تحب تطوّر مطعمك ولا الكافيه متاعك وتسهّل على الـ Clients يطلبو في ثواني؟
+
+مع **DigitalMenu**:
+✅ منيو تفاعلي بـ QR Code عصري
+✅ تنقيص وقت الانتظار وتسهيل الخدمة
+✅ متابعة المبيعات والطلبيات المباشرة (Dashboard)
+
+جرّب المنصة توا ولا اتصل بينا للحصول على التجربة المجانية! 📲
+                            </div>
+                        </div>
+                        <div class="copy-card-footer">
+                            <button class="btn-action btn-secondary" onclick="copyText('msg1')">
+                                <i class="fa-solid fa-copy"></i> Copier النص
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message 2 -->
+                    <div class="copy-card">
+                        <div>
+                            <div class="copy-card-header">
+                                <h4><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp Pitch (Français)</h4>
+                                <span class="poster-badge">B2B Pro</span>
+                            </div>
+                            <div class="copy-content" id="msg2" style="direction: ltr; font-family: 'Outfit';">
+Bonjour ! 🍽️
+Digitalisez votre restaurant avec notre solution **DigitalMenu** :
+
+• Menu QR Code moderne et interactif
+• Réduction du temps d'attente sur table
+• Suivi des commandes en direct en cuisine
+• Statistiques et gestion du chiffre d'affaires
+
+Offrez une expérience inédite à vos clients dès aujourd'hui ! 🚀
+                            </div>
+                        </div>
+                        <div class="copy-card-footer">
+                            <button class="btn-action btn-secondary" onclick="copyText('msg2')">
+                                <i class="fa-solid fa-copy"></i> Copier Texte
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message 3 -->
+                    <div class="copy-card">
+                        <div>
+                            <div class="copy-card-header">
+                                <h4><i class="fa-solid fa-photo-film" style="color: var(--accent-purple);"></i> Script Voix Off TikTok / Reels</h4>
+                                <span class="poster-badge">Script 25s</span>
+                            </div>
+                            <div class="copy-content" id="msg3">
+[00:00 - 00:05] تعبت من المنيو الورقي والـ Client يستنى؟
+[00:05 - 00:10] الحل ساهل! سكاني الـ QR واطلب صحنك في ثانية!
+[00:10 - 00:15] صور تشهي، أسعار واضحة وخيارات مخصصة.
+[00:15 - 00:20] والطلب يوصل للكوجينة في نفس اللحظة!
+[00:20 - 00:25] طوّر مطعمك توا مع DigitalMenu!
+                            </div>
+                        </div>
+                        <div class="copy-card-footer">
+                            <button class="btn-action btn-secondary" onclick="copyText('msg3')">
+                                <i class="fa-solid fa-copy"></i> Copier Script
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Copié dans le presse-papier !</div>
+
+    <script>
+        // Scenes Definition
+        const scenes = [
+            {
+                num: "SCÈNE 1 / 5",
+                badgeColor: "#ef4444",
+                glowColor: "#ef4444",
+                icon: "fa-clock",
+                headline: "تعبت من المنيو الورقي؟",
+                subtext: "الـ Clients يستناو بزاف؟ والأوراق يتقطعو ويتمسخو؟",
+                voiceScript: "تعبت من المنيو الورقي والـ Client يستنى كل دقيقة؟"
+            },
+            {
+                num: "SCÈNE 2 / 5",
+                badgeColor: "#f59e0b",
+                glowColor: "#f59e0b",
+                icon: "fa-qrcode",
+                headline: "الحل الذكي: QR Code",
+                subtext: "سكاني الـ QR Code من الطاولة واكتشف المنيو بوهلة واحدة!",
+                voiceScript: "الحل ساهل! سكاني الـ QR واكتشف المنيو التفاعلي الذكي!"
+            },
+            {
+                num: "SCÈNE 3 / 5",
+                badgeColor: "#10b981",
+                glowColor: "#10b981",
+                icon: "fa-utensils",
+                headline: "منيو تفاعلي مع صور تسخّف",
+                subtext: "تصفّح الأطباق، اختار المكونات وأطلب بضغطة زر!",
+                voiceScript: "أطلب صحنك، اختار التفاصيل، وكل شيء يوصلك سخون بنين!"
+            },
+            {
+                num: "SCÈNE 4 / 5",
+                badgeColor: "#6366f1",
+                glowColor: "#6366f1",
+                icon: "fa-bell-concierge",
+                headline: "إشعار مباشر في الكوجينة",
+                subtext: "الطلب يتسجّل في الـ Caisse والمطبخ يشوفو في نفس اللحظة!",
+                voiceScript: "الكوجينة والـ Caisse يشوفو الطلب في نفس الثانية بدون أخطاء!"
+            },
+            {
+                num: "SCÈNE 5 / 5",
+                badgeColor: "#8b5cf6",
+                glowColor: "#8b5cf6",
+                icon: "fa-rocket",
+                headline: "طوّر مطعمك مع DigitalMenu",
+                subtext: "كبّر مبيعاتك ونظّم خدمتك اليوم! اتصل بينا للحصول على التجربة.",
+                voiceScript: "كبّر مشروعك وطوّر مطعمك مع DigitalMenu! اتصل بينا توا!"
+            }
+        ];
+
+        let currentSceneIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let voiceEnabled = false;
+        let beatsEnabled = false;
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+
+            if (tabId === 'postersTab') {
+                setTimeout(drawCustomPoster, 100);
+            }
+        }
+
+        function renderScene(index) {
+            currentSceneIndex = index;
+            const scene = scenes[index];
+
+            document.getElementById('sceneBadge').innerText = scene.num;
+            document.getElementById('sceneBadge').style.background = scene.badgeColor;
+            document.getElementById('sceneGlow').style.background = scene.glowColor;
+            
+            document.getElementById('sceneIcon').innerHTML = `<i class="fa-solid ${scene.icon}"></i>`;
+            document.getElementById('sceneHeadline').innerText = scene.headline;
+            document.getElementById('sceneSubtext').innerText = scene.subtext;
+            document.getElementById('scriptText').innerText = scene.voiceScript;
+
+            // Highlight active scene timeline
+            const cards = document.querySelectorAll('.scene-card');
+            cards.forEach((card, i) => {
+                card.classList.toggle('active', i === index);
+            });
+
+            // Update Progress fill
+            const pct = ((index + 1) / scenes.length) * 100;
+            document.getElementById('progressFill').style.width = pct + '%';
+
+            // Speak Voiceover if enabled
+            if (voiceEnabled && 'speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(scene.voiceScript);
+                utterance.lang = 'ar-TN';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function selectScene(index) {
+            if (isPlaying) togglePlay();
+            renderScene(index);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('btnPlay');
+
+            if (isPlaying) {
+                btn.innerHTML = `<i class="fa-solid fa-pause"></i> Pause Vidéo`;
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-primary');
+
+                playInterval = setInterval(() => {
+                    let next = (currentSceneIndex + 1) % scenes.length;
+                    renderScene(next);
+                }, 4000);
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-play"></i> Lancer la Vidéo`;
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+                clearInterval(playInterval);
+            }
+        }
+
+        function toggleVoiceover() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('btnVoice');
+            btn.classList.toggle('active', voiceEnabled);
+
+            if (voiceEnabled) {
+                renderScene(currentSceneIndex);
+            } else if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Web Audio Synthesizer Beat Simulation
+        let audioCtx = null;
+        let beatTimer = null;
+
+        function toggleBeats() {
+            beatsEnabled = !beatsEnabled;
+            const btn = document.getElementById('btnSound');
+            btn.classList.toggle('active', beatsEnabled);
+
+            if (beatsEnabled) {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let beatCount = 0;
+                beatTimer = setInterval(() => {
+                    if (!beatsEnabled) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = beatCount % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.value = beatCount % 2 === 0 ? 150 : 300;
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                    beatCount++;
+                }, 500);
+            } else {
+                clearInterval(beatTimer);
+            }
+        }
+
+        // CANVAS POSTER BUILDER
+        function drawCustomPoster() {
+            const canvas = document.getElementById('posterCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const name = document.getElementById('custRestoName').value || 'Le Patio Djerba';
+            const slogan = document.getElementById('custSlogan').value || 'Scannez le QR Code';
+            const phone = document.getElementById('custPhone').value || '+216 75 000 000';
+            const style = document.getElementById('custStyle').value;
+
+            // Background Gradient
+            let grad = ctx.createLinearGradient(0, 0, 0, 800);
+            if (style === 'dark') {
+                grad.addColorStop(0, '#0f172a');
+                grad.addColorStop(1, '#1e1b4b');
+            } else if (style === 'emerald') {
+                grad.addColorStop(0, '#064e3b');
+                grad.addColorStop(1, '#022c22');
+            } else {
+                grad.addColorStop(0, '#3b0764');
+                grad.addColorStop(1, '#1e1b4b');
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 600, 800);
+
+            // Glowing circles
+            ctx.save();
+            ctx.fillStyle = style === 'dark' ? '#f59e0b' : style === 'emerald' ? '#10b981' : '#c084fc';
+            ctx.globalAlpha = 0.15;
+            ctx.beginPath();
+            ctx.arc(300, 200, 180, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Header Title
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(name.toUpperCase(), 300, 100);
+
+            // Subtitle
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = '600 20px Outfit, sans-serif';
+            ctx.fillText(slogan, 300, 140);
+
+            // Fake Acrylic QR Stand Box
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(160, 220, 280, 320, 20);
+            } else {
+                ctx.rect(160, 220, 280, 320);
+            }
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw QR pattern simulation
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(190, 250, 220, 220);
+
+            // Inner QR code details
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(210, 270, 50, 50);
+            ctx.fillRect(340, 270, 50, 50);
+            ctx.fillRect(210, 400, 50, 50);
+            ctx.fillRect(280, 330, 40, 40);
+            ctx.fillRect(330, 380, 50, 40);
+
+            // Inner logo box
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(275, 335, 50, 50);
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 22px Outfit';
+            ctx.fillText('DM', 300, 368);
+            ctx.restore();
+
+            // Scan Instructions
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px Outfit, sans-serif';
+            ctx.fillText('SCANNEZ POUR VOIR LE MENU', 300, 600);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '16px Outfit, sans-serif';
+            ctx.fillText('Directement sur votre téléphone • Sans attente', 300, 630);
+
+            // Footer Contact info bar
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.fillRect(40, 690, 520, 65);
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 18px Outfit, sans-serif';
+            ctx.fillText('📞 Téléphone: ' + phone, 300, 730);
+        }
+
+        function downloadCanvasPoster() {
+            const canvas = document.getElementById('posterCanvas');
+            const link = document.createElement('a');
+            link.download = 'Affiche_Custom_DigitalMenu.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            });
+        }
+
+        // Initialize default view
+        renderScene(0);
+    </script>
+</body>
+</html>

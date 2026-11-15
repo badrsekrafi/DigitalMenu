@@ -1,234 +1,419 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/UserMenu.css">
-    <!-- font:Notosnas -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap">
-    <!-- icons:font awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <title>{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} - Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#102B43">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <title>{{#if activeUniverse}}{{activeUniverse.label}} · {{/if}}Le Patio Djerba - Menu</title>
     <!-- SEO -->
-    <meta name="description" content="Commandez en ligne au restaurant {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} — Menu varié, plats, boissons et plus encore.">
+    <meta name="description" content="Menu digital du restaurant {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} — petit déjeuner, plats, douceurs et boissons. Commandez en ligne depuis votre table.">
     <meta name="robots" content="index, follow">
     <!-- Open Graph (partage réseaux sociaux) -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} — Menu">
-    <meta property="og:description" content="Découvrez notre menu et commandez en ligne.">
+    <meta property="og:title" content="{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} — Notre Menu">
+    <meta property="og:description" content="Découvrez nos saveurs et commandez en ligne.">
     <meta property="og:url" content="https://lepatio-djerba.vercel.app/UserMenu">
-    <meta property="og:image" content="https://lepatio-djerba.vercel.app/images/side.jpg">
-    <script src="https://kit.fontawesome.com/ce75bd9e29.js" crossorigin="anonymous"></script>
+    <meta property="og:image" content="https://lepatio-djerba.vercel.app/images/patio/hero-djerba.jpg">
+
+    <!-- Fonts: Playfair Display (titles) + DM Sans (text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@500;600;700&display=swap">
+    <!-- icons: font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="/css/patio-menu.css">
+    <link rel="preload" as="image" href="{{#if activeUniverse}}{{activeUniverse.cover}}{{else}}/images/patio/hero-djerba.jpg{{/if}}">
     <script>
-        window.RESTAURANT_CURRENCY = "{{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}";
+        window.RESTAURANT_CURRENCY = "{{#if currencyLabel}}{{currencyLabel}}{{else}}DT{{/if}}";
+        window.RESTAURANT_NAME = "Le Patio Djerba";
     </script>
-
-
 </head>
 
-<body>
-    <!-- header -->
-    <input type="checkbox" id="cart">
-    <label for="cart" class="label-cart" aria-label="Open cart" aria-expanded="false">
-        <span class="fas fa-shopping-cart"></span>
-        <span class="cart-count-badge" id="cartCountBadge" aria-live="polite">0</span>
-    </label>
-    <div style="display:flex;align-items:center;gap:8px;">
-        <select id="langSelect" onchange="changeLanguage(this.value)" style="padding:6px 12px;border-radius:20px;border:1px solid #E2E8F0;font-size:12px;font-weight:600;background:#FFF;cursor:pointer;color:#1E293B;">
-            <option value="fr">🇫🇷 FR</option>
-            <option value="ar">🇹🇳 AR</option>
-            <option value="en">🇬🇧 EN</option>
-        </select>
-        <button class="login-btn {{#if menuUser}}is-authenticated{{/if}}" id="loginButton">
-            {{#if menuUser}}
-            <a href="/UserMenu_logout" id="menuLogoutLink">{{menuUser.username}}</a>
-            {{else}}
-            <a href="/UserMenu_loginpage" id="menuLoginLink">Login</a>
-            {{/if}}
-        </button>
-    </div>
-    <h3 class="logo"><span class="logo-text">{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</span></h3>
-    <div class="search-bar">
-        <span class="fas fa-search"></span>
-        <input type="text" id="searchInput" placeholder="Rechercher un plat..." oninput="handleSearchInput(this.value)">
-    </div>
+<body class="patio" data-initial-view="{{#if activeUniverse}}{{activeUniverse.slug}}{{else}}home{{/if}}">
+    <a class="skip-link" href="#main" data-i18n="skipToContent">Aller au contenu</a>
 
-    <!-- main dashbaord -->
-    <div class="dashboard">
-        {{#if latestImage}}
-        <div class="dashboard-banner">
-            {{#if latestImage}}
-            <img src="{{latestImage.base64Image}}" alt="{{latestImage.title}}">
-            {{/if}}
-        </div>
-        {{/if}}
+    <main id="main" class="patio-main">
 
-        <div class="table-context" id="tableContext" hidden>
-            <div>
-                <p id="tableContextKicker">Commande sur place</p>
-                <strong id="tableContextLabel">Choose your table</strong>
-            </div>
-            <label id="tableSelectorWrap" for="userMenuTableSelect">
-                Table
-                <select id="userMenuTableSelect">
-                    <option value="">Choose table</option>
-                    {{#each tables}}
-                    <option value="{{number}}">Table {{number}} - {{seats}} seats</option>
-                    {{/each}}
-                </select>
-            </label>
-        </div>
-
-        <div class="client-order-status" id="clientOrderStatus" hidden>
-            <div class="client-order-status-title">
-                <div>
-                    <p>Suivi commande</p>
-                    <strong>Status des articles</strong>
+        <!-- ═══════════════════════ VIEW : NOTRE MENU (home) ═══════════════════════ -->
+        <section class="view view-home" id="view-home" data-view="home" {{#if activeUniverse}}hidden{{/if}} aria-labelledby="homeTitle">
+            <header class="patio-header">
+                <a class="brand" href="/UserMenu" data-nav-home>
+                    <span class="brand-logo"><img src="/images/logo.png" alt="" width="44" height="44"></span>
+                    <span class="brand-text">
+                        <strong>Le Patio Djerba</strong>
+                        <small data-i18n="tagline">Découvrez nos saveurs</small>
+                    </span>
+                </a>
+                <div class="header-actions">
+                    <button type="button" class="icon-btn" data-search-open aria-label="Rechercher un produit" data-i18n-aria="search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="icon-btn" data-drawer-open aria-controls="navDrawer" aria-expanded="false" aria-label="Ouvrir le menu de navigation" data-i18n-aria="openNav">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
                 </div>
-                <div class="client-order-status-actions">
-                    <span id="clientOrderStatusCount">0 article</span>
-                    <button type="button" class="status-close-button" id="clientOrderStatusClose"
-                        aria-label="Masquer le suivi commande">
-                        <i class="fas fa-times"></i>
+            </header>
+
+            <div class="hero">
+                <img class="hero-img" src="{{#if latestImage.base64Image}}{{latestImage.base64Image}}{{else}}/images/patio/hero-djerba.jpg{{/if}}"
+                    alt="Patio méditerranéen du restaurant à Djerba : murs blancs, porte bleue et palmiers" width="1600" height="900" fetchpriority="high">
+                <div class="hero-shade" aria-hidden="true"></div>
+                <div class="hero-caption">
+                    <span class="hero-chip"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Houmt Souk · Djerba</span>
+                    <p class="hero-welcome" data-i18n="welcome">Bienvenue au Patio</p>
+                </div>
+            </div>
+
+            <div class="home-intro">
+                <span class="ornament" aria-hidden="true"><i></i><b></b><i></i></span>
+                <h1 id="homeTitle" data-i18n="ourMenu">Notre Menu</h1>
+                <p data-i18n="ourMenuSub">Découvrez nos spécialités et choisissez votre catégorie</p>
+            </div>
+
+            <div class="table-context" id="tableContext" hidden>
+                <span class="table-context-icon" aria-hidden="true"><i class="fas fa-chair"></i></span>
+                <div class="table-context-text">
+                    <p id="tableContextKicker">Commande sur place</p>
+                    <strong id="tableContextLabel">Choisissez votre table</strong>
+                </div>
+                <label id="tableSelectorWrap" for="userMenuTableSelect">
+                    <span class="visually-hidden">Table</span>
+                    <select id="userMenuTableSelect">
+                        <option value="">Table…</option>
+                        {{#each tables}}
+                        <option value="{{number}}">Table {{number}} · {{seats}} places</option>
+                        {{/each}}
+                    </select>
+                </label>
+            </div>
+
+            <div class="client-order-status" id="clientOrderStatus" hidden>
+                <div class="client-order-status-title">
+                    <div>
+                        <p data-i18n="orderStatus">Suivi commande</p>
+                        <strong data-i18n="itemStatus">Statut des articles</strong>
+                    </div>
+                    <div class="client-order-status-actions">
+                        <span id="clientOrderStatusCount">0 article</span>
+                        <button type="button" class="status-close-button" id="clientOrderStatusClose" aria-label="Masquer le suivi commande">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="client-order-status-list" id="clientOrderStatusList"></div>
+                <div class="client-order-status-footer">
+                    <button type="button" class="btn-ghost-gold" onclick="openRatingModal()">
+                        <i class="fas fa-star" aria-hidden="true"></i> <span data-i18n="rateExperience">Évaluer votre expérience</span>
                     </button>
                 </div>
             </div>
-            <div class="client-order-status-list" id="clientOrderStatusList"></div>
-            <div style="padding:10px;text-align:center;border-top:1px solid #E2E8F0;">
-                <button type="button" onclick="openRatingModal()" style="background:#B8975A;color:#FFF;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">
-                    ⭐ Évaluer votre expérience
-                </button>
+
+            {{#if menuUniverses.length}}
+            <ul class="universe-list" aria-label="Catégories du menu">
+                {{#each menuUniverses}}
+                <li style="--i: {{@index}}">
+                    <a class="universe-card" href="/UserMenu/categorie/{{slug}}" data-universe-link="{{slug}}">
+                        <img class="uc-img" src="{{cover}}" alt="" width="1200" height="640" {{#if @first}}fetchpriority="high"{{else}}loading="lazy"{{/if}} decoding="async">
+                        <span class="uc-shade" aria-hidden="true"></span>
+                        <span class="uc-icon" aria-hidden="true"><i class="fas {{icon}}"></i></span>
+                        <span class="uc-body">
+                            <span class="uc-tagline" {{#if i18nKey}}data-i18n="{{i18nKey}}Tag"{{/if}}>{{tagline}}</span>
+                            <span class="uc-title" {{#if i18nKey}}data-i18n="{{i18nKey}}"{{/if}}>{{label}}</span>
+                            <span class="uc-meta">{{itemCount}} <span data-i18n="products">produits</span>{{#if hasFilters}} · {{subcategoryCount}} <span data-i18n="sections">rubriques</span>{{/if}}</span>
+                        </span>
+                        <span class="uc-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+            {{else}}
+            <div class="empty-state">
+                <span class="empty-icon" aria-hidden="true"><i class="fas fa-utensils"></i></span>
+                <p data-i18n="menuSoon">Notre carte arrive très bientôt.</p>
             </div>
-        </div>
+            {{/if}}
 
-        <div class="dashboard-menu" aria-label="Menu categories">
-            <a class="menu-item active" href="#all-products" data-category="all">All <span>{{totalItems}}</span></a>
-            {{#each categorySections}}
-            <a class="menu-item" href="#{{this.sectionId}}" data-category="{{this.title}}">{{this.title}} <span>{{this.itemCount}}</span></a>
-            {{/each}}
-        </div>
-
-        <p class="no-results" hidden>No menu items match your search.</p>
-
-        <div class="menu-sections" id="all-products">
-            {{#each categorySections}}
-            <section class="menu-category-section" id="{{this.sectionId}}" data-category="{{this.title}}">
-                <div class="category-heading">
-                    <h3>{{this.title}}</h3>
-                    <span>{{this.itemCount}} items</span>
-                </div>
-                <div class="dashboard-content">
-                    {{#each this.items}}
-                    <div class="dashboard-card" data-category="{{this.category}}" data-title="{{this.title}}">
-                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="card-image">
-                        <div class="card-detail">
-                            <h4>{{this.title}}<span>{{this.price}} {{#if @root.restaurantSettings.currency}}{{@root.restaurantSettings.currency}}{{else}}DNT{{/if}}</span></h4>
-                            <p>{{this.description}}</p>
-                            <p class="card-time">{{this.category}}</p>
-                        </div>
-                        {{#if this.isAvailable}}
-                        <button class="add-to-cart-btn" data-name="{{this.title}}" data-price="{{this.price}}"
-                            data-img="{{this.imageUrl}}">Add to Cart</button>
-                        {{else}}
-                        <button class="add-to-cart-btn" disabled style="background:#CBD5E1;color:#64748B;cursor:not-allowed;box-shadow:none;">Épuisé</button>
-                        {{/if}}
+            <section class="google-reviews-panel" aria-label="Avis Google Maps">
+                <div class="google-reviews-copy">
+                    <span class="google-review-icon" aria-hidden="true"><i class="fab fa-google"></i></span>
+                    <div>
+                        <p class="menu-kicker" data-i18n="googleReviews">Avis Google Maps</p>
+                        <h2 data-i18n="yourOpinion">Votre avis compte</h2>
+                        <p><span data-i18n="shareExperience">Partagez votre expérience chez</span> {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}.</p>
                     </div>
-                    {{/each}}
+                </div>
+                <div class="google-review-stars" aria-hidden="true">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <div class="google-review-actions">
+                    <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" data-i18n="seeReviews">Voir les avis</a>
+                    <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="is-primary" data-i18n="leaveReview">Laisser un avis</a>
                 </div>
             </section>
-            {{/each}}
-        </div>
 
-        <section class="google-reviews-panel" aria-label="Avis Google Maps">
-            <div class="google-reviews-copy">
-                <span class="google-review-icon"><i class="fab fa-google"></i></span>
-                <div>
-                    <p class="menu-kicker">Avis Google Maps</p>
-                    <h3>Votre avis compte</h3>
-                    <p>Partagez votre experience chez {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}.</p>
+            <footer class="patio-footer">
+                <img src="/images/logo.png" alt="" width="40" height="40">
+                <strong>{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</strong>
+                {{#if restaurantSettings.address}}<p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{restaurantSettings.address}}</p>{{/if}}
+                {{#if restaurantSettings.openingHours}}<p><i class="far fa-clock" aria-hidden="true"></i> {{restaurantSettings.openingHours}}</p>{{/if}}
+                {{#if restaurantSettings.phone}}<p><i class="fas fa-phone-alt" aria-hidden="true"></i> <a href="tel:{{restaurantSettings.phone}}">{{restaurantSettings.phone}}</a></p>{{/if}}
+            </footer>
+        </section>
+
+        <!-- ═══════════════════════ VIEWS : one per category universe ═══════════════════════ -->
+        {{#each menuUniverses}}
+        <section class="view view-category" id="view-{{slug}}" data-view="{{slug}}" data-title="{{label}}" {{#unless isActive}}hidden{{/unless}} aria-labelledby="title-{{slug}}">
+            <div class="cat-hero">
+                <img class="cat-hero-img" src="{{cover}}" alt="" width="1200" height="640" {{#if isActive}}fetchpriority="high"{{else}}loading="lazy"{{/if}} decoding="async">
+                <div class="cat-hero-shade" aria-hidden="true"></div>
+                <div class="cat-topbar">
+                    <a class="glass-btn" href="/UserMenu" data-nav-back aria-label="Retour aux catégories" data-i18n-aria="backToCategories">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </a>
+                    <a class="cat-brand" href="/UserMenu" data-nav-back aria-label="Le Patio Djerba — accueil du menu">
+                        <span class="brand-logo"><img src="/images/logo.png" alt="" width="38" height="38"></span>
+                        <span class="cat-brand-name">Le Patio Djerba</span>
+                    </a>
+                    <button type="button" class="glass-btn" data-search-open aria-label="Rechercher un produit" data-i18n-aria="search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="cat-hero-text">
+                    <span class="cat-icon" aria-hidden="true"><i class="fas {{icon}}"></i></span>
+                    <h1 id="title-{{slug}}" {{#if i18nKey}}data-i18n="{{i18nKey}}"{{/if}}>{{label}}</h1>
+                    <p {{#if i18nKey}}data-i18n="{{i18nKey}}Desc"{{/if}}>{{description}}</p>
                 </div>
             </div>
-            <div class="google-review-stars" aria-label="Avis Google">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="google-review-actions">
-                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer">
-                    Voir les avis
-                </a>
-                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="is-primary">
-                    Laisser un avis
+
+            <div class="cat-sheet">
+                <div class="cat-sticky">
+                    <div class="cat-sticky-bar">
+                        <a class="mini-back" href="/UserMenu" data-nav-back aria-label="Retour aux catégories" data-i18n-aria="backToCategories">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        </a>
+                        <strong {{#if i18nKey}}data-i18n="{{i18nKey}}"{{/if}}>{{label}}</strong>
+                        <span class="cat-count">{{itemCount}} <span data-i18n="products">produits</span></span>
+                    </div>
+                    {{#if hasFilters}}
+                    <div class="filters" role="group" aria-label="Filtrer par rubrique">
+                        <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">
+                            <span data-i18n="all">Tout</span> <em>{{itemCount}}</em>
+                        </button>
+                        {{#each subcategories}}
+                        <button type="button" class="chip" data-filter="{{filterId}}" aria-pressed="false">
+                            {{title}} <em>{{itemCount}}</em>
+                        </button>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </div>
+
+                {{#each subcategories}}
+                <section class="sub-section" data-sub="{{filterId}}" aria-label="{{title}}">
+                    <h2 class="sub-title{{#unless ../hasFilters}} visually-hidden{{/unless}}"><span>{{title}}</span><em>{{itemCount}}</em></h2>
+                    <ul class="product-list">
+                        {{#each items}}
+                        <li class="product-card{{#unless isAvailable}} is-unavailable{{/unless}}" data-category="{{../title}}" data-universe="{{../../slug}}">
+                            <div class="pc-media">
+                                <img src="{{imageUrl}}" alt="{{displayTitle}}" width="112" height="112" loading="lazy" decoding="async">
+                                {{#unless isAvailable}}<span class="pc-badge" data-i18n="outOfStock">Épuisé</span>{{/unless}}
+                            </div>
+                            <div class="pc-body">
+                                <h3 class="pc-title">{{displayTitle}}</h3>
+                                {{#if servingHours}}<span class="pc-hours"><i class="far fa-clock" aria-hidden="true"></i> {{servingHours}}</span>{{/if}}
+                                {{#if displayDescription}}<p class="pc-desc">{{displayDescription}}</p>{{/if}}
+                                {{#if size}}<span class="pc-size">{{size}}</span>{{/if}}
+                                <div class="pc-footer">
+                                    <span class="pc-price">{{price}} <small>{{#if @root.currencyLabel}}{{@root.currencyLabel}}{{else}}DT{{/if}}</small></span>
+                                    {{#if isAvailable}}
+                                    <button type="button" class="add-to-cart-btn" data-name="{{title}}" data-display-name="{{displayTitle}}" data-price="{{price}}" data-img="{{imageUrl}}" aria-label="Ajouter {{displayTitle}} au panier">
+                                        <i class="fas fa-plus" aria-hidden="true"></i><i class="fas fa-check" aria-hidden="true"></i>
+                                    </button>
+                                    {{else}}
+                                    <button type="button" class="add-to-cart-btn" disabled aria-label="{{displayTitle}} épuisé">
+                                        <i class="fas fa-ban" aria-hidden="true"></i>
+                                    </button>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </section>
+                {{/each}}
+
+                <a class="back-to-categories" href="/UserMenu" data-nav-back>
+                    <i class="fas fa-th-large" aria-hidden="true"></i> <span data-i18n="allCategories">Voir toutes les catégories</span>
                 </a>
             </div>
         </section>
-    </div>
+        {{/each}}
 
-    <!-- order dashboard -->
-    <div class="dashboard-order" id="dashboard-order">
-        <div class="dashboard-text">
-            <div class="cart-header">
-                <h3>Order Menu</h3>
-                <label for="cart" class="cart-close-icon" aria-label="Fermer le panier">
-                    <i class="fas fa-times"></i>
+        <!-- ═══════════════════════ VIEW : search ═══════════════════════ -->
+        <section class="view view-search" id="view-search" data-view="search" hidden aria-labelledby="searchViewTitle">
+            <h1 id="searchViewTitle" class="visually-hidden" data-i18n="search">Rechercher</h1>
+            <h2 class="visually-hidden">Résultats de recherche</h2>
+            <div class="search-top">
+                <a class="mini-back" href="/UserMenu" data-nav-back aria-label="Retour" data-i18n-aria="back">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+                <label class="search-field">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span class="visually-hidden" data-i18n="search">Rechercher</span>
+                    <input type="search" id="searchInput" autocomplete="off" enterkeyhint="search" placeholder="Rechercher un plat, une boisson…" data-i18n-placeholder="searchPlaceholder">
+                    <button type="button" class="search-clear" id="searchClear" aria-label="Effacer" hidden><i class="fas fa-times-circle" aria-hidden="true"></i></button>
                 </label>
             </div>
+            <p class="search-hint" id="searchHint" data-i18n="searchHint">Tapez le nom d'un produit, d'un ingrédient ou d'une catégorie.</p>
+            <p class="no-results" id="searchEmpty" hidden data-i18n="noResults">Aucun produit ne correspond à votre recherche.</p>
+            <ul class="product-list search-results" id="searchResults" aria-live="polite"></ul>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════ Navigation drawer ═══════════════════════ -->
+    <div class="nav-drawer" id="navDrawer" hidden>
+        <div class="drawer-backdrop" data-drawer-close></div>
+        <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+            <div class="drawer-head">
+                <span class="brand-logo"><img src="/images/logo.png" alt="" width="44" height="44"></span>
+                <div>
+                    <strong id="drawerTitle">{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</strong>
+                    <small data-i18n="tagline">Découvrez nos saveurs</small>
+                </div>
+                <button type="button" class="icon-btn" data-drawer-close aria-label="Fermer le menu" data-i18n-aria="close">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <nav class="drawer-nav" aria-label="Navigation principale">
+                <a href="/UserMenu" data-nav-home data-drawer-link><i class="fas fa-book-open" aria-hidden="true"></i> <span data-i18n="ourMenu">Notre Menu</span></a>
+                {{#each menuUniverses}}
+                <a href="/UserMenu/categorie/{{slug}}" data-universe-link="{{slug}}" data-drawer-link class="is-sub"><i class="fas {{icon}}" aria-hidden="true"></i> <span {{#if i18nKey}}data-i18n="{{i18nKey}}"{{/if}}>{{label}}</span></a>
+                {{/each}}
+                <button type="button" data-cart-open data-drawer-link><i class="fas fa-shopping-bag" aria-hidden="true"></i> <span data-i18n="myCart">Mon panier</span> <span class="drawer-badge" data-cart-count>0</span></button>
+                <button type="button" data-order-status-open data-drawer-link><i class="fas fa-receipt" aria-hidden="true"></i> <span data-i18n="orderStatus">Suivi commande</span></button>
+                <button type="button" onclick="openRatingModal()" data-drawer-link><i class="fas fa-star" aria-hidden="true"></i> <span data-i18n="rateExperience">Évaluer votre expérience</span></button>
+                <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer"><i class="fab fa-google" aria-hidden="true"></i> <span data-i18n="googleReviews">Avis Google Maps</span></a>
+            </nav>
+
+            <div class="drawer-settings">
+                <label for="langSelect"><i class="fas fa-globe" aria-hidden="true"></i> <span data-i18n="language">Langue</span></label>
+                <select id="langSelect" onchange="changeLanguage(this.value)">
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="drawer-account" id="loginButton">
+                {{#if menuUser}}
+                <span class="account-name"><i class="fas fa-user-circle" aria-hidden="true"></i> {{menuUser.username}}</span>
+                <a href="/UserMenu_logout" id="menuLogoutLink" class="btn-outline" data-i18n="logout">Se déconnecter</a>
+                {{else}}
+                <a href="/UserMenu_loginpage" id="menuLoginLink" class="btn-outline"><i class="fas fa-sign-in-alt" aria-hidden="true"></i> <span data-i18n="login">Se connecter</span></a>
+                {{/if}}
+            </div>
+
+            <div class="drawer-info">
+                {{#if restaurantSettings.address}}<p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{restaurantSettings.address}}</p>{{/if}}
+                {{#if restaurantSettings.openingHours}}<p><i class="far fa-clock" aria-hidden="true"></i> {{restaurantSettings.openingHours}}</p>{{/if}}
+                {{#if restaurantSettings.phone}}<p><i class="fas fa-phone-alt" aria-hidden="true"></i> <a href="tel:{{restaurantSettings.phone}}">{{restaurantSettings.phone}}</a></p>{{/if}}
+            </div>
+        </aside>
+    </div>
+
+    <!-- ═══════════════════════ Cart drawer ═══════════════════════ -->
+    <div class="cart-drawer" id="cartDrawer" hidden>
+        <div class="drawer-backdrop" data-cart-close></div>
+        <aside class="cart-panel dashboard-order" id="dashboard-order" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+            <span class="sheet-grabber" aria-hidden="true"></span>
+            <div class="cart-header">
+                <h2 id="cartTitle" data-i18n="yourCart">Votre panier</h2>
+                <button type="button" class="icon-btn cart-close-icon" data-cart-close aria-label="Fermer le panier" data-i18n-aria="closeCart">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
             <div class="order-address">
-                <p>{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</p>
-                <h4>{{#if restaurantSettings.address}}{{restaurantSettings.address}}{{else}}Marina 4180 Houmt Souk Djerba, Tunis{{/if}}</h4>
-                {{#if restaurantSettings.phone}}<p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;"><i class="fas fa-phone"></i> {{restaurantSettings.phone}}</p>{{/if}}
-                {{#if restaurantSettings.openingHours}}<p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 2px;"><i class="fas fa-clock"></i> {{restaurantSettings.openingHours}}</p>{{/if}}
+                <i class="fas fa-store" aria-hidden="true"></i>
+                <div>
+                    <p>{{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}}</p>
+                    <small>{{#if restaurantSettings.address}}{{restaurantSettings.address}}{{else}}Marina 4180 Houmt Souk Djerba, Tunis{{/if}}</small>
+                </div>
             </div>
 
             <div class="cart-wrapper">
-                <h3>Your Cart</h3>
                 <div class="order-items-container">
-                    <!-- Selected items will be displayed here -->
+                    <!-- Selected items are rendered here by UserMenu_Cart.js -->
                 </div>
-                <button id="close-cart">Close Cart</button>
             </div>
 
-            <hr class="divider">
             <div class="order-total">
-                <p>Subtotal <span class="subtotal">0 {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</span></p>
-                <p>Delivery Fee <span>0 {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</span></p>
-                <hr class="divider">
-                <p>Total<span id="grand-total">0.00 {{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}</span></p>
+                <p><span data-i18n="subtotal">Sous-total</span> <span class="subtotal">0.00 {{#if currencyLabel}}{{currencyLabel}}{{else}}DT{{/if}}</span></p>
+                <p class="order-total-grand"><span data-i18n="total">Total</span> <span id="grand-total">0.00 {{#if currencyLabel}}{{currencyLabel}}{{else}}DT{{/if}}</span></p>
             </div>
-            <a href="/Order_Details" class="checkout" id="checkoutLink">Checkout</a>
-        </div>
+            <a href="/Order_Details" class="checkout" id="checkoutLink"><span data-i18n="checkout">Valider la commande</span> <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </aside>
     </div>
 
-    <!-- Fixed Bottom Navigation Bar -->
-    <nav class="bottom-navigation">
-        <a href="#all-products" class="nav-item active">
-            <i class="fas fa-home"></i>
-            <span>Accueil</span>
+    <!-- ═══════════════════════ Bottom navigation ═══════════════════════ -->
+    <nav class="bottom-navigation" aria-label="Navigation rapide">
+        <a href="/UserMenu" class="nav-item active" data-nav-home data-bottom-home>
+            <i class="fas fa-book-open" aria-hidden="true"></i>
+            <span data-i18n="menu">Menu</span>
         </a>
-        <label for="cart" class="nav-item" style="cursor: pointer;">
-            <i class="fas fa-shopping-bag"></i>
-            <span>Panier</span>
-        </label>
-        <button type="button" id="navOrderStatusBtn" class="nav-item" style="background: none; border: none; cursor: pointer;">
-            <i class="fas fa-receipt"></i>
-            <span>Commandes</span>
+        <button type="button" class="nav-item" data-cart-open aria-controls="cartDrawer" aria-expanded="false">
+            <span class="nav-icon-wrap">
+                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                <span class="cart-count-badge is-empty" id="cartCountBadge" data-cart-count aria-live="polite">0</span>
+            </span>
+            <span data-i18n="cart">Panier</span>
+        </button>
+        <button type="button" id="navOrderStatusBtn" class="nav-item">
+            <i class="fas fa-receipt" aria-hidden="true"></i>
+            <span data-i18n="orders">Commandes</span>
         </button>
         <a href="{{googleReviewsUrl}}" target="_blank" rel="noopener noreferrer" class="nav-item">
-            <i class="fas fa-star"></i>
-            <span>Avis</span>
+            <i class="fas fa-star" aria-hidden="true"></i>
+            <span data-i18n="reviews">Avis</span>
         </a>
     </nav>
 
-    <div class="ready-order-toast" id="readyOrderToast" hidden>
-        <button type="button" class="ready-toast-close" id="readyOrderToastClose"
-            aria-label="Masquer la notification">
-            <i class="fas fa-times"></i>
+    <div class="cart-toast" id="cartToast" role="status" hidden>
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span id="cartToastText"></span>
+        <button type="button" data-cart-open class="cart-toast-link" data-i18n="view">Voir</button>
+    </div>
+
+    <div class="ready-order-toast" id="readyOrderToast" role="alert" hidden>
+        <button type="button" class="ready-toast-close" id="readyOrderToastClose" aria-label="Masquer la notification">
+            <i class="fas fa-times" aria-hidden="true"></i>
         </button>
-        <strong>Commande prete</strong>
-        <span id="readyOrderToastText">Votre article est pret.</span>
+        <strong>Commande prête</strong>
+        <span id="readyOrderToastText">Votre article est prêt.</span>
+    </div>
+
+    <!-- Modal Rating -->
+    <div id="ratingModal" class="rating-modal" hidden>
+        <div class="rating-backdrop" onclick="closeRatingModal()"></div>
+        <div class="rating-panel" role="dialog" aria-modal="true" aria-labelledby="ratingTitle">
+            <div class="rating-head">
+                <h3 id="ratingTitle"><i class="fas fa-star" aria-hidden="true"></i> <span data-i18n="yourOpinion">Votre avis compte</span></h3>
+                <button type="button" class="icon-btn" onclick="closeRatingModal()" aria-label="Fermer">&times;</button>
+            </div>
+            <p class="rating-intro">Donnez-nous une note pour votre repas chez Le Patio Djerba :</p>
+            <div id="starRating" class="star-rating" role="radiogroup" aria-label="Note sur 5">
+                <i class="fas fa-star" role="radio" aria-label="1 étoile" tabindex="0"></i>
+                <i class="fas fa-star" role="radio" aria-label="2 étoiles" tabindex="0"></i>
+                <i class="fas fa-star" role="radio" aria-label="3 étoiles" tabindex="0"></i>
+                <i class="fas fa-star" role="radio" aria-label="4 étoiles" tabindex="0"></i>
+                <i class="fas fa-star" role="radio" aria-label="5 étoiles" tabindex="0"></i>
+            </div>
+            <label class="visually-hidden" for="ratingFeedback">Commentaire</label>
+            <textarea id="ratingFeedback" placeholder="Un commentaire ou une suggestion ? (Optionnel)" rows="3"></textarea>
+            <button type="button" class="btn-primary" onclick="submitOrderRating()">Envoyer mon avis</button>
+        </div>
     </div>
 
     <script>
@@ -246,36 +431,47 @@
             const logoutLink = document.getElementById('menuLogoutLink');
             const orderStatusPanel = document.getElementById('clientOrderStatus');
             const navOrderStatusBtn = document.getElementById('navOrderStatusBtn');
-
-            if (navOrderStatusBtn) {
-                navOrderStatusBtn.addEventListener('click', () => {
-                    orderStatusDismissed = false;
-                    orderStatusPanel.hidden = !orderStatusPanel.hidden;
-                    if (!orderStatusPanel.hidden) {
-                        orderStatusPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
             const orderStatusList = document.getElementById('clientOrderStatusList');
             const orderStatusCount = document.getElementById('clientOrderStatusCount');
             const orderStatusClose = document.getElementById('clientOrderStatusClose');
             const readyOrderToast = document.getElementById('readyOrderToast');
             const readyOrderToastText = document.getElementById('readyOrderToastText');
             const readyOrderToastClose = document.getElementById('readyOrderToastClose');
-            const currentReturnTo = `${window.location.pathname}${window.location.search}`;
             const lastOrderStorageKey = 'kaffaLastOrderId';
             const notifiedReadyStorageKey = 'kaffaReadyNotifiedItems';
             let orderStatusDismissed = false;
             let lastOrderStatusKeys = '';
             let readyToastTimer = null;
+            let hasOrderItems = false;
 
-            if (loginLink) {
-                loginLink.href = `/UserMenu_loginpage?returnTo=${encodeURIComponent(currentReturnTo)}`;
+            // Login / logout links always return to the current menu view.
+            function updateAuthLinks() {
+                const currentReturnTo = `${window.location.pathname}${window.location.search}`;
+                if (loginLink) loginLink.href = `/UserMenu_loginpage?returnTo=${encodeURIComponent(currentReturnTo)}`;
+                if (logoutLink) logoutLink.href = `/UserMenu_logout?returnTo=${encodeURIComponent(currentReturnTo)}`;
             }
+            updateAuthLinks();
+            document.addEventListener('patio:viewchange', updateAuthLinks);
 
-            if (logoutLink) {
-                logoutLink.href = `/UserMenu_logout?returnTo=${encodeURIComponent(currentReturnTo)}`;
+            function showOrderStatusPanel() {
+                orderStatusDismissed = false;
+                const reveal = () => {
+                    orderStatusPanel.hidden = false;
+                    if (!hasOrderItems) {
+                        orderStatusCount.textContent = '0 article';
+                        orderStatusList.innerHTML = '<p class="order-status-empty">Aucune commande en cours pour le moment.</p>';
+                    }
+                    orderStatusPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                };
+                if (window.patioRouter && window.patioRouter.current() !== 'home') {
+                    window.patioRouter.show('home');
+                    setTimeout(reveal, 380);
+                } else {
+                    reveal();
+                }
             }
+            if (navOrderStatusBtn) navOrderStatusBtn.addEventListener('click', showOrderStatusPanel);
+            document.querySelectorAll('[data-order-status-open]').forEach((btn) => btn.addEventListener('click', showOrderStatusPanel));
 
             function normalizeTableNumber(value) {
                 const tableNumber = Number(value);
@@ -317,25 +513,20 @@
             function renderTableContext() {
                 const selectedTable = getSelectedTable();
                 const locked = isTableLocked();
-                
-                // Hide table prompt completely if table is already selected or scanned via QR code
-                if (locked || selectedTable) {
-                    tableContext.hidden = true;
-                } else {
-                    tableContext.hidden = false;
-                }
 
+                // Hide table prompt completely if table is already selected or scanned via QR code
+                tableContext.hidden = Boolean(locked || selectedTable);
                 tableContext.classList.toggle('is-locked', locked);
                 tableSelectorWrap.hidden = locked;
 
                 if (selectedTable) {
                     tableSelect.value = selectedTable;
-                    tableContextKicker.textContent = locked ? 'Table QR scanned' : 'Commande sur place';
+                    tableContextKicker.textContent = locked ? 'Table QR scannée' : 'Commande sur place';
                     tableContextLabel.textContent = `Table ${selectedTable}`;
                 } else {
                     tableSelect.value = '';
-                    tableContextKicker.textContent = 'Comptoir QR';
-                    tableContextLabel.textContent = 'Choose your table';
+                    tableContextKicker.textContent = 'Commande sur place';
+                    tableContextLabel.textContent = 'Choisissez votre table';
                 }
 
                 updateCheckoutLink();
@@ -370,7 +561,7 @@
             }
 
             function showReadyToast(item) {
-                readyOrderToastText.textContent = `${item.itemName} est PRET. Venez recuperer votre commande.`;
+                readyOrderToastText.textContent = `${item.itemName} est PRÊT. Venez récupérer votre commande.`;
                 readyOrderToast.hidden = false;
                 readyOrderToast.classList.add('is-visible');
                 if (readyToastTimer) {
@@ -410,7 +601,7 @@
             }
 
             ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
-                window.addEventListener(evt, () => { getClientAudioContext(); }, { passive: true });
+                window.addEventListener(evt, () => { getClientAudioContext(); }, { passive: true, once: true });
             });
 
             if ("Notification" in window && Notification.permission === "default") {
@@ -460,16 +651,9 @@
 
             const STATUS_LABELS_MAP = {
                 pending: '🟡 En attente',
-                en_cours: '🔵 En cours de préparation',
+                en_cours: '🔵 En préparation',
                 pret: '🟢 Prêt ! Venez récupérer',
                 cancel: '🔴 Annulée'
-            };
-
-            const STATUS_BADGE_STYLES = {
-                pending: 'background:#FFFBEB;color:#B45309;border:1px solid #FCD34D;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
-                en_cours: 'background:#EFF6FF;color:#1E40AF;border:1px solid #93C5FD;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
-                pret: 'background:#ECFDF5;color:#065F46;border:1px solid #6EE7B7;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;',
-                cancel: 'background:#FEF2F2;color:#991B1B;border:1px solid #FCA5A5;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-style:normal;'
             };
 
             const clientItemStatuses = new Map();
@@ -511,23 +695,33 @@
                 })));
 
                 if (allItems.length === 0) {
+                    hasOrderItems = false;
                     orderStatusDismissed = false;
                     lastOrderStatusKeys = '';
                     orderStatusPanel.hidden = true;
                     return;
                 }
 
+                hasOrderItems = true;
                 checkItemStatusChanges(allItems);
+
+                // Re-open the panel after a manual close only when a status changed.
+                const statusKeys = allItems.map((item) => `${item.orderId}-${item.itemIndex}-${item.status}`).join('|');
+                if (orderStatusDismissed && statusKeys === lastOrderStatusKeys) {
+                    return;
+                }
+                orderStatusDismissed = false;
+                lastOrderStatusKeys = statusKeys;
 
                 orderStatusPanel.hidden = false;
                 orderStatusCount.textContent = `${allItems.length} ${allItems.length === 1 ? 'article' : 'articles'}`;
                 orderStatusList.innerHTML = allItems.map((item) => `
-                    <div class="client-order-status-row" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F9;">
-                        <div>
-                            <span style="font-size:10px;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:#64748B;font-weight:700;">#${escapeHtml(item.orderIdDisplay)}</span>
-                            <strong style="font-size:13px;color:#B8975A;font-weight:700;margin-left:6px;">${escapeHtml(item.itemName)}</strong>
+                    <div class="client-order-status-row">
+                        <div class="order-row-name">
+                            <span class="order-row-id">#${escapeHtml(item.orderIdDisplay)}</span>
+                            <strong>${escapeHtml(item.itemName)}</strong>
                         </div>
-                        <em style="${STATUS_BADGE_STYLES[item.status] || STATUS_BADGE_STYLES.pending}">
+                        <em class="status-badge status-${escapeHtml(item.status || 'pending')}">
                             ${escapeHtml(STATUS_LABELS_MAP[item.status] || item.statusLabel)}
                         </em>
                     </div>
@@ -576,80 +770,45 @@
             readyOrderToastClose.addEventListener('click', hideReadyToast);
         });
 
-        // ── 🌐 Multi-Language Translation System ──────────────────────────
-        const i18n = {
-            fr: {
-                searchPlaceholder: "Rechercher un plat, boisson...",
-                all: "Tout",
-                items: "plats",
-                addToCart: "Ajouter au panier",
-                outOfStock: "Épuisé",
-                orderStatus: "Suivi commande",
-                itemStatus: "Statut des articles",
-            },
-            ar: {
-                searchPlaceholder: "ابحث عن طبق، مشروب...",
-                all: "الكل",
-                items: "أطباق",
-                addToCart: "أضف إلى السلة",
-                outOfStock: "نفذت الكمية",
-                orderStatus: "متابعة الطلب",
-                itemStatus: "حالة الأطباق",
-            },
-            en: {
-                searchPlaceholder: "Search for a dish, drink...",
-                all: "All",
-                items: "dishes",
-                addToCart: "Add to Cart",
-                outOfStock: "Out of Stock",
-                orderStatus: "Order Tracker",
-                itemStatus: "Item Status",
-            }
-        };
+        // ── ⭐ Rating modal ──────────────────────────────────────────────
+        let currentSelectedRating = 5;
 
-        function changeLanguage(lang) {
-            localStorage.setItem('kaffaLang', lang);
-            const t = i18n[lang] || i18n.fr;
-
-            // Update text direction for Arabic
-            document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-
-            // Update search placeholder
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.placeholder = t.searchPlaceholder;
-
-            // Update Add to Cart buttons
-            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-                if (!btn.disabled) {
-                    btn.textContent = t.addToCart;
-                } else {
-                    btn.textContent = t.outOfStock;
-                }
-            });
+        function openRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            if (!modal) return;
+            if (window.patioDrawer) window.patioDrawer.close(false);
+            modal.hidden = false;
+            selectRating(currentSelectedRating);
+            const firstStar = modal.querySelector('#starRating i');
+            if (firstStar) setTimeout(() => firstStar.focus(), 50);
         }
 
-        // Restore language preference
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('kaffaLang') || 'fr';
-            const langSelect = document.getElementById('langSelect');
-            if (langSelect) langSelect.value = savedLang;
-            changeLanguage(savedLang);
-        });
+        function closeRatingModal() {
+            const modal = document.getElementById('ratingModal');
+            if (modal) modal.hidden = true;
+        }
 
         function selectRating(stars) {
             currentSelectedRating = stars;
             document.querySelectorAll('#starRating i').forEach((star, idx) => {
-                if (idx < stars) {
-                    star.style.color = '#F59E0B';
-                } else {
-                    star.style.color = '#CBD5E1';
-                }
+                star.classList.toggle('is-on', idx < stars);
+                star.setAttribute('aria-checked', String(idx + 1 === stars));
             });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('#starRating i').forEach((star, idx) => {
                 star.addEventListener('click', () => selectRating(idx + 1));
+                star.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        selectRating(idx + 1);
+                    }
+                });
+            });
+            document.addEventListener('keydown', (event) => {
+                const modal = document.getElementById('ratingModal');
+                if (event.key === 'Escape' && modal && !modal.hidden) closeRatingModal();
             });
         });
 
@@ -682,59 +841,7 @@
         }
     </script>
 
-    <!-- Modal Rating -->
-    <div id="ratingModal" class="rating-modal" hidden>
-        <div class="rating-backdrop" onclick="closeRatingModal()"></div>
-        <div class="rating-panel">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <h3 style="font-size:18px;margin:0;color:#1E293B;">⭐ Votre avis compte</h3>
-                <button type="button" onclick="closeRatingModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748B;">&times;</button>
-            </div>
-            <p style="font-size:13px;color:#64748B;margin-bottom:16px;">Donnez-nous une note pour votre repas chez Le Patio Djerba :</p>
-            <div id="starRating" style="display:flex;justify-content:center;gap:12px;font-size:28px;margin-bottom:16px;cursor:pointer;">
-                <i class="fas fa-star" style="color:#F59E0B;"></i>
-                <i class="fas fa-star" style="color:#F59E0B;"></i>
-                <i class="fas fa-star" style="color:#F59E0B;"></i>
-                <i class="fas fa-star" style="color:#F59E0B;"></i>
-                <i class="fas fa-star" style="color:#F59E0B;"></i>
-            </div>
-            <textarea id="ratingFeedback" placeholder="Un commentaire ou une suggestion ? (Optionnel)" rows="3" style="width:100%;border-radius:10px;border:1px solid #CBD5E1;padding:10px;font-family:inherit;font-size:13px;box-sizing:border-box;margin-bottom:16px;"></textarea>
-            <button type="button" onclick="submitOrderRating()" style="background:#B8975A;color:#FFF;border:none;padding:12px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;width:100%;">Envoyer mon avis</button>
-        </div>
-    </div>
-
-    <style>
-        .rating-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .rating-modal[hidden] {
-            display: none !important;
-        }
-        .rating-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,0.6);
-            backdrop-filter: blur(4px);
-        }
-        .rating-panel {
-            position: relative;
-            z-index: 10;
-            background: #FFF;
-            border-radius: 18px;
-            padding: 24px;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        }
-    </style>
-
-    <script src="/javascript/MenuFitering.js"></script>
+    <script src="/javascript/patio-menu.js"></script>
     <script src="/javascript/UserMenu_Cart.js"></script>
 </body>
 

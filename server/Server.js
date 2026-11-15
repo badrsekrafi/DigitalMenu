@@ -34,6 +34,11 @@ const {
     getWhatsAppClickLink,
     sendWhatsAppMessage,
 } = require('./utils/whatsapp');
+const {
+    buildMenuUniverses,
+    cleanDescription,
+    splitServingHours,
+} = require('./utils/menuUniverses');
 
 async function getSettings() {
     try {
@@ -1808,7 +1813,7 @@ function clearMenuAuth(req, res) {
 }
 
 
-async function buildUserMenuViewData(req) {
+async function buildUserMenuViewData(req, activeUniverseSlug = '') {
     let rawCategories = [];
     let rawMenuItems = [];
 
@@ -1832,6 +1837,11 @@ async function buildUserMenuViewData(req) {
         item.isAvailable = item.isAvailable !== false;
         const numPrice = Number(item.price);
         item.price = isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+        // Public display helpers (raw title is kept for the cart / orders).
+        const { title: displayTitle, hours } = splitServingHours(item.title);
+        item.displayTitle = displayTitle;
+        item.servingHours = hours;
+        item.displayDescription = cleanDescription(item.description);
     });
 
     const slugify = (value) => String(value || "other")
@@ -1842,6 +1852,7 @@ async function buildUserMenuViewData(req) {
         category.title,
         {
             title: category.title,
+            description: category.description,
             sectionId: `category-${category._id}`,
             items: [],
         },
@@ -1906,12 +1917,21 @@ async function buildUserMenuViewData(req) {
     let restaurantSettings = {};
     try { restaurantSettings = await getSettings(); } catch (e) { console.error('getSettings error in buildUserMenuViewData:', e); }
 
+    const menuUniverses = buildMenuUniverses(categorySections, activeUniverseSlug);
+    const activeUniverse = menuUniverses.find((universe) => universe.isActive) || null;
+
     return {
         restaurantSettings,
         categories,
         latestImage,
         MenuItems,
         categorySections,
+        menuUniverses,
+        activeUniverse,
+        // Tunisian dinar is displayed as "DT" on the public menu.
+        currencyLabel: ['', 'DNT', 'TND', 'DT'].includes(String(restaurantSettings.currency || '').trim().toUpperCase())
+            ? 'DT'
+            : restaurantSettings.currency,
         totalItems: MenuItems.length,
         tables,
         menuUser,
@@ -1951,6 +1971,23 @@ app.get("/UserMenu", async (req, res) => {
     } catch (error) {
         console.error('Error fetching menu items for UserMenu:', error);
         res.status(500).send(`Error in UserMenu: ${error.message}\n\nStack: ${error.stack}`);
+    }
+});
+
+// Deep link to a menu universe (e.g. /UserMenu/categorie/plats).
+// Same page as /UserMenu, opened directly on the requested category view.
+app.get("/UserMenu/categorie/:slug", async (req, res) => {
+    try {
+        const slug = String(req.params.slug || '').toLowerCase();
+        const viewData = await buildUserMenuViewData(req, slug);
+        if (!viewData.activeUniverse) {
+            const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+            return res.redirect(302, `/UserMenu${query}`);
+        }
+        res.render("UserMenu", viewData);
+    } catch (error) {
+        console.error('Error rendering UserMenu category:', error);
+        res.status(500).send('Error rendering menu category.');
     }
 });
 
