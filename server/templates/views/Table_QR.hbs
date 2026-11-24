@@ -25,7 +25,7 @@
 
         .qr-controls {
             background: #ffffff;
-            border-bottom: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E5D2BA;
             padding: 20px 32px;
             display: flex;
             align-items: center;
@@ -129,7 +129,7 @@
         .qr-card-footer {
             margin-top: 16px;
             font-size: 12px;
-            color: #64748B;
+            color: #3E5368;
             font-weight: 500;
             line-height: 1.4;
         }
@@ -152,13 +152,14 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 <body>
     <div class="qr-controls">
         <h1><i class="fa-solid fa-qrcode" style="color:var(--gold-primary);"></i> QR Codes des Tables — Le Patio Djerba</h1>
         <div class="control-group">
-            <label for="tableFilter" style="font-size:14px;font-weight:600;color:#475569;">Afficher :</label>
-            <select id="tableFilter" onchange="filterTables()" style="padding:8px 14px;border-radius:8px;border:1px solid #CBD5E1;font-size:14px;">
+            <label for="tableFilter" style="font-size:14px;font-weight:600;color:#3E5368;">Afficher :</label>
+            <select id="tableFilter" onchange="filterTables()" style="padding:8px 14px;border-radius:8px;border:1px solid #D5C2AB;font-size:14px;">
                 <option value="all">Toutes les tables (1 - 20)</option>
                 {{#each tables}}
                 <option value="{{this}}">Table {{this}}</option>
@@ -167,7 +168,7 @@
             <button onclick="window.print()" class="btn-print-all">
                 <i class="fa-solid fa-print"></i> Imprimer les QR Cards
             </button>
-            <a href="/Orders" style="text-decoration:none;color:#64748B;font-weight:600;font-size:14px;margin-left:10px;">
+            <a href="/Orders" style="text-decoration:none;color:#3E5368;font-weight:600;font-size:14px;margin-left:10px;">
                 <i class="fa-solid fa-arrow-left"></i> Retour
             </a>
         </div>

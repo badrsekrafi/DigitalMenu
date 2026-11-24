@@ -13,16 +13,18 @@
     <script>
         window.RESTAURANT_CURRENCY = "{{#if restaurantSettings.currency}}{{restaurantSettings.currency}}{{else}}DNT{{/if}}";
     </script>
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
 <body>
     <section class="order" id="order">
+        <a class="checkout-back" href="/UserMenu">← Retour au menu</a>
         <div class="checkout-shell">
             <div class="checkout-panel">
                 <header class="checkout-hero">
                     <p class="eyebrow">Checkout</p>
                     <h1>Complete your order</h1>
-                    <p>Confirm your details, choose sur place or reservation, then send the order to Kaffa.</p>
+                    <p>Confirm your details, choose sur place or reservation, then send the order to Le Patio Djerba.</p>
                 </header>
 
                 <form action="" method="post" id="orderForm" class="checkout-form">

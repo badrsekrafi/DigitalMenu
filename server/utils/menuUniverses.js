@@ -185,7 +185,28 @@ function buildMenuUniverses(categorySections, activeSlug) {
 
 module.exports = {
     buildMenuUniverses,
+    buildCategoryCards,
     cleanDescription,
     splitServingHours,
     slugify,
 };
+
+// Each real admin category gets its own public card and stable deep link.
+// The broad universes remain available for existing QR links and bookmarks.
+function buildCategoryCards(sections) {
+    const used = new Set();
+    return sections.map((section, index) => {
+        const definition = UNIVERSE_DEFINITIONS.find(d => d.slug === findUniverseSlug(section.title));
+        let slug = `rubrique-${slugify(section.title)}`;
+        while (used.has(slug)) slug += '-1';
+        used.add(slug);
+        return {
+            slug, label: section.title, tagline: definition?.tagline || 'À découvrir',
+            description: cleanDescription(section.description) || 'Découvrez notre sélection.',
+            icon: definition?.icon || 'fa-concierge-bell',
+            cover: definition?.cover || section.items[0]?.imageUrl || '/images/patio/hero-djerba.jpg',
+            itemCount: section.itemCount, hasFilters: false, isExtra: index >= 4,
+            subcategories: [{ title: section.title, filterId: section.sectionId, itemCount: section.itemCount, items: section.items }],
+        };
+    });
+}

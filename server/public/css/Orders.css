@@ -15,14 +15,14 @@
 
 :root {
     --light: #ffffff;
-    --color-background: #F8FAFC;
-    --glass: #F8FAFC;
-    --ink: #0F172A;
-    --muted: #64748B;
-    --line: #E2E8F0;
-    --soft: #F8FAFC;
-    --accent: #F97316;
-    --accent-dark: #EA580C;
+    --color-background: #FFF8EF;
+    --glass: #FFF8EF;
+    --ink: #102B43;
+    --muted: #3E5368;
+    --line: #E5D2BA;
+    --soft: #FFF8EF;
+    --accent: #C65A20;
+    --accent-dark: #9A3F0E;
     --danger: #EF4444;
     --success: #22C55E;
 }
@@ -33,14 +33,14 @@ html, body {
 
 body {
     margin: 0;
-    background: #F8FAFC;
+    background: #FFF8EF;
     color: var(--ink);
 }
 
 .main {
     width: 100%;
     min-height: 100vh;
-    background: #F8FAFC;
+    background: #FFF8EF;
     display: flex;
 }
 
@@ -48,7 +48,7 @@ body {
     display: flex;
     width: 100%;
     min-height: 100vh;
-    background-color: #F8FAFC;
+    background-color: #FFF8EF;
 }
 
 main {
@@ -64,7 +64,7 @@ main {
 main .lowerbox {
     width: 100%;
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 16px;
     box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
     padding: 16px;
@@ -79,7 +79,7 @@ main .lowerbox h4 {
 
 .lowerbox-table {
     width: 100%;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 12px;
     background: #FFFFFF;
     overflow: hidden;
@@ -93,7 +93,7 @@ main .lowerbox h4 {
 
 .lowerbox-table th, .lowerbox-table td {
     padding: 10px 8px;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F2E5D5;
     color: var(--ink);
     font-size: 12px;
     text-align: left;
@@ -104,13 +104,13 @@ main .lowerbox h4 {
 .lowerbox-table th {
     position: sticky;
     top: 0;
-    background: #F8FAFC;
+    background: #FFF8EF;
     color: var(--muted);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E5D2BA;
 }
 
 .lowerbox-table tbody tr {
@@ -119,7 +119,7 @@ main .lowerbox h4 {
 }
 
 .lowerbox-table tbody tr:hover {
-    background: #F8FAFC;
+    background: #FFF8EF;
 }
 
 /* ── 📱 Fully Responsive Mobile & Tablet Card Layout ────────────────── */
@@ -155,7 +155,7 @@ main .lowerbox h4 {
 
     .lowerbox-table tbody tr {
         background: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1px solid #E5D2BA !important;
         border-radius: 16px !important;
         margin-bottom: 16px !important;
         padding: 16px !important;
@@ -167,7 +167,7 @@ main .lowerbox h4 {
         align-items: center !important;
         justify-content: space-between !important;
         padding: 10px 0 !important;
-        border-bottom: 1px solid #F1F5F9 !important;
+        border-bottom: 1px solid #F2E5D5 !important;
         text-align: right !important;
         font-size: 13px !important;
     }
@@ -180,7 +180,7 @@ main .lowerbox h4 {
     .lowerbox-table td::before {
         content: attr(data-label);
         font-weight: 600 !important;
-        color: #64748B !important;
+        color: #3E5368 !important;
         font-size: 12px !important;
         text-transform: uppercase !important;
         letter-spacing: 0.03em !important;
@@ -232,7 +232,7 @@ main .lowerbox h4 {
 
 .item-status-card {
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 8px;
     padding: 6px 8px;
     display: flex;
@@ -295,7 +295,7 @@ main .lowerbox h4 {
 
 .item-status-select option {
     background-color: #FFFFFF !important;
-    color: #0F172A !important;
+    color: #102B43 !important;
     font-weight: 600;
     padding: 4px;
 }
@@ -314,8 +314,8 @@ main .lowerbox h4 {
 }
 
 .order-type.dine-in { color: #16A34A; background: #F0FDF4; }
-.order-type.reservation { color: #EA580C; background: #FFF7ED; }
-.order-status { color: #0F172A; background: #F1F5F9; }
+.order-type.reservation { color: #9A3F0E; background: #F2E5D5; }
+.order-status { color: #102B43; background: #F2E5D5; }
 
 .details-button {
     height: 32px;
@@ -359,7 +359,7 @@ main .lowerbox h4 {
     position: relative;
     z-index: 1000;
     background: #ffffff !important;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 16px;
     width: min(560px, 100%);
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
@@ -371,7 +371,7 @@ main .lowerbox h4 {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E5D2BA;
 }
 
 .modal-header h3 {
@@ -384,7 +384,7 @@ main .lowerbox h4 {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #F1F5F9;
+    background: #F2E5D5;
     border: none;
     cursor: pointer;
     display: grid;
@@ -408,7 +408,7 @@ main .lowerbox h4 {
     display: flex;
     justify-content: space-between;
     padding: 8px 0;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F2E5D5;
     font-size: 13px;
 }
 

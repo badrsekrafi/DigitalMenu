@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
 <body>
@@ -141,7 +142,7 @@
                                     </div>
                                 </div>
                                 {{else}}
-                                <p style="color:#64748B;font-size:13px;padding:12px;">Aucune donnée de vente pour le moment.</p>
+                                <p style="color:#3E5368;font-size:13px;padding:12px;">Aucune donnée de vente pour le moment.</p>
                                 {{/each}}
                             </div>
                         </article>
@@ -201,12 +202,12 @@
                         labels: labels,
                         datasets: [{
                             data: totals,
-                            borderColor: '#F97316',
+                            borderColor: '#C65A20',
                             borderWidth: 2.5,
                             fill: true,
                             backgroundColor: gradient,
                             tension: 0.4,
-                            pointBackgroundColor: '#F97316',
+                            pointBackgroundColor: '#C65A20',
                             pointRadius: 4,
                         }]
                     },
@@ -216,7 +217,7 @@
                         plugins: { legend: { display: false } },
                         scales: {
                             x: { grid: { display: false } },
-                            y: { grid: { color: '#F1F5F9' } }
+                            y: { grid: { color: '#F2E5D5' } }
                         }
                     }
                 });
@@ -246,7 +247,7 @@
                         plugins: { legend: { display: false } },
                         scales: {
                             x: { grid: { display: false } },
-                            y: { grid: { color: '#F1F5F9' } }
+                            y: { grid: { color: '#F2E5D5' } }
                         }
                     }
                 });
@@ -257,7 +258,7 @@
             if (catCanvas && analyticsData.categoryDistribution) {
                 const labels = analyticsData.categoryDistribution.map(c => c.category);
                 const counts = analyticsData.categoryDistribution.map(c => c.count);
-                const colors = ['#F97316', '#8B5CF6', '#F59E0B', '#EC4899', '#3B82F6', '#10B981'];
+                const colors = ['#C65A20', '#1B3F5E', '#F59E0B', '#9A3F0E', '#3B82F6', '#10B981'];
                 const ctx = catCanvas.getContext('2d');
 
                 new Chart(ctx, {
@@ -297,11 +298,11 @@
         <div class="modal-panel" role="dialog" aria-modal="true">
             <div class="modal-header">
                 <div>
-                    <p style="font-size:11px;font-weight:700;color:#EA580C;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px 0;">Facture & Rapport de Caisse</p>
-                    <h3 style="margin:0;font-size:18px;color:#0F172A;">Rapport Financier Global</h3>
+                    <p style="font-size:11px;font-weight:700;color:#9A3F0E;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px 0;">Facture & Rapport de Caisse</p>
+                    <h3 style="margin:0;font-size:18px;color:#102B43;">Rapport Financier Global</h3>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
-                    <button type="button" class="btn btn-primary" onclick="window.print()" style="display:inline-flex;align-items:center;gap:8px;background:#EA580C;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">
+                    <button type="button" class="btn btn-primary" onclick="window.print()" style="display:inline-flex;align-items:center;gap:8px;background:#9A3F0E;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">
                         <i class="fa-solid fa-print"></i> Imprimer / PDF
                     </button>
                     <button type="button" class="modal-close" onclick="closeExportModal()" aria-label="Fermer">
@@ -382,7 +383,7 @@
                             <tbody>
                                 {{#each fullReport.dailySales}}
                                 <tr>
-                                    <td><strong>{{this.dayLabel}}</strong> <small style="color:#64748B;">({{this.dateStr}})</small></td>
+                                    <td><strong>{{this.dayLabel}}</strong> <small style="color:#3E5368;">({{this.dateStr}})</small></td>
                                     <td class="text-center">{{this.count}} commande(s)</td>
                                     <td class="text-right"><strong>{{this.revenueFormatted}} {{#if ../restaurantSettings.currency}}{{../restaurantSettings.currency}}{{else}}DNT{{/if}}</strong></td>
                                 </tr>
@@ -447,19 +448,19 @@
     }
     .modal-header {
         padding: 16px 24px;
-        border-bottom: 1px solid #E2E8F0;
+        border-bottom: 1px solid #E5D2BA;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #F8FAFC;
+        background: #FFF8EF;
     }
     .modal-content {
         padding: 24px;
         overflow-y: auto;
-        background: #F1F5F9;
+        background: #F2E5D5;
     }
     .modal-close {
-        background: #E2E8F0;
+        background: #E5D2BA;
         border: none;
         width: 34px;
         height: 34px;
@@ -468,7 +469,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #475569;
+        color: #3E5368;
         transition: all 0.2s;
     }
     .modal-close:hover {
@@ -481,7 +482,7 @@
         background: #fff;
         border-radius: 12px;
         padding: 32px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #E5D2BA;
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
     .inv-header {
@@ -493,12 +494,12 @@
     .inv-brand h2 {
         font-size: 24px;
         font-weight: 800;
-        color: #0F172A;
+        color: #102B43;
         margin-bottom: 4px;
     }
     .inv-brand p {
         font-size: 13px;
-        color: #64748B;
+        color: #3E5368;
         margin: 2px 0;
     }
     .inv-meta {
@@ -506,9 +507,9 @@
     }
     .inv-badge {
         display: inline-block;
-        background: #FFF7ED;
-        color: #EA580C;
-        border: 1px solid #FFEDD5;
+        background: #F2E5D5;
+        color: #9A3F0E;
+        border: 1px solid #E5D2BA;
         font-size: 11px;
         font-weight: 700;
         padding: 4px 10px;
@@ -518,19 +519,19 @@
     }
     .inv-meta p {
         font-size: 12px;
-        color: #475569;
+        color: #3E5368;
         margin: 2px 0;
     }
     .inv-divider {
         height: 2px;
-        background: linear-gradient(90deg, #F97316 0%, #E2E8F0 100%);
+        background: linear-gradient(90deg, #C65A20 0%, #E5D2BA 100%);
         margin: 24px 0;
         border-radius: 2px;
     }
     .inv-section-header h3 {
         font-size: 15px;
         font-weight: 700;
-        color: #1E293B;
+        color: #1B3F5E;
         margin-bottom: 12px;
         display: flex;
         align-items: center;
@@ -542,26 +543,26 @@
         font-size: 13px;
     }
     .inv-table th {
-        background: #F8FAFC;
-        color: #475569;
+        background: #FFF8EF;
+        color: #3E5368;
         font-weight: 600;
         text-align: left;
         padding: 10px 14px;
-        border-bottom: 2px solid #E2E8F0;
+        border-bottom: 2px solid #E5D2BA;
     }
     .inv-table td {
         padding: 10px 14px;
-        border-bottom: 1px solid #F1F5F9;
-        color: #1E293B;
+        border-bottom: 1px solid #F2E5D5;
+        color: #1B3F5E;
     }
     .inv-table tfoot td {
-        border-top: 2px solid #E2E8F0;
-        background: #FFF7ED;
+        border-top: 2px solid #E5D2BA;
+        background: #F2E5D5;
         padding: 12px 14px;
     }
     .inv-highlight {
         font-size: 16px;
-        color: #EA580C;
+        color: #9A3F0E;
     }
     .text-center { text-align: center !important; }
     .text-right { text-align: right !important; }
@@ -570,7 +571,7 @@
     /* Grand Total Banner */
     .inv-grand-total {
         margin-top: 28px;
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        background: linear-gradient(135deg, #102B43 0%, #1B3F5E 100%);
         border-radius: 12px;
         padding: 24px;
         color: #fff;
@@ -580,7 +581,7 @@
     .inv-grand-total span {
         font-size: 11px;
         font-weight: 700;
-        color: #F97316;
+        color: #C65A20;
         letter-spacing: 1px;
         text-transform: uppercase;
     }
@@ -599,7 +600,7 @@
         text-align: center;
         font-size: 11px;
         color: #94A3B8;
-        border-top: 1px solid #F1F5F9;
+        border-top: 1px solid #F2E5D5;
         padding-top: 16px;
     }
 

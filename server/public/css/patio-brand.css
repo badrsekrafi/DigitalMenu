@@ -1,0 +1,110 @@
+/* Shared Le Patio palette: public pages and administration. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+:root {
+    --brand-navy: #102B43;
+    --brand-cream: #FFF8EF;
+    --brand-sand: #F2E5D5;
+    --brand-gold: #EFB35C;
+    --brand-terra: #9A3F0E;
+    --primary: var(--brand-navy);
+    --primary-dark: #1B3F5E;
+    --primary-soft: var(--brand-sand);
+    --secondary: var(--brand-terra);
+    --secondary-soft: var(--brand-sand);
+    --bg: var(--brand-cream);
+    --bg-page: var(--brand-cream);
+    --card: #FFFCF7;
+    --card-bg: #FFFCF7;
+    --text: var(--brand-navy);
+    --text-main: var(--brand-navy);
+    --text-muted: #3E5368;
+    --line: #E5D2BA;
+    --border-color: #E5D2BA;
+    --primary-orange: var(--brand-terra);
+    --purple: var(--brand-navy);
+    --purple-soft: var(--brand-sand);
+    --cream: var(--brand-cream);
+    --cream-dark: var(--brand-sand);
+    --gold: var(--brand-navy);
+    --gold-light: var(--brand-gold);
+    --gold-dark: #1B3F5E;
+    --text-dark: var(--brand-navy);
+    --text-mid: #3E5368;
+    --border: #E5D2BA;
+    --color-background: var(--brand-cream);
+    --color-background-secondary: var(--brand-sand);
+    --color-surface: #FFFCF7;
+    --color-surface-light: var(--brand-sand);
+    --color-header: var(--brand-sand);
+    --color-primary: var(--brand-navy);
+    --color-primary-hover: #1B3F5E;
+    --color-gold: var(--brand-terra);
+    --color-gold-light: var(--brand-navy);
+    --color-text: var(--brand-navy);
+    --color-text-secondary: #3E5368;
+    --color-text-muted: #526171;
+    --color-border: #E5D2BA;
+    --color-card-border: #E5D2BA;
+    --color-shadow: 0 14px 34px rgba(16,43,67,.10);
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'DM Sans', sans-serif;
+    --bg-dark: var(--brand-cream);
+    --bg-card: #FFFCF7;
+    --border-card: #E5D2BA;
+    --primary-gold: var(--brand-terra);
+    --primary-amber: var(--brand-navy);
+    --accent-emerald: var(--brand-navy);
+    --accent-indigo: #1B3F5E;
+    --accent-purple: var(--brand-terra);
+}
+
+[hidden] { display: none !important; }
+body { accent-color: var(--brand-navy); }
+.offer-editor { padding: 24px; }
+.offer-editor-heading, .offer-editor-tools, .offer-editor-footer { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.offer-editor-heading { justify-content: space-between; margin-bottom: 20px; }
+.offer-editor-heading h2 { font: 700 28px 'Playfair Display', Georgia, serif; color: var(--brand-navy); margin: 4px 0 8px; }
+.offer-editor-heading p { font-size: 13px; color: var(--text-muted); max-width: 630px; }
+.offer-editor-heading .offer-eyebrow { color: var(--brand-terra); text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 700; }
+.offer-editor-tools { margin-bottom: 16px; }
+.offer-login-note { padding: 12px; margin-bottom: 16px; background: var(--brand-sand); border-radius: 10px; font-size: 13px; }
+.offer-login-note a { color: var(--brand-terra); font-weight: 600; }
+.offer-editor-tools label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+.offer-search { flex: 1; min-width: 180px; }
+.offer-editor-tools input { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--brand-navy); background: var(--brand-cream); }
+.offer-product-picker { max-height: 265px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; padding: 8px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+.offer-product-option { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid transparent; border-radius: 10px; cursor: pointer; min-width: 0; }
+.offer-product-option:hover { background: var(--brand-cream); }
+.offer-product-option:has(input:checked) { border-color: var(--brand-gold); background: var(--brand-sand); }
+.offer-product-option input { width: 18px; height: 18px; flex-shrink: 0; }
+.offer-product-option span { flex: 1; min-width: 0; }
+.offer-product-option strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.offer-product-option small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 4px; }
+.offer-product-option b { font-size: 12px; white-space: nowrap; }
+.offer-editor-footer { margin-top: 18px; }
+.offer-editor-footer > span { margin-inline-end: auto; font-size: 12px; color: var(--text-muted); }
+#dailyOfferMessage { margin: 12px 0 0; color: var(--brand-navy); font-size: 13px; }
+#dailyOfferMessage.is-error { color: #A22F28; }
+.categories-toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 30px; padding: 14px 24px; border: 1px solid var(--patio-sand-deep); border-radius: 999px; background: var(--brand-sand); color: var(--brand-navy); font: 600 15px var(--font-sans); cursor: pointer; }
+.categories-toggle:hover { background: var(--brand-gold); }
+.categories-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+.daily-offers { margin: 0 16px 28px; padding: 20px; border: 1px solid var(--brand-gold); border-radius: 22px; background: var(--brand-sand); }
+.daily-offers-heading { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.daily-offers-heading h2 { margin: 4px 0 0; font: 700 28px 'Playfair Display',Georgia,serif; }
+.daily-offer-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: var(--brand-navy); color: var(--brand-cream); border-radius: 999px; padding: 8px 12px; white-space: nowrap; }
+.daily-offer-list { padding: 0; margin: 0; }
+.daily-offer-list .product-card { background: var(--brand-cream); }
+.cart-venue-photo { display: block; width: calc(100% - 40px); height: 135px; object-fit: cover; object-position: center 32%; border-radius: 16px; margin: 0 20px 12px; flex-shrink: 0; }
+.hero-img { object-position: center 22%; }
+.client-auth { background: var(--brand-cream); background-image: radial-gradient(circle at top left, #F2E5D5, transparent 65%); color: var(--brand-navy); padding: 24px; font-family: var(--font-sans); }
+.client-auth .wrapper { width: min(440px,100%); background: #FFFCF7; border: 1px solid #E5D2BA; color: var(--brand-navy); box-shadow: 0 14px 34px rgba(16,43,67,.1); }
+.client-auth .wrapper h1 { font-family: 'Playfair Display',Georgia,serif; }
+.client-auth .input-box input { color: var(--brand-navy); background: var(--brand-cream); border: 1px solid #E5D2BA; border-radius: 12px; }
+.client-auth .input-box input::placeholder { color: #526171; }
+.client-auth .wrapper a { color: var(--brand-terra); }
+.client-auth .wrapper .btn { color: var(--brand-cream); background: var(--brand-navy); }
+.client-auth .auth-error { color: #A22F28; background: #FAE9E1; border-color: #A22F28; }
+.checkout-back { display: inline-flex; gap: 8px; margin-bottom: 16px; color: var(--brand-navy); text-decoration: none; font-weight: 600; }
+@media (min-width: 760px) { .daily-offers { margin-inline: 28px; } .daily-offer-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; } }
+@media (max-width: 600px) { .offer-editor { padding: 16px; } .offer-product-picker { grid-template-columns: minmax(0,1fr); } .offer-editor-footer .btn { flex: 1; height: auto; min-height: 42px; white-space: normal; } .offer-editor-footer > span { width: 100%; } .daily-offers { padding: 14px; } .daily-offers-heading h2 { font-size: 24px; } }

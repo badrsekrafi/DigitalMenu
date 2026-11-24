@@ -1,5 +1,5 @@
 (function () {
-    const CATEGORY_COLORS = ['#F97316', '#8B5CF6', '#F59E0B', '#EC4899', '#3B82F6', '#22C55E', '#EF4444', '#14B8A6'];
+    const CATEGORY_COLORS = ['#C65A20', '#1B3F5E', '#F59E0B', '#9A3F0E', '#3B82F6', '#22C55E', '#EF4444', '#14B8A6'];
 
     function getAnalytics() {
         return window.__DASHBOARD_ANALYTICS__ || {
@@ -51,12 +51,12 @@
                 labels: analytics.revenueByDay.map((entry) => entry.day),
                 datasets: [{
                     data: analytics.revenueByDay.map((entry) => entry.total),
-                    borderColor: '#F97316',
+                    borderColor: '#C65A20',
                     borderWidth: 2.5,
                     fill: true,
                     backgroundColor: gradient,
                     tension: 0.4,
-                    pointBackgroundColor: '#F97316',
+                    pointBackgroundColor: '#C65A20',
                     pointRadius: 3,
                     pointHoverRadius: 5,
                 }],
@@ -68,7 +68,7 @@
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } },
                     y: {
-                        grid: { color: '#F1F5F9' },
+                        grid: { color: '#F2E5D5' },
                         ticks: { color: '#94A3B8', font: { size: 10 }, callback: (v) => (v >= 1000 ? `${v / 1000}k` : v) },
                     },
                 },
@@ -98,7 +98,7 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                    y: { grid: { color: '#F1F5F9' }, ticks: { color: '#94A3B8', font: { size: 10 }, precision: 0 } },
+                    y: { grid: { color: '#F2E5D5' }, ticks: { color: '#94A3B8', font: { size: 10 }, precision: 0 } },
                 },
             },
         });

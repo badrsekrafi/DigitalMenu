@@ -9,6 +9,9 @@
 
     const I18N = {
         fr: {
+            showMoreCategories: "Afficher la suite", showLessCategories: "Afficher moins",
+            dailyOffers: "Offres du jour", dailyOfferKicker: "La sélection du Patio", todayOnly: "Aujourd’hui",
+            categorySoon: "Les produits de cette catégorie arrivent bientôt.",
             skipToContent: "Aller au contenu",
             tagline: "Découvrez nos saveurs",
             welcome: "Bienvenue au Patio",
@@ -68,6 +71,9 @@
             uniSweetsDesc: "Crêpes, gaufres, pancakes et desserts maison pour une parenthèse gourmande.",
         },
         ar: {
+            showMoreCategories: "عرض المزيد", showLessCategories: "عرض أقل",
+            dailyOffers: "عروض اليوم", dailyOfferKicker: "اختيارات لو باتيو", todayOnly: "اليوم",
+            categorySoon: "منتجات هذه الفئة متوفرة قريباً.",
             skipToContent: "انتقل إلى المحتوى",
             tagline: "اكتشف نكهاتنا",
             welcome: "مرحباً بكم في لو باتيو",
@@ -127,6 +133,9 @@
             uniSweetsDesc: "كريب، وافل، بان كيك وحلويات منزلية الصنع.",
         },
         en: {
+            showMoreCategories: "Show more", showLessCategories: "Show less",
+            dailyOffers: "Today’s specials", dailyOfferKicker: "The Patio selection", todayOnly: "Today",
+            categorySoon: "Products in this category are coming soon.",
             skipToContent: "Skip to content",
             tagline: "Discover our flavours",
             welcome: "Welcome to Le Patio",
@@ -237,6 +246,23 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
+        const categoriesToggle = document.getElementById("categoriesToggle");
+        if (categoriesToggle) categoriesToggle.addEventListener("click", () => {
+            const expanded = categoriesToggle.getAttribute("aria-expanded") !== "true";
+            categoriesToggle.setAttribute("aria-expanded", String(expanded));
+            document.querySelectorAll("[data-extra-category]").forEach(card => { card.hidden = !expanded; });
+            const label = categoriesToggle.querySelector("span");
+            const key = expanded ? "showLessCategories" : "showMoreCategories";
+            label.setAttribute("data-i18n", key);
+            label.textContent = window.patioT(key, expanded ? "Afficher moins" : "Afficher la suite");
+            if (!expanded) document.getElementById("categoryList").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        // A page kept open past midnight must not keep promoting yesterday's offers.
+        const dailyOffers = document.querySelector("[data-offer-day]");
+        if (dailyOffers) setInterval(() => {
+            const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Tunis", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+            if (day !== dailyOffers.dataset.offerDay) dailyOffers.hidden = true;
+        }, 60000);
         const views = Array.from(document.querySelectorAll(".view[data-view]"));
         const viewBySlug = new Map(views.map((view) => [view.getAttribute("data-view"), view]));
         const initialView = document.body.getAttribute("data-initial-view") || "home";
@@ -486,7 +512,13 @@
         const searchHint = document.getElementById("searchHint");
         const searchEmpty = document.getElementById("searchEmpty");
         const searchResults = document.getElementById("searchResults");
-        const sourceCards = Array.from(document.querySelectorAll(".view-category .product-card")).map((card) => {
+        const indexedProducts = new Set();
+        const sourceCards = Array.from(document.querySelectorAll(".view-category .product-card")).filter(card => {
+            const id = card.dataset.productId;
+            if (indexedProducts.has(id)) return false;
+            indexedProducts.add(id);
+            return true;
+        }).map((card) => {
             const title = card.querySelector(".pc-title")?.textContent || "";
             const desc = card.querySelector(".pc-desc")?.textContent || "";
             const cat = card.getAttribute("data-category") || "";

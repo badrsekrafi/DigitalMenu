@@ -12,13 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
 <body>
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            
+
             <main class="boxes fade-in">
                 <section class="upperbox">
                     <div class="upperbox-text">
@@ -58,7 +59,7 @@
                                         <span class="cell-text strong-text">{{this.title}}</span>
                                     </td>
                                     <td class="description-cell" data-label="Description">
-                                        <span class="cell-text" style="color: #64748B;">{{this.description}}</span>
+                                        <span class="cell-text" style="color: #3E5368;">{{this.description}}</span>
                                     </td>
                                     <td class="action-cell" data-label="Modifier" style="text-align: center;">
                                         <a class="icon-action edit-action" href="/Categories_add?id={{this._id}}" aria-label="Modifier {{this.title}}">

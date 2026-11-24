@@ -8,11 +8,11 @@
 }
 
 :root {
-    --primary: #F97316; --primary-dark: #EA580C; --primary-soft: #FFF7ED;
-    --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --muted: #64748B;
-    --line: #E2E8F0; --radius: 16px; --shadow: 0 4px 20px -2px rgba(15,23,42,.06);
+    --primary: #C65A20; --primary-dark: #9A3F0E; --primary-soft: #F2E5D5;
+    --bg: #FFF8EF; --card: #FFFFFF; --text: #102B43; --muted: #3E5368;
+    --line: #E5D2BA; --radius: 16px; --shadow: 0 4px 20px -2px rgba(15,23,42,.06);
     --transition: 200ms cubic-bezier(.4,0,.2,1);
-    --ink: #0F172A; --danger: #EF4444; --success: #22C55E;
+    --ink: #102B43; --danger: #EF4444; --success: #22C55E;
 }
 
 html, body { min-height: 100%; }

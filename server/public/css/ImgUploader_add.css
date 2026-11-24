@@ -12,17 +12,17 @@
 
 :root {
     --light: #ffffff;
-    --color-background: #F8FAFC;
+    --color-background: #FFF8EF;
     --glass: #FFFFFF;
-    --ink: #0F172A;
-    --muted: #64748B;
-    --line: #E2E8F0;
+    --ink: #102B43;
+    --muted: #3E5368;
+    --line: #E5D2BA;
     --free: #16A34A;
     --free-soft: #F0FDF4;
     --reserved: #EF4444;
     --reserved-soft: #FEF2F2;
     --amber: #F59E0B;
-    --primary: #F97316;
+    --primary: #C65A20;
     --shadow: 0 4px 20px -2px rgba(15,23,42,.06);
     --radius: 16px;
     --transition: 200ms cubic-bezier(.4,0,.2,1);
@@ -98,7 +98,7 @@ body {
     transition: all var(--transition);
 }
 .orders-link:hover {
-    background: #EA580C;
+    background: #9A3F0E;
     box-shadow: 0 4px 12px rgba(249,115,22,.25);
 }
 
@@ -271,7 +271,7 @@ body {
     transition: all var(--transition);
 }
 .primary-action:hover {
-    background: #EA580C;
+    background: #9A3F0E;
     box-shadow: 0 4px 12px rgba(249,115,22,.25);
 }
 

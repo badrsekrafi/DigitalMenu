@@ -12,13 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
 <body>
     <div class="main">
         <div class="bigBox">
             {{>Sidebar}}
-            
+
             <main class="boxes fade-in">
                 <section class="upperbox">
                     <div class="upperbox-text">
@@ -54,10 +55,10 @@
                                         <span class="cell-text strong-text">{{this.username}}</span>
                                     </td>
                                     <td data-label="Téléphone">
-                                        <span class="cell-text" style="color: #64748B;">{{this.phonenumber}}</span>
+                                        <span class="cell-text" style="color: #3E5368;">{{this.phonenumber}}</span>
                                     </td>
                                     <td data-label="Email">
-                                        <span class="cell-text" style="color: #64748B;">{{this.email}}</span>
+                                        <span class="cell-text" style="color: #3E5368;">{{this.email}}</span>
                                     </td>
                                     <td class="action-cell" data-label="Actions" style="text-align: center;">
                                         <button class="icon-action delete-action" type="button" onclick="confirmDeleteUser('{{this._id}}')" aria-label="Supprimer {{this.username}}">

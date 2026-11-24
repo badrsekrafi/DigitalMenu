@@ -1,12 +1,12 @@
 /* Modern SaaS Homepage CSS matching the mockup image */
 
 :root {
-    --bg-page: #F8FAFC;
+    --bg-page: #FFF8EF;
     --card-bg: #FFFFFF;
-    --border-color: #E2E8F0;
-    --text-main: #0F172A;
-    --text-muted: #64748B;
-    --primary-orange: #F97316;
+    --border-color: #E5D2BA;
+    --text-main: #102B43;
+    --text-muted: #3E5368;
+    --primary-orange: #C65A20;
 }
 
 body {
@@ -115,8 +115,8 @@ body {
 .search-kbd {
     position: absolute;
     right: 14px;
-    background: #F1F5F9;
-    border: 1px solid #CBD5E1;
+    background: #F2E5D5;
+    border: 1px solid #D5C2AB;
     border-radius: 4px;
     padding: 1px 6px;
     font-size: 11px;
@@ -131,7 +131,7 @@ body {
     left: 0;
     width: 380px;
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 16px;
     box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18);
     z-index: 1005;
@@ -160,22 +160,22 @@ body {
     padding: 10px 16px;
     text-decoration: none;
     transition: background 0.15s ease;
-    border-bottom: 1px solid #F8FAFC;
+    border-bottom: 1px solid #FFF8EF;
 }
 
 .search-result-item:hover {
-    background: #F8FAFC;
+    background: #FFF8EF;
 }
 
 .search-result-title {
     font-size: 13px;
     font-weight: 600;
-    color: #0F172A;
+    color: #102B43;
 }
 
 .search-result-subtitle {
     font-size: 11px;
-    color: #64748B;
+    color: #3E5368;
     margin-top: 2px;
 }
 
@@ -221,7 +221,7 @@ body {
     right: 0;
     width: 360px;
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 16px;
     box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18);
     z-index: 1000;
@@ -234,17 +234,17 @@ body {
 
 .notif-header {
     padding: 14px 16px;
-    background: #F8FAFC;
-    border-bottom: 1px solid #E2E8F0;
+    background: #FFF8EF;
+    border-bottom: 1px solid #E5D2BA;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .notif-count-pill {
-    background: #FFF7ED;
-    color: #EA580C;
-    border: 1px solid #FFEDD5;
+    background: #F2E5D5;
+    color: #9A3F0E;
+    border: 1px solid #E5D2BA;
     font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
@@ -258,13 +258,13 @@ body {
 
 .notif-footer {
     padding: 10px 16px;
-    background: #F8FAFC;
-    border-top: 1px solid #E2E8F0;
+    background: #FFF8EF;
+    border-top: 1px solid #E5D2BA;
     text-align: center;
 }
 
 .notif-footer-link {
-    color: #EA580C;
+    color: #9A3F0E;
     font-size: 12px;
     font-weight: 700;
     text-decoration: none;
@@ -381,18 +381,18 @@ body {
 }
 
 .stat-card-orange .stat-icon-wrapper {
-    background: #FFF7ED;
-    color: #F97316;
+    background: #F2E5D5;
+    color: #C65A20;
 }
 
 .stat-card-purple .stat-icon-wrapper {
-    background: #F3E8FF;
-    color: #9333EA;
+    background: #F2E5D5;
+    color: #102B43;
 }
 
 .stat-card-pink .stat-icon-wrapper {
-    background: #FDF2F8;
-    color: #EC4899;
+    background: #F2E5D5;
+    color: #9A3F0E;
 }
 
 .stat-card-green .stat-icon-wrapper {
@@ -486,7 +486,7 @@ body {
 
 .metric-trend.is-up { color: #22C55E; }
 .metric-trend.is-down { color: #EF4444; }
-.metric-trend.is-flat { color: var(--text-muted, #64748B); }
+.metric-trend.is-flat { color: var(--text-muted, #3E5368); }
 .metric-trend i { margin-right: 3px; }
 
 .analytics-period-select {
@@ -551,7 +551,7 @@ body {
 .progress-bar-bg {
     width: 100%;
     height: 4px;
-    background: #F1F5F9;
+    background: #F2E5D5;
     border-radius: 9999px;
     overflow: hidden;
 }
@@ -656,14 +656,14 @@ body {
     color: var(--text-muted);
     letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-color);
-    background: #F8FAFC;
+    background: #FFF8EF;
 }
 
 .orders-table td {
     padding: 12px;
     font-size: 13px;
     color: var(--text-main);
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F2E5D5;
     vertical-align: middle;
 }
 
@@ -672,7 +672,7 @@ body {
 }
 
 .orders-table tbody tr:hover {
-    background: #F8FAFC;
+    background: #FFF8EF;
 }
 
 .btn-action-eye {
@@ -691,8 +691,8 @@ body {
 
 .btn-action-eye:hover {
     color: var(--primary-orange);
-    background: #FFF7ED;
-    border-color: #F97316;
+    background: #F2E5D5;
+    border-color: #C65A20;
 }
 
 /* QR Quick Card */
@@ -756,7 +756,7 @@ body {
     flex: 1;
     height: 36px;
     padding: 0 12px;
-    background: #F8FAFC;
+    background: #FFF8EF;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 12px;

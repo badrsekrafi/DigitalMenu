@@ -28,6 +28,8 @@ const UserNew = require('./models/UserMenu_SignUp');
 const Order = require('./models/order');
 const TableConfig = require('./models/tableConfig');
 const Settings = require('./models/settings');
+const DailyOffer = require('./models/dailyOffer');
+const { restaurantDay, isValidDay } = require('./utils/dailyOffers');
 const {
     ADMIN_WHATSAPP_NUMBER,
     formatWhatsAppNumber,
@@ -36,6 +38,7 @@ const {
 } = require('./utils/whatsapp');
 const {
     buildMenuUniverses,
+    buildCategoryCards,
     cleanDescription,
     splitServingHours,
 } = require('./utils/menuUniverses');
@@ -92,7 +95,7 @@ hbs.registerPartials(partials_path);
 
 // Use the 'express-session' middleware
 app.use(session({
-    secret: secretKey, 
+    secret: secretKey,
     resave: false,
     saveUninitialized: true,
 }));
@@ -521,6 +524,12 @@ app.get(["/Home", "/home"], async (req, res) => {
         const categoryCount = await MyCategory.countDocuments(); // Update this line
         const orders = await Order.find().sort({ createdAt: -1 }).limit(8);
         const analytics = await computeDashboardAnalytics();
+        const offerDay = restaurantDay();
+        const [offerProducts, dailyOffer] = await Promise.all([
+            MenuItem.find({}, { image: 0 }).sort({ category: 1, title: 1 }).lean(),
+            DailyOffer.findOne({ day: offerDay }).lean(),
+        ]);
+        const selectedIds = new Set((dailyOffer?.itemIds || []).map(String));
 
         res.render("Home", {
             categories,
@@ -529,9 +538,45 @@ app.get(["/Home", "/home"], async (req, res) => {
             hasOrders: orders.length > 0,
             adminName: getAdminDisplayName(req),
             analytics,
+            offerDay,
+            offerProducts: offerProducts.map(item => ({ ...item, isAvailable: item.isAvailable !== false, selected: selectedIds.has(String(item._id)) })),
+            offerSelectedCount: selectedIds.size,
+            offerAdminLoggedIn: Boolean(req.session?.user),
         });
     } catch (error) {
         res.status(500).send("Error in Fetching");
+    }
+});
+
+// Only a signed-in administrator can publish the restaurant's daily selection.
+app.get('/api/daily-offers', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ success: false, error: 'Connectez-vous en tant qu’administrateur.' });
+    const day = req.query.day || restaurantDay();
+    if (!isValidDay(day)) return res.status(400).json({ success: false, error: 'Date invalide.' });
+    try {
+        const offer = await DailyOffer.findOne({ day }).lean();
+        res.json({ success: true, day, itemIds: (offer?.itemIds || []).map(String) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossible de charger les offres.' });
+    }
+});
+
+app.put('/api/daily-offers', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ success: false, error: 'Connectez-vous en tant qu’administrateur.' });
+    const { day, itemIds } = req.body;
+    if (!isValidDay(day) || !Array.isArray(itemIds) || itemIds.length > 100 ||
+        itemIds.some(id => typeof id !== 'string' || !/^[a-f\d]{24}$/i.test(id))) {
+        return res.status(400).json({ success: false, error: 'Date ou sélection invalide (100 produits maximum).' });
+    }
+    try {
+        const ids = [...new Set(itemIds)];
+        const count = await MenuItem.countDocuments({ _id: { $in: ids } });
+        if (count !== ids.length) return res.status(400).json({ success: false, error: 'Un produit sélectionné n’existe plus. Rechargez la page.' });
+        await DailyOffer.findOneAndUpdate({ day }, { $set: { itemIds: ids } }, { upsert: true, runValidators: true });
+        res.json({ success: true, day, itemIds: ids });
+    } catch (error) {
+        console.error('Saving daily offer:', error);
+        res.status(500).json({ success: false, error: 'Impossible d’enregistrer les offres.' });
     }
 });
 
@@ -1166,7 +1211,7 @@ app.get(["/Settings", "/settings"], async (req, res) => {
 app.post("/Settings", async (req, res) => {
     try {
         const { restaurantName, address, phone, openingHours, currency, adminEmail, adminPassword, twoFactorPin } = req.body;
-        
+
         await Settings.findOneAndUpdate(
             {},
             {
@@ -1881,7 +1926,6 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
         ...sectionsByCategory.values(),
         ...extraSections.values(),
     ]
-        .filter((section) => section.items.length > 0)
         .map((section) => ({
             ...section,
             itemCount: section.items.length,
@@ -1917,8 +1961,18 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
     let restaurantSettings = {};
     try { restaurantSettings = await getSettings(); } catch (e) { console.error('getSettings error in buildUserMenuViewData:', e); }
 
-    const menuUniverses = buildMenuUniverses(categorySections, activeUniverseSlug);
+    const homeCategories = buildCategoryCards(categorySections);
+    const menuUniverses = homeCategories.map(category => ({ ...category, isActive: category.slug === activeUniverseSlug }));
+    // Preserve existing broad-category links without rendering every product twice.
+    if (activeUniverseSlug && !menuUniverses.some(category => category.isActive)) {
+        const legacyUniverse = buildMenuUniverses(categorySections, activeUniverseSlug).find(category => category.isActive);
+        if (legacyUniverse) menuUniverses.push(legacyUniverse);
+    }
     const activeUniverse = menuUniverses.find((universe) => universe.isActive) || null;
+    const offerDay = restaurantDay();
+    const dailyOffer = await DailyOffer.findOne({ day: offerDay }).lean();
+    const offerIds = new Set((dailyOffer?.itemIds || []).map(String));
+    const dailyOfferItems = MenuItems.filter(item => item.isAvailable && offerIds.has(String(item._id)));
 
     return {
         restaurantSettings,
@@ -1927,6 +1981,10 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
         MenuItems,
         categorySections,
         menuUniverses,
+        homeCategories,
+        hasMoreCategories: homeCategories.length > 4,
+        dailyOfferItems,
+        offerDay,
         activeUniverse,
         // Tunisian dinar is displayed as "DT" on the public menu.
         currencyLabel: ['', 'DNT', 'TND', 'DT'].includes(String(restaurantSettings.currency || '').trim().toUpperCase())

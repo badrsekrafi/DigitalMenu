@@ -8,9 +8,9 @@
 }
 
 :root {
-    --primary: #F97316; --primary-dark: #EA580C; --primary-soft: #FFF7ED;
-    --secondary: #EC4899; --bg: #F8FAFC; --card: #FFFFFF;
-    --text: #0F172A; --muted: #64748B; --line: #E2E8F0;
+    --primary: #C65A20; --primary-dark: #9A3F0E; --primary-soft: #F2E5D5;
+    --secondary: #9A3F0E; --bg: #FFF8EF; --card: #FFFFFF;
+    --text: #102B43; --muted: #3E5368; --line: #E5D2BA;
     --success: #22C55E; --success-soft: #F0FDF4;
     --danger: #EF4444; --danger-soft: #FEF2F2;
     --warning: #F59E0B; --warning-soft: #FEF3C7;
@@ -121,13 +121,13 @@ body { margin: 0; background: var(--bg); color: var(--text); }
     transition: all var(--transition);
 }
 
-.btn-cancel:hover { background: var(--bg); color: var(--text); border-color: #CBD5E1; }
+.btn-cancel:hover { background: var(--bg); color: var(--text); border-color: #D5C2AB; }
 
 /* ---- Toast/Popup ---- */
 .popup {
     display: none; position: fixed; z-index: 9999;
     bottom: 24px; right: 24px;
-    background: #0F172A; color: #fff;
+    background: #102B43; color: #fff;
     padding: 12px 20px; border-radius: 10px;
     font-size: 13px; font-weight: 500;
     box-shadow: 0 10px 25px rgba(0,0,0,.2);

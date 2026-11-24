@@ -19,7 +19,7 @@
 .sidebar {
     width: 250px;
     background: #FFFFFF;
-    border-right: 1px solid #E2E8F0;
+    border-right: 1px solid #E5D2BA;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -48,7 +48,7 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: #FFF7ED;
+    background: #F2E5D5;
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -68,19 +68,19 @@
 .brand-title {
     font-size: 18px;
     font-weight: 700;
-    color: #0F172A;
+    color: #102B43;
     line-height: 1.2;
     letter-spacing: -0.02em;
 }
 
 .brand-accent {
-    color: #F97316;
+    color: #C65A20;
 }
 
 .brand-subtitle {
     font-size: 11px;
     font-weight: 500;
-    color: #64748B;
+    color: #3E5368;
     letter-spacing: -0.01em;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
+    background: #D5C2AB;
     border-radius: 4px;
 }
 
@@ -108,7 +108,7 @@
     gap: 12px;
     padding: 10px 14px;
     border-radius: 10px;
-    color: #64748B;
+    color: #3E5368;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
@@ -125,18 +125,18 @@
 }
 
 .nav-link:hover {
-    color: #0F172A;
-    background: #F8FAFC;
+    color: #102B43;
+    background: #FFF8EF;
     transform: translateX(3px);
 }
 
 .nav-link:hover i {
-    color: #F97316;
+    color: #C65A20;
 }
 
 /* Active Nav Item Pill */
 .nav-link.active {
-    background: #F97316;
+    background: #C65A20;
     color: #FFFFFF;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
@@ -148,7 +148,7 @@
 
 .nav-link.active:hover {
     transform: none;
-    background: #EA580C;
+    background: #9A3F0E;
 }
 
 /* Sidebar Footer & Promo Card */
@@ -159,8 +159,8 @@
 }
 
 .sidebar-promo-card {
-    background: linear-gradient(135deg, #FFF7ED 0%, #FDF2F8 100%);
-    border: 1px solid #FFEDD5;
+    background: linear-gradient(135deg, #F2E5D5 0%, #F2E5D5 100%);
+    border: 1px solid #E5D2BA;
     border-radius: 14px;
     padding: 16px;
     display: flex;
@@ -172,7 +172,7 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #F97316;
+    background: #C65A20;
     color: #FFFFFF;
     display: grid;
     place-items: center;
@@ -182,13 +182,13 @@
 .promo-content h4 {
     font-size: 13px;
     font-weight: 700;
-    color: #0F172A;
+    color: #102B43;
     margin-bottom: 2px;
 }
 
 .promo-content p {
     font-size: 11px;
-    color: #64748B;
+    color: #3E5368;
     line-height: 1.35;
     margin-bottom: 10px;
 }
@@ -199,8 +199,8 @@
     gap: 10px;
     padding: 10px 12px;
     border-radius: 12px;
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
+    background: #FFF8EF;
+    border: 1px solid #E5D2BA;
 }
 
 .user-avatar {
@@ -208,7 +208,7 @@
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
 }
 
 .user-info {
@@ -221,7 +221,7 @@
 .user-name {
     font-size: 13px;
     font-weight: 600;
-    color: #0F172A;
+    color: #102B43;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -229,7 +229,7 @@
 
 .user-role {
     font-size: 11px;
-    color: #64748B;
+    color: #3E5368;
 }
 
 .user-logout-btn {

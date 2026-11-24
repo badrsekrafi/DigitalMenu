@@ -24,11 +24,12 @@
     <!-- icons: font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="/css/patio-menu.css">
-    <link rel="preload" as="image" href="{{#if activeUniverse}}{{activeUniverse.cover}}{{else}}/images/patio/hero-djerba.jpg{{/if}}">
+    <link rel="preload" as="image" href="{{#if activeUniverse}}{{activeUniverse.cover}}{{else}}/images/patio/le-patio-terrasse.jpg{{/if}}">
     <script>
         window.RESTAURANT_CURRENCY = "{{#if currencyLabel}}{{currencyLabel}}{{else}}DT{{/if}}";
         window.RESTAURANT_NAME = "Le Patio Djerba";
     </script>
+    <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
 <body class="patio" data-initial-view="{{#if activeUniverse}}{{activeUniverse.slug}}{{else}}home{{/if}}">
@@ -57,8 +58,8 @@
             </header>
 
             <div class="hero">
-                <img class="hero-img" src="{{#if latestImage.base64Image}}{{latestImage.base64Image}}{{else}}/images/patio/hero-djerba.jpg{{/if}}"
-                    alt="Patio méditerranéen du restaurant à Djerba : murs blancs, porte bleue et palmiers" width="1600" height="900" fetchpriority="high">
+                <img class="hero-img" src="/images/patio/le-patio-terrasse.jpg"
+                    alt="La terrasse du Patio Café & Drinks à Djerba" width="1205" height="1306" fetchpriority="high">
                 <div class="hero-shade" aria-hidden="true"></div>
                 <div class="hero-caption">
                     <span class="hero-chip"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Houmt Souk · Djerba</span>
@@ -110,10 +111,33 @@
                 </div>
             </div>
 
-            {{#if menuUniverses.length}}
-            <ul class="universe-list" aria-label="Catégories du menu">
-                {{#each menuUniverses}}
-                <li style="--i: {{@index}}">
+            {{#if dailyOfferItems.length}}
+            <section class="daily-offers" aria-labelledby="dailyOfferTitle" data-offer-day="{{offerDay}}">
+                <div class="daily-offers-heading">
+                    <div><p class="menu-kicker" data-i18n="dailyOfferKicker">La sélection du Patio</p>
+                    <h2 id="dailyOfferTitle" data-i18n="dailyOffers">Offres du jour</h2></div>
+                    <span class="daily-offer-label"><i class="fas fa-sun" aria-hidden="true"></i> <span data-i18n="todayOnly">Aujourd’hui</span></span>
+                </div>
+                <ul class="product-list daily-offer-list">
+                    {{#each dailyOfferItems}}
+                    <li class="product-card" data-product-id="{{_id}}">
+                        <div class="pc-media"><img src="{{imageUrl}}" alt="{{displayTitle}}" width="112" height="112" loading="lazy"></div>
+                        <div class="pc-body"><h3 class="pc-title">{{displayTitle}}</h3>
+                            {{#if displayDescription}}<p class="pc-desc">{{displayDescription}}</p>{{/if}}
+                            <div class="pc-footer"><span class="pc-price">{{price}} <small>{{@root.currencyLabel}}</small></span>
+                                <button type="button" class="add-to-cart-btn" data-name="{{title}}" data-display-name="{{displayTitle}}" data-price="{{price}}" data-img="{{imageUrl}}" aria-label="Ajouter {{displayTitle}} au panier"><i class="fas fa-plus" aria-hidden="true"></i><i class="fas fa-check" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </li>
+                    {{/each}}
+                </ul>
+            </section>
+            {{/if}}
+
+            {{#if homeCategories.length}}
+            <ul class="universe-list" id="categoryList" aria-label="Catégories du menu">
+                {{#each homeCategories}}
+                <li style="--i: {{@index}}" {{#if isExtra}}data-extra-category hidden{{/if}}>
                     <a class="universe-card" href="/UserMenu/categorie/{{slug}}" data-universe-link="{{slug}}">
                         <img class="uc-img" src="{{cover}}" alt="" width="1200" height="640" {{#if @first}}fetchpriority="high"{{else}}loading="lazy"{{/if}} decoding="async">
                         <span class="uc-shade" aria-hidden="true"></span>
@@ -128,6 +152,11 @@
                 </li>
                 {{/each}}
             </ul>
+            {{#if hasMoreCategories}}
+            <button type="button" class="categories-toggle" id="categoriesToggle" aria-expanded="false" aria-controls="categoryList">
+                <span data-i18n="showMoreCategories">Afficher la suite</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            {{/if}}
             {{else}}
             <div class="empty-state">
                 <span class="empty-icon" aria-hidden="true"><i class="fas fa-utensils"></i></span>
@@ -215,7 +244,7 @@
                     <h2 class="sub-title{{#unless ../hasFilters}} visually-hidden{{/unless}}"><span>{{title}}</span><em>{{itemCount}}</em></h2>
                     <ul class="product-list">
                         {{#each items}}
-                        <li class="product-card{{#unless isAvailable}} is-unavailable{{/unless}}" data-category="{{../title}}" data-universe="{{../../slug}}">
+                        <li class="product-card{{#unless isAvailable}} is-unavailable{{/unless}}" data-product-id="{{_id}}" data-category="{{../title}}" data-universe="{{../../slug}}">
                             <div class="pc-media">
                                 <img src="{{imageUrl}}" alt="{{displayTitle}}" width="112" height="112" loading="lazy" decoding="async">
                                 {{#unless isAvailable}}<span class="pc-badge" data-i18n="outOfStock">Épuisé</span>{{/unless}}
@@ -241,6 +270,7 @@
                         </li>
                         {{/each}}
                     </ul>
+                    {{#unless items.length}}<p class="empty-state" data-i18n="categorySoon">Les produits de cette catégorie arrivent bientôt.</p>{{/unless}}
                 </section>
                 {{/each}}
 
@@ -289,7 +319,7 @@
 
             <nav class="drawer-nav" aria-label="Navigation principale">
                 <a href="/UserMenu" data-nav-home data-drawer-link><i class="fas fa-book-open" aria-hidden="true"></i> <span data-i18n="ourMenu">Notre Menu</span></a>
-                {{#each menuUniverses}}
+                {{#each homeCategories}}
                 <a href="/UserMenu/categorie/{{slug}}" data-universe-link="{{slug}}" data-drawer-link class="is-sub"><i class="fas {{icon}}" aria-hidden="true"></i> <span {{#if i18nKey}}data-i18n="{{i18nKey}}"{{/if}}>{{label}}</span></a>
                 {{/each}}
                 <button type="button" data-cart-open data-drawer-link><i class="fas fa-shopping-bag" aria-hidden="true"></i> <span data-i18n="myCart">Mon panier</span> <span class="drawer-badge" data-cart-count>0</span></button>
@@ -335,6 +365,7 @@
                     <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
+            <img class="cart-venue-photo" src="/images/patio/le-patio-terrasse.jpg" alt="La terrasse du Patio Café & Drinks à Djerba" width="1205" height="1306" loading="lazy">
             <div class="order-address">
                 <i class="fas fa-store" aria-hidden="true"></i>
                 <div>

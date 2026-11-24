@@ -15,14 +15,14 @@
 
 :root {
     --light: #ffffff;
-    --color-background: #F8FAFC;
-    --glass: #F8FAFC;
-    --ink: #0F172A;
-    --muted: #64748B;
-    --line: #E2E8F0;
-    --soft: #F8FAFC;
-    --accent: #F97316;
-    --accent-dark: #EA580C;
+    --color-background: #FFF8EF;
+    --glass: #FFF8EF;
+    --ink: #102B43;
+    --muted: #3E5368;
+    --line: #E5D2BA;
+    --soft: #FFF8EF;
+    --accent: #C65A20;
+    --accent-dark: #9A3F0E;
     --danger: #EF4444;
     --success: #22C55E;
 }
@@ -33,14 +33,14 @@ html, body {
 
 body {
     margin: 0;
-    background: #F8FAFC;
+    background: #FFF8EF;
     color: var(--ink);
 }
 
 .main {
     width: 100%;
     min-height: 100vh;
-    background: #F8FAFC;
+    background: #FFF8EF;
     display: flex;
 }
 
@@ -48,7 +48,7 @@ body {
     display: flex;
     width: 100%;
     min-height: 100vh;
-    background-color: #F8FAFC;
+    background-color: #FFF8EF;
 }
 
 .boxes {
@@ -64,7 +64,7 @@ body {
 .upperbox, .lowerbox {
     width: 100%;
     background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     border-radius: 16px;
     box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
 }
@@ -153,7 +153,7 @@ body {
 
 .lowerbox-table th, .lowerbox-table td {
     padding: 12px 14px;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid #F2E5D5;
     color: var(--ink);
     font-size: 13px;
     text-align: left;
@@ -163,13 +163,13 @@ body {
 .lowerbox-table th {
     position: sticky;
     top: 0;
-    background: #F8FAFC;
+    background: #FFF8EF;
     color: var(--muted);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E5D2BA;
 }
 
 .lowerbox-table tbody tr {
@@ -178,7 +178,7 @@ body {
 }
 
 .lowerbox-table tbody tr:hover {
-    background: #F8FAFC;
+    background: #FFF8EF;
 }
 
 .price-pill {
@@ -195,8 +195,8 @@ body {
     display: inline-flex;
     padding: 4px 10px;
     border-radius: 9999px;
-    background: #FFF7ED;
-    color: #EA580C;
+    background: #F2E5D5;
+    color: #9A3F0E;
     font-weight: 600;
     font-size: 12px;
 }
@@ -206,7 +206,7 @@ body {
     height: 44px;
     border-radius: 8px;
     object-fit: cover;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
 }
 
 .icon-action {
@@ -217,7 +217,7 @@ body {
     align-items: center;
     justify-content: center;
     background: #ffffff;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #E5D2BA;
     color: var(--muted);
     cursor: pointer;
     font-size: 14px;
@@ -226,7 +226,7 @@ body {
 
 .edit-action:hover {
     color: var(--accent);
-    background: #FFF7ED;
+    background: #F2E5D5;
     border-color: var(--accent);
 }
 
@@ -243,9 +243,9 @@ body {
     gap: 8px;
     color: var(--muted);
     text-align: center;
-    border: 1px dashed #E2E8F0;
+    border: 1px dashed #E5D2BA;
     border-radius: 12px;
-    background: #F8FAFC;
+    background: #FFF8EF;
     padding: 24px;
 }
 
