@@ -38,6 +38,7 @@
             {{/if}}
 
             <form action="/login" method="POST" style="width:100%">
+                <input type="hidden" name="returnTo" value="{{returnTo}}">
                 <div class="input-field">
                     <i class="fa fa-envelope-o"></i>
                     <input type="email" placeholder="Adresse e-mail" name="email" required autocomplete="email">

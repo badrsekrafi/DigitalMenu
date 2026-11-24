@@ -1,7 +1,6 @@
 
 // Modern SaaS Admin Server
 const express = require("express");
-const session = require('express-session');
 const path = require("path");
 const crypto = require('crypto');
 const mongoose = require('mongoose');
@@ -13,6 +12,7 @@ const io = socketIO(server);
 const hbs = require("hbs");
 const multer = require('multer');
 const { connectToDatabase } = require("./database/connection");
+const { createAdminSession, requireAdminPage, safeAdminReturnTo, buildAdminSessionUser } = require('./utils/adminSession');
 
 const secretKey = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 if (!process.env.SESSION_SECRET) {
@@ -94,12 +94,10 @@ app.set("view engine", "hbs");
 app.set("views", templates_path);
 hbs.registerPartials(partials_path);
 
-// Use the 'express-session' middleware
-app.use(session({
-    secret: secretKey,
-    resave: false,
-    saveUninitialized: true,
-}));
+// Share sessions across process restarts and deployment instances.
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+app.use(createAdminSession(secretKey));
+app.use(requireAdminPage);
 
 hbs.registerHelper('formatCurrency', function (value) {
     const num = Number(value);
@@ -471,14 +469,15 @@ async function ensureDefaultAdminCreated() {
 }
 
 app.get("/", (req, res) => {
-    res.render("login");
+    res.render("login", { returnTo: '/Home' });
 });
 
 app.get("/login", (req, res) => {
-    res.render("login");
+    res.render("login", { returnTo: safeAdminReturnTo(req.query.returnTo) });
 });
 
 app.post("/login", async (req, res) => {
+    const returnTo = safeAdminReturnTo(req.body.returnTo);
     try {
         await ensureDefaultAdminCreated();
         const inputEmail = String(req.body.email || '').trim().toLowerCase();
@@ -495,14 +494,16 @@ app.post("/login", async (req, res) => {
         }
 
         if (!userModel || userModel.password !== inputPassword) {
-            return res.render("login", { errorMessage: "Email ou mot de passe incorrect." });
+            return res.status(401).render("login", { errorMessage: "Email ou mot de passe incorrect.", returnTo });
         }
 
-        req.session.user = userModel.toObject ? userModel.toObject() : userModel;
-        res.redirect("/Home");
+        await new Promise((resolve, reject) => req.session.regenerate(error => error ? reject(error) : resolve()));
+        req.session.user = buildAdminSessionUser(userModel);
+        await new Promise((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
+        res.redirect(returnTo);
     } catch (error) {
         console.error("Login error:", error);
-        res.render("login", { errorMessage: "Une erreur est survenue lors de la connexion." });
+        res.status(503).render("login", { errorMessage: "Connexion indisponible. Veuillez réessayer.", returnTo });
     }
 });
 
@@ -1323,7 +1324,7 @@ app.post("/Settings", async (req, res) => {
                 adminDoc.twoFactorPin = cleanPin;
                 if (restaurantName) adminDoc.Restaurant_name = String(restaurantName).trim();
                 await adminDoc.save();
-                req.session.user = adminDoc.toObject ? adminDoc.toObject() : adminDoc;
+                req.session.user = buildAdminSessionUser(adminDoc);
             } else {
                 const newUser = await user.create({
                     Restaurant_name: String(restaurantName || "Le Patio Djerba").trim(),
@@ -1331,7 +1332,7 @@ app.post("/Settings", async (req, res) => {
                     password: cleanPassword,
                     twoFactorPin: cleanPin
                 });
-                req.session.user = newUser.toObject ? newUser.toObject() : newUser;
+                req.session.user = buildAdminSessionUser(newUser);
             }
         }
 

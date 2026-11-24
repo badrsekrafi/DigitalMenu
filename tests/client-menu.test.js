@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 const { test, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { restaurantDay, isValidDay } = require('../server/utils/dailyOffers');

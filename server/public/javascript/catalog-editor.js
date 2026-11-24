@@ -33,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = editing ? `/api/${product ? 'menu-items' : 'categories'}/${encodeURIComponent(form.dataset.id)}` : returnUrl + '_add';
             const response = await fetch(url, { method: editing ? 'PUT' : 'POST', headers, body });
             const data = response.headers.get('content-type')?.includes('application/json') ? await response.json() : await response.text();
+            if (response.status === 401) {
+                message.textContent = 'Votre session a expiré. Connectez-vous, puis revenez ici pour enregistrer vos modifications. ';
+                const reconnect = document.createElement('a');
+                reconnect.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                reconnect.target = '_blank';
+                reconnect.rel = 'noopener';
+                reconnect.textContent = 'Se reconnecter';
+                message.appendChild(reconnect);
+                message.classList.add('field-error');
+                button.disabled = false;
+                return;
+            }
             if (!response.ok) throw new Error(data.error || (typeof data === 'string' ? data : 'Enregistrement impossible.'));
             window.location.href = returnUrl;
         } catch (error) {

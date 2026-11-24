@@ -13,29 +13,24 @@ if (dnsServers.length > 0) {
     dns.setServers(dnsServers);
 }
 
-let isConnecting = false;
+let connectionPromise;
 
 async function connectToDatabase() {
-    if (mongoose.connection.readyState >= 1) {
+    if (mongoose.connection.readyState === 1) {
         return mongoose;
     }
 
-    if (isConnecting) {
-        return;
-    }
-
-    isConnecting = true;
-    try {
-        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+    if (!connectionPromise) connectionPromise = mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 }).then(() => {
         console.log("Connected to MongoDB");
-    } catch (error) {
+        return mongoose;
+    }).catch(error => {
         console.error("MongoDB connection failed:", error.message);
-    } finally {
-        isConnecting = false;
-    }
+        throw error;
+    }).finally(() => { connectionPromise = null; });
+    return connectionPromise;
 }
 
-connectToDatabase();
+connectToDatabase().catch(() => {});
 
 module.exports = mongoose;
 module.exports.connectToDatabase = connectToDatabase;

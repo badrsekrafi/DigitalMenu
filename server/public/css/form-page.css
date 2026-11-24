@@ -138,6 +138,7 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 /* ---- Back link ---- */
 .editor-image-preview { display: block; width: 160px; height: 120px; object-fit: contain; border-radius: 12px; background: var(--primary-soft); margin: 8px 0; }
 #editorMessage { font-size: 14px; margin-top: 16px; }
+#editorMessage a { color: var(--text); text-decoration: underline; font-weight: 700; }
 .btn-submit:disabled { opacity: .6; cursor: wait; }
 .field-group .availability-control { display: flex; align-items: center; gap: 12px; width: fit-content; cursor: pointer; color: var(--text); }
 .availability-control input[type="checkbox"] { position: relative; appearance: none; width: 48px; height: 28px; min-height: 0; padding: 0; margin: 0; border: 1px solid var(--line); border-radius: 999px; background: var(--primary-soft); cursor: pointer; flex-shrink: 0; }
