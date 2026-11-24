@@ -24,7 +24,7 @@
                 <header class="checkout-hero">
                     <p class="eyebrow">Checkout</p>
                     <h1>Complete your order</h1>
-                    <p>Confirm your details, choose sur place or reservation, then send the order to Le Patio Djerba.</p>
+                    <p>Choisissez sur place, réservation ou livraison à domicile, puis confirmez votre commande.</p>
                 </header>
 
                 <form action="" method="post" id="orderForm" class="checkout-form">
@@ -40,7 +40,7 @@
                             <span>1</span>
                             <div>
                                 <h2>Service</h2>
-                                <p>Choose whether this is a table order or a reservation.</p>
+                                <p>Sur place, réservation ou livraison à domicile.</p>
                             </div>
                         </div>
 
@@ -54,6 +54,11 @@
                                 <input type="radio" name="serviceType" value="reservation">
                                 <span>Reservation</span>
                                 <small>Choose the exact date and time to come.</small>
+                            </label>
+                            <label class="service-card" id="deliveryChoice">
+                                <input type="radio" name="serviceType" value="delivery" id="deliveryService">
+                                <span>🛵 Commander à distance</span>
+                                <small>Livraison à votre adresse, sans table.</small>
                             </label>
                         </div>
                     </div>
@@ -86,7 +91,7 @@
                                 <input type="email" id="email" name="email" placeholder="Enter Your Email"
                                     value="{{checkoutUser.email}}" {{#if checkoutUser.isLoggedIn}}readonly{{/if}}>
                             </div>
-                            <div class="input">
+                            <div class="input" id="seatCountField">
                                 <label for="seatCount">Number of seats / people</label>
                                 <input type="number" id="seatCount" name="seatCount" placeholder="How many people?" min="1" value="1" required>
                             </div>
@@ -97,8 +102,8 @@
                         <div class="section-title">
                             <span>3</span>
                             <div>
-                                <h2>Table or reservation time</h2>
-                                <p>Table QR orders keep the scanned table locked.</p>
+                                <h2 id="serviceDetailsTitle">Table ou réservation</h2>
+                                <p id="serviceDetailsHint">La table scannée par QR code reste sélectionnée.</p>
                             </div>
                         </div>
 
@@ -129,6 +134,10 @@
                         </div>
                     </div>
 
+                    <div class="input delivery-address" id="deliveryAddressField" hidden>
+                        <label for="deliveryAddress">Adresse de livraison</label>
+                        <textarea id="deliveryAddress" name="deliveryAddress" rows="3" maxlength="500" placeholder="Rue, numéro, quartier, ville et indications utiles…"></textarea>
+                    </div>
                     <div class="form-section">
                         <div class="section-title">
                             <span>4</span>
@@ -199,6 +208,8 @@
 
         const tableStorageKey = 'kaffaSelectedTableNumber';
         const tableLockedStorageKey = 'kaffaSelectedTableLocked';
+        const orderModeKey = 'kaffaOrderMode';
+        let checkoutContextInitialized = false;
 
         function normalizeTableNumber(value) {
             const tableNumber = Number(value);
@@ -210,11 +221,17 @@
             const urlTable = normalizeTableNumber(params.get('table'));
             const isCounterMode = params.get('mode') === 'counter';
 
-            if (urlTable) {
-                localStorage.setItem(tableStorageKey, urlTable);
-                localStorage.setItem(tableLockedStorageKey, 'true');
-            } else if (isCounterMode) {
-                localStorage.setItem(tableLockedStorageKey, 'false');
+            if (!checkoutContextInitialized) {
+                if (urlTable) {
+                    localStorage.setItem(orderModeKey, 'dine-in');
+                    localStorage.setItem(tableStorageKey, urlTable);
+                    localStorage.setItem(tableLockedStorageKey, 'true');
+                } else if (isCounterMode || params.get('mode') === 'delivery') {
+                    localStorage.removeItem(tableStorageKey);
+                    localStorage.setItem(orderModeKey, params.get('mode') === 'delivery' ? 'delivery' : 'dine-in');
+                    localStorage.setItem(tableLockedStorageKey, 'false');
+                }
+                checkoutContextInitialized = true;
             }
 
             const storedTable = normalizeTableNumber(localStorage.getItem(tableStorageKey));
@@ -229,6 +246,7 @@
 
         function syncCheckoutFields() {
             const isReservation = getSelectedServiceType() === 'reservation';
+            let isDelivery = getSelectedServiceType() === 'delivery';
             const nameInput = document.getElementById('name');
             const phoneInput = document.getElementById('number');
             const reservationFields = document.getElementById('reservationFields');
@@ -239,18 +257,34 @@
             const tableLockNote = document.getElementById('tableLockNote');
             const lockedTableLabel = document.getElementById('lockedTableLabel');
             const tableContext = readCheckoutTableContext();
+            const hasTable = Boolean(tableContext.tableNumber);
+            document.getElementById('deliveryChoice').hidden = hasTable;
+            document.getElementById('deliveryService').disabled = hasTable;
+            if (hasTable && isDelivery) {
+                document.querySelector('[name="serviceType"][value="dine-in"]').checked = true;
+                isDelivery = false;
+            }
+            const dineIn = !isReservation && !isDelivery;
+            document.getElementById('deliveryAddressField').hidden = !isDelivery;
+            document.getElementById('deliveryAddress').required = isDelivery;
+            document.getElementById('seatCountField').hidden = isDelivery;
+            document.getElementById('seatCount').required = !isDelivery;
+            document.getElementById('seatCount').disabled = isDelivery;
+            document.getElementById('serviceDetailsTitle').textContent = isDelivery ? 'Livraison à domicile' : 'Table ou réservation';
+            document.getElementById('serviceDetailsHint').textContent = isDelivery ? 'Indiquez une adresse complète pour vous livrer.' : 'La table scannée par QR code reste sélectionnée.';
+            localStorage.setItem(orderModeKey, isDelivery ? 'delivery' : 'dine-in');
 
-            nameInput.required = isReservation;
-            phoneInput.required = isReservation;
+            nameInput.required = isReservation || isDelivery;
+            phoneInput.required = isReservation || isDelivery;
             reservationFields.hidden = !isReservation;
             reservationDateInput.required = isReservation;
             reservationTimeInput.required = isReservation;
-            tableNumberField.classList.toggle('is-hidden', isReservation);
-            tableNumberInput.required = !isReservation;
-            tableNumberField.classList.toggle('is-locked', !isReservation && tableContext.locked);
-            tableLockNote.hidden = isReservation || !tableContext.locked;
+            tableNumberField.classList.toggle('is-hidden', !dineIn);
+            tableNumberInput.required = dineIn && !tableContext.locked;
+            tableNumberField.classList.toggle('is-locked', dineIn && tableContext.locked);
+            tableLockNote.hidden = !dineIn || !tableContext.locked;
 
-            if (isReservation) {
+            if (!dineIn) {
                 tableNumberInput.required = false;
             } else {
                 if (tableContext.tableNumber) {
@@ -330,6 +364,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            const initialContext = readCheckoutTableContext();
+            if (!initialContext.tableNumber && localStorage.getItem(orderModeKey) === 'delivery') document.getElementById('deliveryService').checked = true;
             document.querySelectorAll('input[name="serviceType"]').forEach(input => {
                 input.addEventListener('change', syncCheckoutFields);
             });
@@ -355,7 +391,8 @@
                 event.preventDefault();
 
                 const selectedServiceType = getSelectedServiceType();
-                const seatCount = Number(document.getElementById('seatCount').value);
+                const seatCount = selectedServiceType === 'delivery' ? 1 : Number(document.getElementById('seatCount').value);
+                const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
                 const tableNumber = document.getElementById('TableNumber').value;
                 const reservationDate = document.getElementById('reservationDate').value;
                 const reservationTime = document.getElementById('reservationTime').value;
@@ -422,6 +459,7 @@
                     PhoneNumber: document.getElementById('number').value,
                     email: document.getElementById('email').value,
                     serviceType: selectedServiceType,
+                    deliveryAddress: selectedServiceType === 'delivery' ? deliveryAddress : '',
                     seatCount,
                     TableNumber: selectedServiceType === 'dine-in' ? tableNumber : '',
                     reservationDate: selectedServiceType === 'reservation' ? reservationDate : '',
@@ -458,6 +496,8 @@
                             const redirectUrl = new URL('/UserMenu', window.location.origin);
                             if (selectedServiceType === 'dine-in' && tableNumber) {
                                 redirectUrl.searchParams.set('table', tableNumber);
+                            } else if (selectedServiceType === 'delivery') {
+                                redirectUrl.searchParams.set('mode', 'delivery');
                             }
                             window.location.href = `${redirectUrl.pathname}${redirectUrl.search}`;
                         });

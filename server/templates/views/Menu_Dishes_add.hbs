@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvel Article | Le Patio</title>
+    <title>{{#if isEditing}}Modifier l’article{{else}}Nouvel article{{/if}} | Le Patio</title>
     <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/form-page.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,28 +25,28 @@
                     <div class="form-card-header">
                         <div>
                             <p class="eyebrow">Menu</p>
-                            <h1>Nouvel article</h1>
+                            <h1>{{#if isEditing}}Modifier l’article{{else}}Nouvel article{{/if}}</h1>
                         </div>
                         <div style="width:40px;height:40px;background:var(--primary-soft);border-radius:10px;display:grid;place-items:center;color:var(--primary);">
                             <i class="fa-solid fa-utensils"></i>
                         </div>
                     </div>
 
-                    <div class="form-card-body">
+                    <form class="form-card-body" id="catalogEditor" data-editor="product" data-id="{{_id}}" data-editing="{{isEditing}}">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                             <div class="field-group">
                                 <label for="dishTitle">Titre</label>
                                 <input type="text" id="dishTitle" name="title" required value="{{this.title}}" placeholder="Nom du plat">
                             </div>
                             <div class="field-group">
-                                <label for="dishPrice">Prix (DNT)</label>
-                                <input type="number" id="dishPrice" name="price" value="{{this.price}}" required placeholder="0.00">
+                                <label for="dishPrice">Prix (DT)</label>
+                                <input type="number" id="dishPrice" name="price" min="0" step="0.01" value="{{this.price}}" required placeholder="0.00">
                             </div>
                         </div>
 
                         <div class="field-group">
                             <label for="dishDescription">Description</label>
-                            <textarea id="dishDescription" name="description" rows="3" placeholder="Décrivez ce plat…">{{this.description}}</textarea>
+                            <textarea id="dishDescription" name="description" rows="3" required placeholder="Décrivez ce plat…">{{this.description}}</textarea>
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -56,10 +56,10 @@
                             </div>
                             <div class="field-group">
                                 <label for="dishCategory">Catégorie</label>
-                                <select id="dishCategory" name="category">
+                                <select id="dishCategory" name="category" required>
                                     <option value="">Sélectionner une catégorie</option>
                                     {{#each categories}}
-                                    <option value="{{this._id}}">{{this.title}}</option>
+                                    <option value="{{this._id}}" {{#if selected}}selected{{/if}}>{{this.title}}</option>
                                     {{/each}}
                                 </select>
                             </div>
@@ -67,90 +67,39 @@
 
                         <div class="field-group">
                             <label for="dishImage">Image</label>
-                            <input type="file" id="dishImage" name="image" accept="image/*">
+                            {{#if isEditing}}<img class="editor-image-preview" src="{{imageUrl}}" alt="{{title}}"><p class="field-hint">Image actuelle. Laissez ce champ vide pour la conserver.</p>{{/if}}
+                            <input type="file" id="dishImage" name="image" accept="image/*" {{#unless isEditing}}required{{/unless}}>
                             <p class="field-hint">Formats acceptés : JPG, PNG, WEBP. Recommandé : 800×600px.</p>
                             <span id="imageAlert" class="field-error"></span>
                         </div>
 
+                        <div class="field-group">
+                            <label for="dishAvailability">Disponibilité</label>
+                            <label class="availability-control">
+                                <input type="checkbox" role="switch" id="dishAvailability" name="isAvailable" value="true" aria-label="Disponibilité" {{#if isAvailable}}checked{{/if}}>
+                                <span id="dishAvailabilityLabel">{{#if isAvailable}}Disponible{{else}}Épuisé{{/if}}</span>
+                            </label>
+                            <p class="field-hint">Un article épuisé reste visible dans le menu, mais ne peut plus être ajouté au panier.</p>
+                        </div>
+
                         <div class="form-actions">
-                            <button type="button" class="btn-submit" onclick="addNewItem()">
-                                <i class="fa-solid fa-plus" style="margin-right:6px;"></i>
-                                Ajouter l'article
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid {{#if isEditing}}fa-check{{else}}fa-plus{{/if}}" style="margin-right:6px;"></i>
+                                {{#if isEditing}}Enregistrer les modifications{{else}}Ajouter l’article{{/if}}
                             </button>
-                            <button type="button" class="btn-cancel" onclick="cancelNewItemAdd()">
+                            <button type="button" class="btn-cancel" data-editor-cancel>
                                 Annuler
                             </button>
                         </div>
-                    </div>
+                        <p id="editorMessage" role="status" aria-live="polite"></p>
+                    </form>
                 </div>
 
-                <div id="successPopup" class="popup">
-                    <div class="popup_content">
-                        <i class="fa-solid fa-circle-check" style="color:#22C55E;"></i>
-                        Article ajouté avec succès !
-                    </div>
-                </div>
             </main>
         </div>
     </div>
 
     <script src="/javascript/index.js"></script>
-    <script>
-        function addNewItem() {
-            const title = document.getElementById('dishTitle').value;
-            const description = document.getElementById('dishDescription').value;
-            const price = document.getElementById('dishPrice').value;
-            const size = document.getElementById('dishSize').value;
-            const imageInput = document.getElementById('dishImage');
-            const imageFile = imageInput.files[0];
-            const categorySelect = document.getElementById('dishCategory');
-            const selectedCategory = categorySelect.value;
-            const imageAlert = document.getElementById('imageAlert');
-
-            if (!selectedCategory) { imageAlert.textContent = 'Veuillez sélectionner une catégorie.'; return; }
-            if (!imageFile) { imageAlert.textContent = 'Veuillez choisir une image.'; return; }
-            imageAlert.textContent = '';
-
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('description', description);
-            formData.append('price', price);
-            formData.append('size', size);
-            formData.append('image', imageFile);
-            formData.append('category', selectedCategory);
-
-            fetch('/Menu_Dishes_add', { method: 'POST', body: formData })
-                .then(async Response => {
-                    const data = await Response.text();
-                    if (!Response.ok) throw new Error(data || "Erreur lors de l'ajout.");
-                    return data;
-                })
-                .then(data => {
-                    $('#successPopup').fadeIn();
-                    document.getElementById('dishTitle').value = '';
-                    document.getElementById('dishDescription').value = '';
-                    document.getElementById('dishPrice').value = '';
-                    document.getElementById('dishSize').value = '';
-                    imageInput.value = '';
-                    setTimeout(function() { $('#successPopup').fadeOut(); }, 5000);
-                })
-                .catch(err => {
-                    imageAlert.textContent = err.message || "Erreur lors de l'ajout.";
-                    console.error('Error:', err);
-                });
-        }
-
-        function cancelNewItemAdd() {
-            window.location.href = '/Menu_Dishes';
-        }
-
-        $(document).ready(function() {
-            $(window).click(function(e) {
-                if (!$(e.target).closest('.form-card').length) {
-                    $('#successPopup').fadeOut();
-                }
-            });
-        });
-    </script>
+    <script src="/javascript/catalog-editor.js"></script>
 </body>
 </html>

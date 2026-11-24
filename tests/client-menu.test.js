@@ -14,7 +14,7 @@ const Settings = require('../server/models/settings');
 const DailyOffer = require('../server/models/dailyOffer');
 const User = require('../server/models/registerUsers');
 const items = [
-    { _id: '000000000000000000000001', title: 'Café du jour', price: 4, category: 'Café', isAvailable: true },
+    { _id: '000000000000000000000001', title: 'Café du jour', price: 4, category: 'Café', description: 'Café fraîchement moulu.\nLait, noisettes et chocolat <maison>.', size: 'Grande tasse', isAvailable: true },
     { _id: '000000000000000000000002', title: 'Produit épuisé', price: 8, category: 'Café', isAvailable: false },
 ];
 const offers = new Map();
@@ -75,4 +75,26 @@ test('admin selection persists through API readback and renders available produc
     assert.ok(!(await (await fetch(`${base}/UserMenu`)).text()).includes('<section class="daily-offers"'));
     await put({ day: '2099-01-01', itemIds: ids }, cookie);
     assert.ok(!(await (await fetch(`${base}/UserMenu`)).text()).includes('<section class="daily-offers"'));
+});
+
+test('product links open a full detail page with description, price, size, cart data and table-aware category return', async () => {
+    await listening;
+    const base = `http://127.0.0.1:${app.server.address().port}`;
+    const id = items[0]._id;
+    const category = (await (await fetch(`${base}/UserMenu/categorie/rubrique-cafe?table=5`)).text()).replace(/&#x3D;/g, '=');
+    assert.ok(category.includes(`class="product-detail-link" href="/UserMenu/article/${id}?table=5"`));
+    const response = await fetch(`${base}/UserMenu/article/${id}?table=5`);
+    assert.equal(response.status, 200);
+    const html = (await response.text()).replace(/&#x3D;/g, '=');
+    assert.ok(html.includes('data-initial-view="article"'));
+    assert.ok(html.includes('id="productTitle">Café du jour</h1>'));
+    assert.ok(html.includes('Lait, noisettes et chocolat &lt;maison&gt;.'));
+    assert.ok(html.includes('Grande tasse'));
+    assert.ok(html.includes('class="product-back" href="/UserMenu/categorie/rubrique-cafe?table=5"'));
+    assert.ok(html.includes('data-price="4.00"'));
+    assert.ok(html.includes(`src="/menu-image/${id}"`));
+    const unavailable = await (await fetch(`${base}/UserMenu/article/${items[1]._id}`)).text();
+    assert.ok(unavailable.includes('class="add-to-cart-btn product-detail-add" disabled'));
+    assert.equal((await fetch(`${base}/UserMenu/article/not-an-id`)).status, 404);
+    assert.equal((await fetch(`${base}/UserMenu/article/ffffffffffffffffffffffff`)).status, 404);
 });

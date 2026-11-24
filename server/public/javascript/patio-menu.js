@@ -9,6 +9,8 @@
 
     const I18N = {
         fr: {
+            backToProducts: "Retour aux articles", productDetails: "Détails du produit", productSize: "Format",
+            noProductDescription: "Aucun détail supplémentaire pour cet article.", addToCart: "Ajouter au panier",
             showMoreCategories: "Afficher la suite", showLessCategories: "Afficher moins",
             dailyOffers: "Offres du jour", dailyOfferKicker: "La sélection du Patio", todayOnly: "Aujourd’hui",
             categorySoon: "Les produits de cette catégorie arrivent bientôt.",
@@ -71,6 +73,8 @@
             uniSweetsDesc: "Crêpes, gaufres, pancakes et desserts maison pour une parenthèse gourmande.",
         },
         ar: {
+            backToProducts: "العودة إلى المنتجات", productDetails: "تفاصيل المنتج", productSize: "الحجم",
+            noProductDescription: "لا توجد تفاصيل إضافية لهذا المنتج.", addToCart: "أضف إلى السلة",
             showMoreCategories: "عرض المزيد", showLessCategories: "عرض أقل",
             dailyOffers: "عروض اليوم", dailyOfferKicker: "اختيارات لو باتيو", todayOnly: "اليوم",
             categorySoon: "منتجات هذه الفئة متوفرة قريباً.",
@@ -133,6 +137,8 @@
             uniSweetsDesc: "كريب، وافل، بان كيك وحلويات منزلية الصنع.",
         },
         en: {
+            backToProducts: "Back to products", productDetails: "Product details", productSize: "Size",
+            noProductDescription: "No additional details for this product.", addToCart: "Add to cart",
             showMoreCategories: "Show more", showLessCategories: "Show less",
             dailyOffers: "Today’s specials", dailyOfferKicker: "The Patio selection", todayOnly: "Today",
             categorySoon: "Products in this category are coming soon.",
@@ -281,6 +287,7 @@
 
         function buildUrlForView(slug) {
             const search = window.location.search || "";
+            if (slug === 'article') return document.querySelector('.view-product')?.getAttribute('data-product-url') || window.location.pathname + search;
             if (!slug || slug === "home" || slug === "search") {
                 return `/UserMenu${search}`;
             }

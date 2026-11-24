@@ -21,10 +21,11 @@ const menuSchema = new mongoose.Schema({
         data: Buffer,  // Store image as binary data
         contentType: String,  // Define the content type (e.g., 'image/jpeg')
     },
+    imageUpdatedAt: Date,
     category: {
         // type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',  // Reference to the Category model
-        type: String,  
+        type: String,
         // required: true,
     },
     isAvailable: {

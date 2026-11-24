@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#102B43">
     <link rel="icon" type="image/png" href="/images/logo.png">
-    <title>{{#if activeUniverse}}{{activeUniverse.label}} · {{/if}}Le Patio Djerba - Menu</title>
+    <title>{{#if activeProduct}}{{activeProduct.displayTitle}} · {{else}}{{#if activeUniverse}}{{activeUniverse.label}} · {{/if}}{{/if}}Le Patio Djerba - Menu</title>
     <!-- SEO -->
     <meta name="description" content="Menu digital du restaurant {{#if restaurantSettings.restaurantName}}{{restaurantSettings.restaurantName}}{{else}}Le Patio Djerba{{/if}} — petit déjeuner, plats, douceurs et boissons. Commandez en ligne depuis votre table.">
     <meta name="robots" content="index, follow">
@@ -24,7 +24,7 @@
     <!-- icons: font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="/css/patio-menu.css">
-    <link rel="preload" as="image" href="{{#if activeUniverse}}{{activeUniverse.cover}}{{else}}/images/patio/le-patio-terrasse.jpg{{/if}}">
+    <link rel="preload" as="image" href="{{#if activeProduct}}{{activeProduct.imageUrl}}{{else}}{{#if activeUniverse}}{{activeUniverse.cover}}{{else}}/images/patio/le-patio-terrasse.jpg{{/if}}{{/if}}">
     <script>
         window.RESTAURANT_CURRENCY = "{{#if currencyLabel}}{{currencyLabel}}{{else}}DT{{/if}}";
         window.RESTAURANT_NAME = "Le Patio Djerba";
@@ -32,13 +32,13 @@
     <link rel="stylesheet" href="/css/patio-brand.css">
 </head>
 
-<body class="patio" data-initial-view="{{#if activeUniverse}}{{activeUniverse.slug}}{{else}}home{{/if}}">
+<body class="patio" data-initial-view="{{#if activeProduct}}article{{else}}{{#if activeUniverse}}{{activeUniverse.slug}}{{else}}home{{/if}}{{/if}}">
     <a class="skip-link" href="#main" data-i18n="skipToContent">Aller au contenu</a>
 
     <main id="main" class="patio-main">
 
         <!-- ═══════════════════════ VIEW : NOTRE MENU (home) ═══════════════════════ -->
-        <section class="view view-home" id="view-home" data-view="home" {{#if activeUniverse}}hidden{{/if}} aria-labelledby="homeTitle">
+        <section class="view view-home" id="view-home" data-view="home" {{#if activeProduct}}hidden{{else}}{{#if activeUniverse}}hidden{{/if}}{{/if}} aria-labelledby="homeTitle">
             <header class="patio-header">
                 <a class="brand" href="/UserMenu" data-nav-home>
                     <span class="brand-logo"><img src="/images/logo.png" alt="" width="44" height="44"></span>
@@ -88,6 +88,7 @@
                         {{/each}}
                     </select>
                 </label>
+                <button type="button" class="remote-order-button" id="remoteOrderButton"><i class="fas fa-motorcycle" aria-hidden="true"></i> <span>Commander à distance</span></button>
             </div>
 
             <div class="client-order-status" id="clientOrderStatus" hidden>
@@ -122,7 +123,7 @@
                     {{#each dailyOfferItems}}
                     <li class="product-card" data-product-id="{{_id}}">
                         <div class="pc-media"><img src="{{imageUrl}}" alt="{{displayTitle}}" width="112" height="112" loading="lazy"></div>
-                        <div class="pc-body"><h3 class="pc-title">{{displayTitle}}</h3>
+                        <div class="pc-body"><h3 class="pc-title"><a class="product-detail-link" href="{{detailUrl}}">{{displayTitle}}</a></h3>
                             {{#if displayDescription}}<p class="pc-desc">{{displayDescription}}</p>{{/if}}
                             <div class="pc-footer"><span class="pc-price">{{price}} <small>{{@root.currencyLabel}}</small></span>
                                 <button type="button" class="add-to-cart-btn" data-name="{{title}}" data-display-name="{{displayTitle}}" data-price="{{price}}" data-img="{{imageUrl}}" aria-label="Ajouter {{displayTitle}} au panier"><i class="fas fa-plus" aria-hidden="true"></i><i class="fas fa-check" aria-hidden="true"></i></button>
@@ -250,7 +251,7 @@
                                 {{#unless isAvailable}}<span class="pc-badge" data-i18n="outOfStock">Épuisé</span>{{/unless}}
                             </div>
                             <div class="pc-body">
-                                <h3 class="pc-title">{{displayTitle}}</h3>
+                                <h3 class="pc-title"><a class="product-detail-link" href="{{detailUrl}}">{{displayTitle}}</a></h3>
                                 {{#if servingHours}}<span class="pc-hours"><i class="far fa-clock" aria-hidden="true"></i> {{servingHours}}</span>{{/if}}
                                 {{#if displayDescription}}<p class="pc-desc">{{displayDescription}}</p>{{/if}}
                                 {{#if size}}<span class="pc-size">{{size}}</span>{{/if}}
@@ -280,6 +281,32 @@
             </div>
         </section>
         {{/each}}
+
+        {{#if activeProduct}}
+        <section class="view view-product" id="view-article" data-view="article" data-product-url="{{activeProduct.detailUrl}}" data-title="{{activeProduct.displayTitle}}" aria-labelledby="productTitle">
+            <header class="patio-header product-detail-header">
+                <a class="product-back" href="{{activeProduct.backUrl}}"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span data-i18n="backToProducts">Retour aux articles</span></a>
+                <a class="brand" href="/UserMenu" data-nav-home><span class="brand-text"><strong>Le Patio Djerba</strong></span></a>
+            </header>
+            <article class="product-detail">
+                <div class="product-detail-photo"><img src="{{activeProduct.imageUrl}}" alt="{{activeProduct.displayTitle}}" width="1000" height="1000" fetchpriority="high"></div>
+                <div class="product-detail-copy">
+                    <p class="menu-kicker">{{activeProduct.category}}</p>
+                    <h1 id="productTitle">{{activeProduct.displayTitle}}</h1>
+                    <p class="product-detail-price">{{activeProduct.price}} <small>{{currencyLabel}}</small></p>
+                    <h2 data-i18n="productDetails">Détails du produit</h2>
+                    {{#if activeProduct.displayDescription}}<p class="product-detail-description">{{activeProduct.displayDescription}}</p>{{else}}<p class="product-detail-description" data-i18n="noProductDescription">Aucun détail supplémentaire pour cet article.</p>{{/if}}
+                    {{#if activeProduct.size}}<p class="product-detail-meta"><span data-i18n="productSize">Format</span> : {{activeProduct.size}}</p>{{/if}}
+                    {{#if activeProduct.servingHours}}<p class="product-detail-meta"><i class="far fa-clock" aria-hidden="true"></i> {{activeProduct.servingHours}}</p>{{/if}}
+                    {{#if activeProduct.isAvailable}}
+                    <button type="button" class="add-to-cart-btn product-detail-add" data-name="{{activeProduct.title}}" data-display-name="{{activeProduct.displayTitle}}" data-price="{{activeProduct.price}}" data-img="{{activeProduct.imageUrl}}"><i class="fas fa-plus" aria-hidden="true"></i><i class="fas fa-check" aria-hidden="true"></i><span data-i18n="addToCart">Ajouter au panier</span></button>
+                    {{else}}
+                    <button type="button" class="add-to-cart-btn product-detail-add" disabled><i class="fas fa-ban" aria-hidden="true"></i><span data-i18n="outOfStock">Épuisé</span></button>
+                    {{/if}}
+                </div>
+            </article>
+        </section>
+        {{/if}}
 
         <!-- ═══════════════════════ VIEW : search ═══════════════════════ -->
         <section class="view view-search" id="view-search" data-view="search" hidden aria-labelledby="searchViewTitle">
@@ -511,11 +538,15 @@
 
             const urlTable = normalizeTableNumber(params.get('table'));
             const isCounterMode = params.get('mode') === 'counter';
+            const orderModeKey = 'kaffaOrderMode';
+            const remoteOrderButton = document.getElementById('remoteOrderButton');
 
             if (urlTable) {
+                localStorage.setItem(orderModeKey, 'dine-in');
                 localStorage.setItem(tableStorageKey, urlTable);
                 localStorage.setItem(tableLockedStorageKey, 'true');
-            } else if (isCounterMode) {
+            } else if (isCounterMode || params.get('mode') === 'delivery') {
+                localStorage.setItem(orderModeKey, params.get('mode') === 'delivery' ? 'delivery' : 'dine-in');
                 localStorage.removeItem(tableStorageKey);
                 localStorage.setItem(tableLockedStorageKey, 'false');
             }
@@ -534,6 +565,8 @@
 
                 if (selectedTable) {
                     url.searchParams.set('table', selectedTable);
+                } else if (localStorage.getItem(orderModeKey) === 'delivery') {
+                    url.searchParams.set('mode', 'delivery');
                 } else if (isCounterMode) {
                     url.searchParams.set('mode', 'counter');
                 }
@@ -548,7 +581,11 @@
                 // Hide table prompt completely if table is already selected or scanned via QR code
                 tableContext.hidden = Boolean(locked || selectedTable);
                 tableContext.classList.toggle('is-locked', locked);
-                tableSelectorWrap.hidden = locked;
+                const delivery = !selectedTable && localStorage.getItem(orderModeKey) === 'delivery';
+                remoteOrderButton.hidden = Boolean(selectedTable);
+                remoteOrderButton.querySelector('span').textContent = delivery ? 'Commander sur place' : 'Commander à distance';
+                remoteOrderButton.setAttribute('aria-pressed', String(delivery));
+                tableSelectorWrap.hidden = locked || delivery;
 
                 if (selectedTable) {
                     tableSelect.value = selectedTable;
@@ -556,14 +593,15 @@
                     tableContextLabel.textContent = `Table ${selectedTable}`;
                 } else {
                     tableSelect.value = '';
-                    tableContextKicker.textContent = 'Commande sur place';
-                    tableContextLabel.textContent = 'Choisissez votre table';
+                    tableContextKicker.textContent = delivery ? 'Commande à distance' : 'Commande sur place';
+                    tableContextLabel.textContent = delivery ? 'Livraison à domicile' : 'Choisissez votre table';
                 }
 
                 updateCheckoutLink();
             }
 
             tableSelect.addEventListener('change', () => {
+                localStorage.setItem(orderModeKey, 'dine-in');
                 const selectedTable = normalizeTableNumber(tableSelect.value);
 
                 if (selectedTable) {
@@ -577,6 +615,16 @@
                 renderTableContext();
             });
 
+            remoteOrderButton.addEventListener('click', () => {
+                if (getSelectedTable()) return;
+                const delivery = localStorage.getItem(orderModeKey) !== 'delivery';
+                localStorage.setItem(orderModeKey, delivery ? 'delivery' : 'dine-in');
+                const url = new URL(window.location.href);
+                if (delivery) url.searchParams.set('mode', 'delivery');
+                else url.searchParams.delete('mode');
+                history.replaceState(history.state, '', url.pathname + url.search);
+                renderTableContext();
+            });
             renderTableContext();
 
             function getNotifiedReadyItems() {
@@ -592,7 +640,7 @@
             }
 
             function showReadyToast(item) {
-                readyOrderToastText.textContent = `${item.itemName} est PRÊT. Venez récupérer votre commande.`;
+                readyOrderToastText.textContent = item.serviceType === 'delivery' ? `${item.itemName} est prêt pour la livraison.` : `${item.itemName} est PRÊT. Venez récupérer votre commande.`;
                 readyOrderToast.hidden = false;
                 readyOrderToast.classList.add('is-visible');
                 if (readyToastTimer) {
@@ -698,7 +746,7 @@
                     if (prevStatus !== undefined && prevStatus !== currentStatus) {
                         playStatusChangeChime();
 
-                        const statusText = STATUS_LABELS_MAP[currentStatus] || currentStatus;
+                        const statusText = currentStatus === 'pret' && item.serviceType === 'delivery' ? '🟢 Prêt pour la livraison' : STATUS_LABELS_MAP[currentStatus] || currentStatus;
                         const title = `🔔 Le Patio Djerba`;
                         const body = `${item.itemName} ➔ ${statusText}`;
 
@@ -721,6 +769,7 @@
                     ...item,
                     orderId: order.orderId,
                     orderIdDisplay: order.orderIdDisplay,
+                    serviceType: order.serviceType,
                     serviceTypeLabel: order.serviceTypeLabel,
                     tableDisplay: order.tableDisplay,
                 })));
@@ -753,7 +802,7 @@
                             <strong>${escapeHtml(item.itemName)}</strong>
                         </div>
                         <em class="status-badge status-${escapeHtml(item.status || 'pending')}">
-                            ${escapeHtml(STATUS_LABELS_MAP[item.status] || item.statusLabel)}
+                            ${escapeHtml(item.status === 'pret' && item.serviceType === 'delivery' ? '🟢 Prêt pour la livraison' : STATUS_LABELS_MAP[item.status] || item.statusLabel)}
                         </em>
                     </div>
                 `).join('');

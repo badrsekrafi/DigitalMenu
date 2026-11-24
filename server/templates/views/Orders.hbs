@@ -52,7 +52,7 @@
                             </thead>
                             <tbody>
                                 {{#each orders}}
-                                <tr data-order-raw-id="{{orderId}}">
+                                <tr id="order-{{orderId}}" data-order-raw-id="{{orderId}}">
                                     <td data-label="Commande">
                                         <code style="font-size:11px;background:#F2E5D5;padding:2px 6px;border-radius:4px;font-weight:700;">{{orderIdDisplay}}</code>
                                         <div style="color:#3E5368;font-size:11px;margin-top:4px;white-space:nowrap;">{{createdAtDisplay}}</div>
@@ -73,9 +73,10 @@
                                         <span class="order-type {{serviceTypeClass}}">{{serviceTypeLabel}}</span>
                                         <div style="font-size:12px;font-weight:600;margin-top:3px;color:#1B3F5E;">
                                             {{#if tableDisplay}}Table {{tableDisplay}}{{/if}}
-                                            <span style="font-weight:normal;color:#3E5368;font-size:11px;">({{seatCount}} p.)</span>
+                                            {{#unless isDelivery}}<span style="font-weight:normal;color:#3E5368;font-size:11px;">({{seatCount}} p.)</span>{{/unless}}
                                         </div>
                                         {{#if reservationLabel}}<div style="font-size:10px;color:#9A3F0E;margin-top:2px;">{{reservationLabel}}</div>{{/if}}
+                                        {{#if isDelivery}}<p class="order-delivery-address">{{deliveryAddress}}</p>{{/if}}
                                     </td>
                                     <td data-label="Commentaire" class="comment-cell" style="font-size:11px;color:#3E5368;">{{commentDisplay}}</td>
                                     <td data-label="Articles" class="items-cell">
@@ -366,7 +367,8 @@
             const clientName = tr.querySelector('td[data-label="Client"] strong')?.textContent || '-';
             const phone = tr.querySelector('td[data-label="Client"] span')?.textContent || '-';
             const serviceType = tr.querySelector('.order-type')?.textContent || '-';
-            const tableNum = tr.querySelector('td[data-label="Service"] div')?.textContent || '-';
+            const tableNum = tr.querySelector('td[data-label="Service"] div')?.textContent.trim() || '-';
+            const deliveryAddress = tr.querySelector('.order-delivery-address')?.textContent || '';
             const total = tr.querySelector('.order-total-cell')?.textContent || '0.00 DNT';
 
             const itemRows = Array.from(tr.querySelectorAll('.item-status-card')).map(row => {
@@ -411,6 +413,7 @@
                     <p style="margin:2px 0;"><strong>Client:</strong> ${clientName}</p>
                     <p style="margin:2px 0;"><strong>Tél:</strong> ${phone}</p>
                     <p style="margin:2px 0;"><strong>Service:</strong> ${serviceType} (${tableNum})</p>
+                    ${deliveryAddress ? `<p style="margin:2px 0;"><strong>Adresse:</strong> ${escapeHtml(deliveryAddress)}</p>` : ''}
                     <div class="line"></div>
                     <table style="width:100%;border-collapse:collapse;">
                         <thead>

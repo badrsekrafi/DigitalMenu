@@ -30,6 +30,7 @@ const TableConfig = require('./models/tableConfig');
 const Settings = require('./models/settings');
 const DailyOffer = require('./models/dailyOffer');
 const { restaurantDay, isValidDay } = require('./utils/dailyOffers');
+const { buildDeliveryCards } = require('./utils/deliveryOrders');
 const {
     ADMIN_WHATSAPP_NUMBER,
     formatWhatsAppNumber,
@@ -121,8 +122,9 @@ hbs.registerHelper('json', function (value) {
 });
 
 function getServiceTypeLabel(serviceType) {
-    return serviceType === 'reservation' ? 'Reservation' : 'Sur place';
+    return serviceType === 'delivery' ? 'Livraison à domicile' : serviceType === 'reservation' ? 'Reservation' : 'Sur place';
 }
+hbs.registerHelper('serviceLabel', getServiceTypeLabel);
 
 function formatReservationLabel(order) {
     if (order.serviceType !== 'reservation') {
@@ -591,7 +593,7 @@ app.get('/api/notifications', async (req, res) => {
             id: String(o._id),
             orderIdDisplay: String(o._id || '').slice(-6).toUpperCase() || '-',
             name: o.name || (o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : 'Client Sur Place'),
-            serviceType: o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : 'Réservation',
+            serviceType: o.serviceType === 'dine-in' ? `Table ${o.TableNumber || '-'}` : getServiceTypeLabel(o.serviceType),
             totalPrice: Number(o.totalPrice || 0).toFixed(2),
             time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '',
             status: o.status || 'Active'
@@ -730,9 +732,42 @@ app.delete('/deleteCategory/:id', async (req, res) => {
     }
 });
 
-app.get("/Categories_add", (req, res) => {
-    res.render("Categories_add");
-})
+app.get("/Categories_add", async (req, res) => {
+    if (!req.query.id) return res.render('Categories_add');
+    if (!/^[a-f\d]{24}$/i.test(String(req.query.id))) return res.status(404).send('Catégorie introuvable.');
+    try {
+        const category = await Category.findById(req.query.id).lean();
+        if (!category) return res.status(404).send('Catégorie introuvable.');
+        res.render('Categories_add', { ...category, isEditing: true });
+    } catch (error) { res.status(500).send('Impossible de charger la catégorie.'); }
+});
+
+app.put('/api/categories/:id', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    const { title, description } = req.body;
+    if (!/^[a-f\d]{24}$/i.test(req.params.id) || typeof title !== 'string' || !title.trim() || typeof description !== 'string' || !description.trim()) {
+        return res.status(400).json({ error: 'Le titre et la description sont obligatoires.' });
+    }
+    try {
+        let result;
+        await mongoose.connection.transaction(async session => {
+            const category = await Category.findById(req.params.id).session(session);
+            if (!category) throw Object.assign(new Error('Catégorie introuvable.'), { status: 404 });
+            const duplicate = await Category.findOne({ title: title.trim(), _id: { $ne: category._id } }).session(session);
+            if (duplicate) throw Object.assign(new Error('Une catégorie porte déjà ce nom.'), { status: 409 });
+            const previousTitle = category.title;
+            category.title = title.trim();
+            category.description = description.trim();
+            await category.save({ session });
+            // Products reference categories by title: keep them attached after a rename.
+            if (previousTitle !== category.title) await MenuItem.updateMany({ category: previousTitle }, { $set: { category: category.title } }, { session });
+            result = { id: String(category._id), title: category.title, description: category.description };
+        });
+        res.json({ success: true, category: result });
+    } catch (error) {
+        res.status(error.status || 500).json({ error: error.status ? error.message : 'Impossible de modifier la catégorie.' });
+    }
+});
 
 app.post("/Categories_add", async (req, res) => {
     const { title, description } = req.body;
@@ -753,7 +788,8 @@ app.get(["/Menu_Dishes", "/menu_dishes"], async (req, res) => {
     try {
         const MenuItems = await MenuItem.find({}, { image: 0 }).lean();
         MenuItems.forEach(item => {
-            item.imageUrl = `/menu-image/${item._id}`;
+            item.isAvailable = item.isAvailable !== false;
+            item.imageUrl = `/menu-image/${item._id}${item.imageUpdatedAt ? `?v=${new Date(item.imageUpdatedAt).getTime()}` : ''}`;
         });
         res.render("Menu_Dishes", {
             MenuItems,
@@ -804,9 +840,20 @@ app.delete('/deleteMenuItem/:id', async (req, res) => {
 
 app.get("/Menu_Dishes_add", async (req, res) => {
     try {
-        // Fetch categories from your database
-        const categories = await Category.find();
-        res.render("Menu_Dishes_add", { categories });
+        const categories = await Category.find().lean();
+        let item = null;
+        if (req.query.id) {
+            if (!/^[a-f\d]{24}$/i.test(String(req.query.id))) return res.status(404).send('Article introuvable.');
+            item = await MenuItem.findById(req.query.id, { image: 0 }).lean();
+            if (!item) return res.status(404).send('Article introuvable.');
+        }
+        const options = categories.map(category => ({ ...category, selected: category.title === item?.category }));
+        if (item?.category && !options.some(category => category.selected)) {
+            options.push({ _id: '__keep__', title: item.category, selected: true });
+        }
+        res.render("Menu_Dishes_add", { ...item, isAvailable: item?.isAvailable !== false, isEditing: Boolean(item), categories: options,
+            imageUrl: item ? `/menu-image/${item._id}${item.imageUpdatedAt ? `?v=${new Date(item.imageUpdatedAt).getTime()}` : ''}` : '',
+        });
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Error rendering Menu_Dishes_add page.');
@@ -827,6 +874,42 @@ const upload = multer({
     }
 });
 
+app.put('/api/menu-items/:id', (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) return res.status(400).json({ error: 'Article invalide.' });
+    upload.single('image')(req, res, async uploadError => {
+        if (uploadError) return res.status(400).json({ error: uploadError.code === 'LIMIT_FILE_SIZE' ? 'Choisissez une image de moins de 5 Mo.' : 'Format image invalide.' });
+        const { title, description, price, size, category: categoryId } = req.body;
+        if (req.body.isAvailable !== undefined && !['true', 'false'].includes(req.body.isAvailable)) return res.status(400).json({ error: 'Disponibilité invalide.' });
+        const amount = Number(price);
+        if (typeof title !== 'string' || !title.trim() || typeof description !== 'string' || !description.trim() ||
+            typeof price !== 'string' || !price.trim() || !Number.isFinite(amount) || amount < 0 || typeof size !== 'string' ||
+            (categoryId !== '__keep__' && !/^[a-f\d]{24}$/i.test(String(categoryId || '')))) {
+            return res.status(400).json({ error: 'Vérifiez le titre, la description, le prix et la catégorie.' });
+        }
+        try {
+            const item = await MenuItem.findById(req.params.id);
+            if (!item) return res.status(404).json({ error: 'Article introuvable.' });
+            if (categoryId !== '__keep__') {
+                const category = await Category.findById(categoryId);
+                if (!category) return res.status(400).json({ error: 'Catégorie introuvable.' });
+                item.category = category.title;
+            }
+            item.title = title.trim();
+            item.description = description.trim();
+            item.price = amount;
+            item.size = size.trim();
+            if (req.body.isAvailable !== undefined) item.isAvailable = req.body.isAvailable === 'true';
+            if (req.file) {
+                item.image = { data: req.file.buffer, contentType: req.file.mimetype };
+                item.imageUpdatedAt = new Date();
+            }
+            await item.save();
+            res.json({ success: true, id: String(item._id) });
+        } catch (error) { res.status(500).json({ error: 'Impossible de modifier cet article.' }); }
+    });
+});
+
 app.post("/Menu_Dishes_add", (req, res) => {
     upload.single('image')(req, res, async (uploadError) => {
         if (uploadError) {
@@ -837,6 +920,7 @@ app.post("/Menu_Dishes_add", (req, res) => {
         }
 
         const { title, description, price, size } = req.body;
+        if (req.body.isAvailable !== undefined && !['true', 'false'].includes(req.body.isAvailable)) return res.status(400).send('Disponibilité invalide.');
         const image = req.file;
         const categoryID = req.body.category;
 
@@ -854,6 +938,7 @@ app.post("/Menu_Dishes_add", (req, res) => {
             }
 
             const newItem = new MenuItem({
+                isAvailable: req.body.isAvailable !== 'false',
                 title,
                 description,
                 price,
@@ -897,7 +982,9 @@ app.get(["/Orders", "/orders"], async (req, res) => {
                 orderId,
                 orderIdDisplay: String(order._id || '').slice(-6).toUpperCase() || '-',
                 serviceTypeLabel: getServiceTypeLabel(order.serviceType),
-                serviceTypeClass: isReservation ? 'reservation' : 'dine-in',
+                serviceTypeClass: order.serviceType === 'delivery' ? 'delivery' : isReservation ? 'reservation' : 'dine-in',
+                isDelivery: order.serviceType === 'delivery',
+                deliveryAddress: req.session?.user ? order.deliveryAddress : '',
                 seatCount: order.seatCount || 1,
                 tableDisplay: order.TableNumber || '-',
                 reservationLabel: formatReservationLabel(order) || '-',
@@ -1303,7 +1390,8 @@ app.patch("/api/menu-items/:id/toggle-stock", async (req, res) => {
         if (!item) {
             return res.status(404).json({ success: false, error: 'Item not found' });
         }
-        item.isAvailable = req.body.isAvailable !== undefined ? Boolean(req.body.isAvailable) : !item.isAvailable;
+        if (req.body.isAvailable !== undefined && typeof req.body.isAvailable !== 'boolean') return res.status(400).json({ success: false, error: 'Disponibilité invalide.' });
+        item.isAvailable = req.body.isAvailable !== undefined ? req.body.isAvailable : item.isAvailable === false;
         await item.save();
         res.json({ success: true, isAvailable: item.isAvailable });
     } catch (error) {
@@ -1410,10 +1498,11 @@ app.put('/updateImage/:id', upload.single('image'), async (req, res) => {
 app.get('/ImgUploader_add', async (req, res) => {
     try {
         const floorTables = await getConfiguredFloorTables();
-        const activeOrders = await Order.find({ status: { $ne: 'closed' } }).lean();
+        const activeOrders = await Order.find({ status: { $ne: 'closed' } }).sort({ createdAt: -1 }).lean();
         const ordersByTable = new Map();
 
         activeOrders.forEach((order) => {
+            if (order.serviceType === 'delivery') return;
             const tableNumber = Number(order.TableNumber);
             if (!Number.isInteger(tableNumber) || tableNumber < 1) {
                 return;
@@ -1498,6 +1587,8 @@ app.get('/ImgUploader_add', async (req, res) => {
             .filter((section) => section.tables.length > 0);
 
         res.render('ImgUploader_add', {
+            deliveryOrders: req.session?.user ? buildDeliveryCards(activeOrders) : [],
+            deliveryAdminLoggedIn: Boolean(req.session?.user),
             tableSections,
             tableStats: {
                 totalTables: tables.length,
@@ -1510,6 +1601,25 @@ app.get('/ImgUploader_add', async (req, res) => {
         console.error('Error fetching table map:', error);
         res.status(500).send('Error fetching table map.');
     }
+});
+
+app.get('/api/delivery-orders', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    try {
+        const orders = await Order.find({ serviceType: 'delivery', status: { $ne: 'closed' } }).sort({ createdAt: -1 }).lean();
+        res.json({ success: true, orders: buildDeliveryCards(orders) });
+    } catch (error) { res.status(500).json({ error: 'Impossible de charger les livraisons.' }); }
+});
+
+app.patch('/api/orders/:id/delivered', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) return res.status(400).json({ error: 'Commande invalide.' });
+    try {
+        const order = await Order.findOneAndUpdate({ _id: req.params.id, serviceType: 'delivery', status: { $ne: 'closed' } },
+            { $set: { status: 'closed', closedAt: new Date(), deliveredAt: new Date() } }, { new: true });
+        if (!order) return res.status(404).json({ error: 'Livraison introuvable ou déjà terminée.' });
+        res.json({ success: true, id: String(order._id) });
+    } catch (error) { res.status(500).json({ error: 'Impossible de terminer la livraison.' }); }
 });
 
 app.post('/tables/config', async (req, res) => {
@@ -1858,7 +1968,7 @@ function clearMenuAuth(req, res) {
 }
 
 
-async function buildUserMenuViewData(req, activeUniverseSlug = '') {
+async function buildUserMenuViewData(req, activeUniverseSlug = '', activeProductId = '') {
     let rawCategories = [];
     let rawMenuItems = [];
 
@@ -1876,9 +1986,14 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
 
     const categories = Array.isArray(rawCategories) ? rawCategories.filter(c => c && c.title) : [];
     const MenuItems = Array.isArray(rawMenuItems) ? rawMenuItems.filter(item => item && item.title) : [];
+    const contextParams = new URLSearchParams();
+    if (/^[1-9]\d*$/.test(String(req.query.table || ''))) contextParams.set('table', req.query.table);
+    if (['counter', 'delivery'].includes(req.query.mode)) contextParams.set('mode', req.query.mode);
+    const menuContext = contextParams.size ? `?${contextParams}` : '';
 
     MenuItems.forEach(item => {
-        item.imageUrl = `/menu-image/${item._id}`;
+        item.imageUrl = `/menu-image/${item._id}${item.imageUpdatedAt ? `?v=${new Date(item.imageUpdatedAt).getTime()}` : ''}`;
+        item.detailUrl = `/UserMenu/article/${item._id}${menuContext}`;
         item.isAvailable = item.isAvailable !== false;
         const numPrice = Number(item.price);
         item.price = isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
@@ -1962,6 +2077,11 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
     try { restaurantSettings = await getSettings(); } catch (e) { console.error('getSettings error in buildUserMenuViewData:', e); }
 
     const homeCategories = buildCategoryCards(categorySections);
+    const activeProduct = MenuItems.find(item => String(item._id) === activeProductId) || null;
+    if (activeProduct) {
+        const parent = homeCategories.find(category => category.subcategories.some(section => section.items.includes(activeProduct)));
+        activeProduct.backUrl = parent ? `/UserMenu/categorie/${parent.slug}${menuContext}` : `/UserMenu${menuContext}`;
+    }
     const menuUniverses = homeCategories.map(category => ({ ...category, isActive: category.slug === activeUniverseSlug }));
     // Preserve existing broad-category links without rendering every product twice.
     if (activeUniverseSlug && !menuUniverses.some(category => category.isActive)) {
@@ -1986,6 +2106,7 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '') {
         dailyOfferItems,
         offerDay,
         activeUniverse,
+        activeProduct,
         // Tunisian dinar is displayed as "DT" on the public menu.
         currencyLabel: ['', 'DNT', 'TND', 'DT'].includes(String(restaurantSettings.currency || '').trim().toUpperCase())
             ? 'DT'
@@ -2029,6 +2150,19 @@ app.get("/UserMenu", async (req, res) => {
     } catch (error) {
         console.error('Error fetching menu items for UserMenu:', error);
         res.status(500).send(`Error in UserMenu: ${error.message}\n\nStack: ${error.stack}`);
+    }
+});
+
+app.get('/UserMenu/article/:id', async (req, res) => {
+    const id = String(req.params.id || '');
+    if (!/^[a-f\d]{24}$/i.test(id)) return res.status(404).render('ProductNotFound');
+    try {
+        const viewData = await buildUserMenuViewData(req, '', id.toLowerCase());
+        if (!viewData.activeProduct) return res.status(404).render('ProductNotFound');
+        res.render('UserMenu', viewData);
+    } catch (error) {
+        console.error('Error rendering product detail:', error);
+        res.status(500).send('Impossible de charger cet article. Veuillez réessayer.');
     }
 });
 
@@ -2077,6 +2211,7 @@ app.get('/UserMenu/order-status', async (req, res) => {
             return {
                 orderId,
                 orderIdDisplay: orderId.slice(-6).toUpperCase(),
+                serviceType: order.serviceType,
                 serviceTypeLabel: getServiceTypeLabel(order.serviceType),
                 tableDisplay: order.TableNumber || '',
                 reservationLabel: formatReservationLabel(order),
@@ -2088,6 +2223,7 @@ app.get('/UserMenu/order-status', async (req, res) => {
             .filter((item) => item.status === 'pret')
             .map((item) => ({
                 ...item,
+                serviceType: order.serviceType,
                 orderId: order.orderId,
                 orderIdDisplay: order.orderIdDisplay,
             })));
@@ -2140,6 +2276,7 @@ app.post('/Order_Details', async (req, res) => {
             email,
             TableNumber,
             serviceType,
+            deliveryAddress,
             seatCount,
             reservationDate,
             reservationTime,
@@ -2152,10 +2289,18 @@ app.post('/Order_Details', async (req, res) => {
         const customerName = checkoutUser.isLoggedIn ? checkoutUser.name : String(name || '').trim();
         const customerPhone = checkoutUser.isLoggedIn ? checkoutUser.phone : String(PhoneNumber || '').trim();
         const customerEmail = checkoutUser.isLoggedIn ? checkoutUser.email : String(email || '').trim();
-        const normalizedServiceType = serviceType === 'reservation' ? 'reservation' : 'dine-in';
-        const parsedSeatCount = Number(seatCount);
+        const normalizedServiceType = ['reservation', 'delivery'].includes(serviceType) ? serviceType : 'dine-in';
+        const parsedSeatCount = normalizedServiceType === 'delivery' ? 1 : Number(seatCount);
         const parsedTableNumber = Number(TableNumber);
         const customerComment = String(comment || '').trim();
+        const address = typeof deliveryAddress === 'string' ? deliveryAddress.trim() : '';
+        if (normalizedServiceType === 'delivery') {
+            if (!customerName || !customerPhone) return res.status(400).send('Nom et téléphone obligatoires pour la livraison.');
+            if (!address || address.length > 500) return res.status(400).send('Saisissez une adresse de livraison (500 caractères maximum).');
+            if (!Array.isArray(items) || !items.length || !Number.isFinite(Number(totalPrice)) || Number(totalPrice) < 0) {
+                return res.status(400).send('Votre panier est vide ou invalide.');
+            }
+        }
 
         if (normalizedServiceType === 'reservation') {
             if (!customerName) {
@@ -2190,6 +2335,7 @@ app.post('/Order_Details', async (req, res) => {
             PhoneNumber: finalPhone,
             email: finalEmail,
             serviceType: normalizedServiceType,
+            deliveryAddress: normalizedServiceType === 'delivery' ? address : undefined,
             seatCount: parsedSeatCount,
             TableNumber: normalizedServiceType === 'dine-in' ? parsedTableNumber : undefined,
             comment: customerComment,
@@ -2228,7 +2374,8 @@ app.post('/Order_Details', async (req, res) => {
                 `🆔 Commande: #${String(order._id).slice(-6).toUpperCase()}\n` +
                 `👤 Client: ${order.name}\n` +
                 `📞 Tél: ${order.PhoneNumber || '-'}\n` +
-                `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : 'Réservation'}\n` +
+                `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : getServiceTypeLabel(order.serviceType)}\n` +
+                (order.serviceType === 'delivery' ? `🛵 Adresse: ${order.deliveryAddress}\n` : '') +
                 `🛒 Articles:\n${orderItemsSummary}\n` +
                 `------------------------------------\n` +
                 `💰 TOTAL: ${Number(order.totalPrice || 0).toFixed(2)} DNT`;
@@ -2240,7 +2387,8 @@ app.post('/Order_Details', async (req, res) => {
                 const customerMsg = `✅ *COMMANDE CONFIRMÉE - Le Patio Djerba* ☕\n` +
                     `Bonjour ${order.name},\n` +
                     `Votre commande #${String(order._id).slice(-6).toUpperCase()} a bien été enregistrée !\n\n` +
-                    `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : 'Réservation'}\n` +
+                    `📍 Service: ${order.serviceType === 'dine-in' ? `Table ${order.TableNumber}` : getServiceTypeLabel(order.serviceType)}\n` +
+                    (order.serviceType === 'delivery' ? `🛵 Adresse: ${order.deliveryAddress}\n` : '') +
                     `💰 Montant Total: ${Number(order.totalPrice || 0).toFixed(2)} DNT\n\n` +
                     `Merci pour votre confiance ! 🙏`;
 

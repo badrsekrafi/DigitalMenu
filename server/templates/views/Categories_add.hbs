@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle Catégorie | Le Patio</title>
+    <title>{{#if isEditing}}Modifier la catégorie{{else}}Nouvelle catégorie{{/if}} | Le Patio</title>
     <link rel="stylesheet" href="/css/admin-theme.css">
     <link rel="stylesheet" href="/css/form-page.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -25,14 +25,14 @@
                     <div class="form-card-header">
                         <div>
                             <p class="eyebrow">Catalogue</p>
-                            <h1>Nouvelle catégorie</h1>
+                            <h1>{{#if isEditing}}Modifier la catégorie{{else}}Nouvelle catégorie{{/if}}</h1>
                         </div>
                         <div style="width:40px;height:40px;background:var(--primary-soft);border-radius:10px;display:grid;place-items:center;color:var(--primary);">
                             <i class="fa-solid fa-tags"></i>
                         </div>
                     </div>
 
-                    <div class="form-card-body">
+                    <form class="form-card-body" id="catalogEditor" data-editor="category" data-id="{{_id}}" data-editing="{{isEditing}}">
                         <div class="field-group">
                             <label for="catTitle">Titre</label>
                             <input type="text" id="catTitle" name="title" required value="{{this.title}}" placeholder="Ex: Boissons, Entrées…">
@@ -40,63 +40,27 @@
 
                         <div class="field-group">
                             <label for="catDescription">Description</label>
-                            <textarea id="catDescription" name="description" rows="4" placeholder="Décrivez cette catégorie…">{{this.description}}</textarea>
+                            <textarea id="catDescription" name="description" rows="4" required placeholder="Décrivez cette catégorie…">{{this.description}}</textarea>
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" class="btn-submit" onclick="addCategory()">
-                                <i class="fa-solid fa-plus" style="margin-right:6px;"></i>
-                                Ajouter la catégorie
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid {{#if isEditing}}fa-check{{else}}fa-plus{{/if}}" style="margin-right:6px;"></i>
+                                {{#if isEditing}}Enregistrer les modifications{{else}}Ajouter la catégorie{{/if}}
                             </button>
-                            <button type="button" class="btn-cancel" onclick="cancelCategoryAdd()">
+                            <button type="button" class="btn-cancel" data-editor-cancel>
                                 Annuler
                             </button>
                         </div>
-                    </div>
+                        <p id="editorMessage" role="status" aria-live="polite"></p>
+                    </form>
                 </div>
 
-                <div id="successPopup" class="popup">
-                    <div class="popup_content">
-                        <i class="fa-solid fa-circle-check" style="color:#22C55E;"></i>
-                        Catégorie ajoutée avec succès !
-                    </div>
-                </div>
             </main>
         </div>
     </div>
 
     <script src="/javascript/index.js"></script>
-    <script>
-        function addCategory() {
-            const title = document.getElementById('catTitle').value;
-            const description = document.getElementById('catDescription').value;
-
-            fetch('/Categories_add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description })
-            })
-            .then(Response => Response.text())
-            .then(data => {
-                $('#successPopup').fadeIn();
-                document.getElementById('catTitle').value = '';
-                document.getElementById('catDescription').value = '';
-                setTimeout(function() { $('#successPopup').fadeOut(); }, 5000);
-            })
-            .catch(err => console.error('Error:', err));
-        }
-
-        function cancelCategoryAdd() {
-            window.location.href = '/Categories';
-        }
-
-        $(document).ready(function() {
-            $(window).click(function(e) {
-                if (!$(e.target).closest('.form-card').length) {
-                    $('#successPopup').fadeOut();
-                }
-            });
-        });
-    </script>
+    <script src="/javascript/catalog-editor.js"></script>
 </body>
 </html>

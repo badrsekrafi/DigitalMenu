@@ -118,6 +118,14 @@
                     </form>
                 </section>
 
+                <section class="delivery-dashboard" aria-labelledby="deliveryDashboardTitle" data-delivery-access="{{deliveryAdminLoggedIn}}">
+                    <div class="delivery-dashboard-heading"><img src="/images/patio/delivery-scooter.svg" alt="Livraison à scooter" width="100" height="72"><div><p class="eyebrow">Commandes à distance</p><h2 id="deliveryDashboardTitle">Livraisons à domicile</h2><p><span id="deliveryOrderCount">{{deliveryOrders.length}}</span> commande(s) en cours · une carte par commande</p></div></div>
+                    <p id="deliveryDashboardMessage" role="status" aria-live="polite"></p>
+                    {{#unless deliveryAdminLoggedIn}}<p><a href="/login">Connectez-vous à votre compte administrateur</a> pour consulter les livraisons.</p>{{/unless}}
+                    <div class="delivery-order-grid" id="deliveryOrderGrid">{{#each deliveryOrders}}{{>delivery_order_card}}{{/each}}</div>
+                    <p id="deliveryOrdersEmpty" {{#if deliveryOrders.length}}hidden{{/if}}>Aucune commande à livrer pour le moment.</p>
+                    <template id="deliveryOrderTemplate">{{>delivery_order_card}}</template>
+                </section>
                 <div class="floor-plan">
                     {{#each tableSections}}
                     <section class="floor-zone">
@@ -192,6 +200,7 @@
     <div id="statusToast" class="status-toast" role="status" aria-live="polite"></div>
 
     <script src="/javascript/index.js"></script>
+    <script src="/javascript/delivery-orders.js"></script>
     <script>
         const toast = document.getElementById('statusToast');
         const tableCountForm = document.getElementById('tableCountForm');

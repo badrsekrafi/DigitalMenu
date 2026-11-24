@@ -284,7 +284,7 @@
                                 <tbody>
                                     {{#each orders}}
                                     <tr>
-                                        <td><strong>{{#if TableNumber}}Table {{TableNumber}}{{else}}Reservation{{/if}}</strong></td>
+                                        <td><strong>{{#if TableNumber}}Table {{TableNumber}}{{else}}{{serviceLabel serviceType}}{{/if}}</strong></td>
                                         <td>{{name}}</td>
                                         <td style="color: #3E5368;">
                                             {{#each items}}

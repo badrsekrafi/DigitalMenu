@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema({
    },
    serviceType: {
         type: String,
-        enum: ['dine-in', 'reservation'],
+        enum: ['dine-in', 'reservation', 'delivery'],
         default: 'dine-in',
    },
    seatCount: {
@@ -26,6 +26,13 @@ const orderSchema = new mongoose.Schema({
         min: 1,
         default: 1,
    },
+   deliveryAddress: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+        required: function () { return this.serviceType === 'delivery'; },
+   },
+   deliveredAt: Date,
    reservationDate: {
         type: String,
    },

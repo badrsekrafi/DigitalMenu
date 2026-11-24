@@ -1,0 +1,10 @@
+<article class="delivery-order-card" data-delivery-id="{{id}}">
+    <div class="delivery-card-heading"><img src="/images/patio/delivery-scooter.svg" alt="Livraison à scooter" width="64" height="48"><div><h3>Commande <span data-delivery-reference>#{{orderIdDisplay}}</span></h3><time data-delivery-created>{{created}}</time></div></div>
+    <strong data-delivery-name>{{name}}</strong>
+    <p data-delivery-phone>{{phone}}</p>
+    <p class="delivery-card-address" data-delivery-address>{{address}}</p>
+    <ul data-delivery-items>{{#each items}}<li>{{quantity}} × {{name}} · {{status}}</li>{{/each}}</ul>
+    <p class="delivery-card-comment" data-delivery-comment>{{comment}}</p>
+    <div class="delivery-card-total"><span>Total</span><strong data-delivery-total>{{total}} DT</strong></div>
+    <div class="delivery-card-actions"><a href="/Orders#order-{{id}}" data-delivery-details>Détails / préparation</a><button type="button" data-delivery-complete="{{id}}">Marquer livrée</button></div>
+</article>

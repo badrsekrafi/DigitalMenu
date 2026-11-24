@@ -136,6 +136,16 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 .popup_content { display: flex; align-items: center; gap: 8px; }
 
 /* ---- Back link ---- */
+.editor-image-preview { display: block; width: 160px; height: 120px; object-fit: contain; border-radius: 12px; background: var(--primary-soft); margin: 8px 0; }
+#editorMessage { font-size: 14px; margin-top: 16px; }
+.btn-submit:disabled { opacity: .6; cursor: wait; }
+.field-group .availability-control { display: flex; align-items: center; gap: 12px; width: fit-content; cursor: pointer; color: var(--text); }
+.availability-control input[type="checkbox"] { position: relative; appearance: none; width: 48px; height: 28px; min-height: 0; padding: 0; margin: 0; border: 1px solid var(--line); border-radius: 999px; background: var(--primary-soft); cursor: pointer; flex-shrink: 0; }
+.availability-control input::after { content: ''; position: absolute; width: 20px; height: 20px; top: 3px; left: 3px; border-radius: 50%; background: var(--text-muted); transition: transform .15s ease; }
+.availability-control input:checked { background: var(--primary); }
+.availability-control input:checked::after { transform: translateX(20px); background: #EFB35C; }
+.availability-control input:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
 .back-link {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 13px; font-weight: 500; color: var(--muted);
