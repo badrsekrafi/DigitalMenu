@@ -10,6 +10,7 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    menuOrder: { type: Number, min: 0, default: null },
 });
 
 const Category = mongoose.model('Category', categorySchema);

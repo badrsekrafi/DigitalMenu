@@ -31,6 +31,7 @@ const Settings = require('./models/settings');
 const DailyOffer = require('./models/dailyOffer');
 const { restaurantDay, isValidDay } = require('./utils/dailyOffers');
 const { buildDeliveryCards } = require('./utils/deliveryOrders');
+const { sortMenuCategories } = require('./utils/categoryOrder');
 const {
     ADMIN_WHATSAPP_NUMBER,
     formatWhatsAppNumber,
@@ -709,7 +710,7 @@ app.get('/getorderCount', async (req, res) => {
 // ==============  Categories Page =================
 app.get(["/Categories", "/categories"], async (req, res) => {
     try {
-        const categories = await Category.find();
+        const categories = sortMenuCategories(await Category.find().lean());
         const categoryCount = categories.length; // Get the count of categories
         res.render("Categories", {
             categories,
@@ -741,6 +742,31 @@ app.get("/Categories_add", async (req, res) => {
         if (!category) return res.status(404).send('Catégorie introuvable.');
         res.render('Categories_add', { ...category, isEditing: true });
     } catch (error) { res.status(500).send('Impossible de charger la catégorie.'); }
+});
+
+app.put('/api/categories/order', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    const { categoryIds } = req.body;
+    if (!Array.isArray(categoryIds) || categoryIds.length > 2000 || categoryIds.some(id => typeof id !== 'string' || !/^[a-f\d]{24}$/i.test(id))) {
+        return res.status(400).json({ error: 'Liste de catégories invalide.' });
+    }
+    const ids = categoryIds.map(id => id.toLowerCase());
+    if (new Set(ids).size !== ids.length) return res.status(400).json({ error: 'Une catégorie apparaît plusieurs fois.' });
+    try {
+        await mongoose.connection.transaction(async session => {
+            const current = await Category.find({}, { _id: 1 }).session(session).lean();
+            const currentIds = new Set(current.map(category => String(category._id)));
+            if (currentIds.size !== ids.length || ids.some(id => !currentIds.has(id))) {
+                throw Object.assign(new Error('La liste des catégories a changé. Rechargez la page avant de réorganiser.'), { status: 409 });
+            }
+            if (ids.length) await Category.bulkWrite(ids.map((id, index) => ({
+                updateOne: { filter: { _id: id }, update: { $set: { menuOrder: index } } },
+            })), { session });
+        });
+        res.json({ success: true, categoryIds: ids });
+    } catch (error) {
+        res.status(error.status || 500).json({ error: error.status ? error.message : 'Impossible d’enregistrer l’ordre des catégories.' });
+    }
 });
 
 app.put('/api/categories/:id', async (req, res) => {
@@ -841,7 +867,7 @@ app.delete('/deleteMenuItem/:id', async (req, res) => {
 
 app.get("/Menu_Dishes_add", async (req, res) => {
     try {
-        const categories = await Category.find().lean();
+        const categories = sortMenuCategories(await Category.find().lean());
         let item = null;
         if (req.query.id) {
             if (!/^[a-f\d]{24}$/i.test(String(req.query.id))) return res.status(404).send('Article introuvable.');
@@ -1974,7 +2000,7 @@ async function buildUserMenuViewData(req, activeUniverseSlug = '', activeProduct
     let rawMenuItems = [];
 
     try {
-        rawCategories = await Category.find().lean();
+        rawCategories = sortMenuCategories(await Category.find().lean());
     } catch (catErr) {
         console.error('Error finding categories:', catErr);
     }

@@ -41,20 +41,36 @@
                         <span id="categoryCountLabel">{{categoryCount}} catégories</span>
                     </div>
 
+                    {{#if hasCategories}}
+                    <div class="category-order-toolbar">
+                        <div><strong>Ordre dans le menu client</strong><p>Glissez les lignes, utilisez les flèches ou choisissez une position. Les 4 premières catégories s’affichent avant « Afficher la suite ».</p></div>
+                        <div class="category-order-actions"><button type="button" id="cancelCategoryOrder" disabled>Annuler</button><button type="button" id="saveCategoryOrder" disabled>Enregistrer l’ordre</button></div>
+                    </div>
+                    <p id="categoryOrderMessage" class="category-order-message" role="status" aria-live="polite"></p>
+                    {{/if}}
                     <div class="lowerbox-table" aria-label="Table des catégories">
                         {{#if hasCategories}}
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Position</th>
                                     <th>Nom</th>
                                     <th>Description</th>
                                     <th style="text-align: center;">Modifier</th>
                                     <th style="text-align: center;">Supprimer</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="categoryOrderRows">
                                 {{#each categories}}
                                 <tr data-id="{{this._id}}" id="category-{{this._id}}">
+                                    <td class="category-order-cell" data-label="Position">
+                                        <div class="category-order-controls">
+                                            <button type="button" class="category-drag-handle" draggable="true" aria-label="Glisser {{title}} pour déplacer" title="Glisser pour déplacer"><i class="fa-solid fa-grip-vertical" aria-hidden="true"></i></button>
+                                            <select class="category-position" aria-label="Position de {{title}}"><option value="{{inc @index}}">{{inc @index}}</option></select>
+                                            <button type="button" data-category-move="up" aria-label="Monter {{title}}"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" data-category-move="down" aria-label="Descendre {{title}}"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        </div>
+                                    </td>
                                     <td class="name-cell" data-label="Nom">
                                         <span class="cell-text strong-text">{{this.title}}</span>
                                     </td>
@@ -94,6 +110,7 @@
     </div>
 
     <script src="/javascript/index.js"></script>
+    <script src="/javascript/category-order.js"></script>
     <script>
         function confirmDelete(id) {
             if (confirm('Voulez-vous vraiment supprimer cette catégorie ?')) {
@@ -125,6 +142,7 @@
                 const row = document.querySelector(`tr[data-id="${id}"]`);
                 if (row) {
                     row.remove();
+                    document.dispatchEvent(new CustomEvent('categories:deleted', { detail: { id } }));
                     updateCategoryCount();
                     $('#successPopup').fadeIn();
                 }

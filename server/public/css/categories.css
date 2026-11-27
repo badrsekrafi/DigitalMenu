@@ -1,6 +1,32 @@
 /* Modern SaaS Categories CSS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+.category-order-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px; margin-bottom: 8px; background: #F2E5D5; border-radius: 14px; }
+.category-order-toolbar strong { color: #102B43; font-size: 14px; }
+.category-order-toolbar p { color: #3E5368; max-width: 560px; font-size: 12px; line-height: 1.6; margin-top: 6px; }
+.category-order-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.category-order-actions button { padding: 12px 16px; border-radius: 10px; background: #FFF8EF; color: #102B43; cursor: pointer; font-size: 12px; font-weight: 600; }
+.category-order-actions #saveCategoryOrder { background: #102B43; color: #FFF8EF; }
+.category-order-actions button:disabled { opacity: .5; cursor: default; }
+.category-order-message { min-height: 20px; margin: 10px 0; font-size: 12px; color: #3E5368; }
+.category-order-message.is-error { color: #B91C1C; }
+.category-order-message a { color: #102B43; text-decoration: underline; font-weight: 600; }
+.category-order-controls { display: flex; align-items: center; gap: 6px; }
+.category-order-controls button { width: 32px; height: 34px; border-radius: 8px; border: 1px solid #E5D2BA; background: #FFF8EF; color: #102B43; cursor: pointer; flex-shrink: 0; }
+.category-order-controls button:disabled { opacity: .35; cursor: default; }
+.category-order-controls .category-drag-handle { cursor: grab; }
+.category-order-controls .category-position { appearance: auto; width: 52px; height: 34px; text-align: center; border: 1px solid #E5D2BA; border-radius: 8px; color: #102B43; background: #FFF8EF; }
+.category-order-controls :focus-visible, .category-order-actions button:focus-visible { outline: 2px solid #102B43; outline-offset: 2px; }
+.lowerbox-table tr.is-dragging { opacity: .55; background: #F2E5D5; }
+@media (max-width:1000px) { .category-order-toolbar { align-items: stretch; flex-direction: column; gap: 12px; } }
+@media (max-width:640px) {
+    .boxes { padding: 16px; }
+    .upperbox { flex-wrap: wrap; padding: 18px; }
+    .lowerbox { padding: 16px; }
+    .category-order-actions { flex-wrap: wrap; }
+    .category-order-actions button { flex: 1; }
+}
+
 * {
     margin: 0;
     padding: 0;
