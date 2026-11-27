@@ -32,6 +32,7 @@ const DailyOffer = require('./models/dailyOffer');
 const { restaurantDay, isValidDay } = require('./utils/dailyOffers');
 const { buildDeliveryCards } = require('./utils/deliveryOrders');
 const { sortMenuCategories } = require('./utils/categoryOrder');
+const { imageContentType } = require('./utils/websiteLogo');
 const {
     ADMIN_WHATSAPP_NUMBER,
     formatWhatsAppNumber,
@@ -47,7 +48,7 @@ const {
 
 async function getSettings() {
     try {
-        const settings = await Settings.findOne().lean();
+        const settings = await Settings.findOne({}, { logo: 0 }).lean();
         return {
             restaurantName: settings?.restaurantName || 'Le Patio Djerba',
             address: settings?.address || 'Marina 4180 Houmt Souk Djerba, Tunis',
@@ -88,6 +89,25 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// A fixed public URL keeps the menu, sidebar, favicon and notifications in sync.
+app.get(['/images/logo.png', '/favicon.ico'], async (req, res) => {
+    try {
+        const settings = await Settings.findOne({}, { logo: 1 }).lean();
+        const logo = settings?.logo;
+        if (logo?.data) {
+            const bytes = Buffer.isBuffer(logo.data) ? logo.data : Buffer.from(logo.data.buffer || logo.data);
+            const contentType = imageContentType(bytes);
+            if (contentType) {
+                res.set({ 'Content-Type': contentType, 'Cache-Control': 'public, no-cache', 'X-Content-Type-Options': 'nosniff',
+                    ETag: `"${crypto.createHash('sha256').update(bytes).digest('hex')}"` });
+                if (req.fresh) return res.status(304).end();
+                return res.send(bytes);
+            }
+        }
+    } catch (error) { console.error('Error loading website logo:', error.message); }
+    res.set('Cache-Control', 'public, no-cache');
+    res.sendFile(path.join(static_path, 'images/logo.png'), { cacheControl: false });
+});
 app.use(express.static(static_path));
 app.use("/vendor/qrious", express.static(path.join(__dirname, "../node_modules/qrious/dist")));
 app.use("/vendor/chartjs", express.static(path.join(__dirname, "../node_modules/chart.js/dist")));
@@ -1304,7 +1324,7 @@ app.get(["/Reports", "/reports"], async (req, res) => {
 app.get(["/Settings", "/settings"], async (req, res) => {
     try {
         await ensureDefaultAdminCreated();
-        const settingsData = (await Settings.findOne().lean()) || {};
+        const settingsData = (await Settings.findOne({}, { logo: 0 }).lean()) || {};
         const adminAccount = (await user.findOne().lean()) || {
             email: "badersekrafi242@gmail.com",
             password: "00000000"
@@ -1320,6 +1340,32 @@ app.get(["/Settings", "/settings"], async (req, res) => {
         console.error('Error fetching settings:', error);
         res.status(500).send('Error fetching settings.');
     }
+});
+
+const logoUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, callback) => {
+        callback(null, ['image/png', 'image/jpeg', 'image/webp'].includes(file.mimetype));
+    },
+});
+
+app.post('/api/settings/logo', (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ error: 'Connectez-vous à votre compte administrateur.' });
+    logoUpload.single('logo')(req, res, async uploadError => {
+        if (uploadError) return res.status(uploadError.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: uploadError.code === 'LIMIT_FILE_SIZE' ? 'Choisissez un logo de moins de 5 Mo.' : 'Impossible de lire le fichier sélectionné.' });
+        const contentType = req.file && imageContentType(req.file.buffer);
+        if (!contentType || contentType !== req.file.mimetype) return res.status(400).json({ error: 'Choisissez une image PNG, JPG ou WEBP valide.' });
+        try {
+            await Settings.findOneAndUpdate({}, { $set: { logo: {
+                data: req.file.buffer, contentType, updatedAt: new Date(),
+            } } }, { upsert: true, new: true, setDefaultsOnInsert: true });
+            res.json({ success: true, logoUrl: `/images/logo.png?v=${crypto.randomBytes(8).toString('hex')}` });
+        } catch (error) {
+            console.error('Error saving website logo:', error.message);
+            res.status(500).json({ error: 'Impossible d’enregistrer le logo. Veuillez réessayer.' });
+        }
+    });
 });
 
 app.post("/Settings", async (req, res) => {

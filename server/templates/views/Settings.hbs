@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="/css/patio-brand.css">
+    <link rel="icon" href="/images/logo.png?v=website-icon">
 </head>
 <body>
     <div class="main">
@@ -29,6 +30,18 @@
                     Paramètres enregistrés avec succès !
                 </div>
                 {{/if}}
+
+                <section class="form-card" aria-labelledby="websiteLogoTitle">
+                    <div class="form-card-header"><div><p class="eyebrow">Identité visuelle</p><h2 id="websiteLogoTitle">Logo du site</h2></div><i class="fa-solid fa-image" aria-hidden="true"></i></div>
+                    <form id="websiteLogoForm" class="form-card-body" action="/api/settings/logo" method="POST" enctype="multipart/form-data">
+                        <div class="website-logo-editor">
+                            <img id="websiteLogoPreview" src="/images/logo.png" alt="Logo actuel du site" width="144" height="144">
+                            <div class="field-group"><label for="websiteLogo">Choisir un nouveau logo</label><input type="file" id="websiteLogo" name="logo" accept="image/png,image/jpeg,image/webp" required><p class="field-hint">PNG, JPG ou WEBP · 5 Mo maximum. Le logo sera utilisé sur le site et dans le menu client.</p></div>
+                        </div>
+                        <div class="form-actions"><button type="submit" class="btn-submit" id="saveWebsiteLogo" disabled><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Enregistrer le logo</button></div>
+                        <p id="websiteLogoMessage" role="status" aria-live="polite"></p>
+                    </form>
+                </section>
 
                 <div class="form-card">
                     <div class="form-card-header">
@@ -106,5 +119,6 @@
     </div>
 
     <script src="/javascript/index.js"></script>
+    <script src="/javascript/website-logo.js"></script>
 </body>
 </html>

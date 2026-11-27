@@ -137,6 +137,12 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 
 /* ---- Back link ---- */
 .editor-image-preview { display: block; width: 160px; height: 120px; object-fit: contain; border-radius: 12px; background: var(--primary-soft); margin: 8px 0; }
+.website-logo-editor { display: flex; gap: 24px; align-items: center; }
+.website-logo-editor > img { width: 144px; height: 144px; object-fit: contain; border-radius: 50%; border: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+.website-logo-editor .field-group { flex: 1; min-width: 0; }
+#websiteLogoMessage { font-size: 13px; margin-top: 14px; }
+#websiteLogoMessage a { color: var(--text); text-decoration: underline; font-weight: 600; }
+@media (max-width:600px) { .website-logo-editor { flex-direction: column; align-items: stretch; } .website-logo-editor > img { align-self: center; } }
 #editorMessage { font-size: 14px; margin-top: 16px; }
 #editorMessage a { color: var(--text); text-decoration: underline; font-weight: 700; }
 .btn-submit:disabled { opacity: .6; cursor: wait; }

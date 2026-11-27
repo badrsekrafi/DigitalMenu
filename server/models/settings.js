@@ -22,6 +22,11 @@ const settingsSchema = new mongoose.Schema({
         type: String,
         default: 'DNT',
     },
+    logo: {
+        data: Buffer,
+        contentType: String,
+        updatedAt: Date,
+    },
 }, { timestamps: true });
 
 const Settings = mongoose.model('Settings', settingsSchema);
